@@ -15,12 +15,19 @@ if (redirect) {
 }
 entry.path = window.location.pathname
 
+// App instalável / offline (somente em produção)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL }).catch(() => {})
+  })
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <AuthProvider>
         <App />
-        <Toaster richColors position="top-center" closeButton />
+        <Toaster position="top-center" toastOptions={{ style: { fontFamily: 'var(--font-sans)', borderRadius: 14 } }} />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { Copy, Check, Mail, MessageCircle, Send } from 'lucide-react'
+import { Copy, Check, Mail, MessageCircle, Users, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Modal } from './ui'
 
@@ -10,59 +10,56 @@ export default function ShareDialog({ open, onClose, url, title }: { open: boole
 
   useEffect(() => {
     if (!open) return
-    QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#1e1b4b', light: '#ffffff' } }).then(setQr).catch(() => setQr(''))
+    QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr).catch(() => setQr(''))
   }, [open, url])
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url)
-      setCopied(true); toast.success('Link copiado!')
+      setCopied(true); toast.success('Link copiado')
       setTimeout(() => setCopied(false), 2000)
     } catch { toast.error('Não foi possível copiar. Selecione o link manualmente.') }
   }
-  const text = `📘 ${title}`
   const enc = encodeURIComponent
+  const actions = [
+    { label: copied ? 'Copiado' : 'Copiar link', icon: copied ? Check : Copy, color: '#8e8e93', onClick: copy },
+    { label: 'WhatsApp', icon: MessageCircle, color: '#25d366', href: `https://wa.me/?text=${enc(`${title}\n${url}`)}` },
+    { label: 'Teams', icon: Users, color: '#5b5fc7', href: `https://teams.microsoft.com/share?href=${enc(url)}&msgText=${enc(title)}` },
+    { label: 'E-mail', icon: Mail, color: '#007aff', href: `mailto:?subject=${enc(title)}&body=${enc(`${title}\n\n${url}`)}` },
+  ]
 
   return (
-    <Modal open={open} onClose={onClose} title="Compartilhar tutorial">
+    <Modal open={open} onClose={onClose} title="Compartilhar">
       <div className="space-y-5">
-        <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Link curto</label>
-          <div className="flex gap-2">
-            <input readOnly value={url} onFocus={e => e.target.select()}
-              className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 font-mono text-sm text-slate-800 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
-            <button onClick={copy} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-500">
-              {copied ? <Check className="size-4" /> : <Copy className="size-4" />}{copied ? 'Copiado' : 'Copiar'}
-            </button>
+        <div className="flex items-center gap-3 rounded-[12px] bg-neutral-100 p-3 dark:bg-neutral-800">
+          {qr && <img src={qr} alt="QR Code do tutorial" className="size-16 shrink-0 rounded-md bg-white p-1" />}
+          <div className="min-w-0">
+            <div className="line-clamp-2 text-[15px] font-semibold leading-snug text-neutral-900 dark:text-white">{title}</div>
+            <input readOnly value={url} onFocus={e => e.target.select()} className="mt-0.5 w-full bg-transparent font-mono text-[12px] text-neutral-500 outline-none" />
           </div>
-          <p className="mt-2 text-xs text-slate-500">Quem abrir o link precisa estar logado na central. A visualização fica registrada.</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <a target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${enc(`${text}\n${url}`)}`}
-            className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 p-3 text-xs font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-emerald-500/10">
-            <MessageCircle className="size-5 text-emerald-600" />WhatsApp
-          </a>
-          <a target="_blank" rel="noopener noreferrer" href={`https://teams.microsoft.com/share?href=${enc(url)}&msgText=${enc(text)}`}
-            className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 p-3 text-xs font-medium text-slate-700 hover:border-violet-300 hover:bg-violet-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-violet-500/10">
-            <Send className="size-5 text-violet-600" />Teams
-          </a>
-          <a href={`mailto:?subject=${enc(text)}&body=${enc(`${title}\n\n${url}`)}`}
-            className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 p-3 text-xs font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-sky-500/10">
-            <Mail className="size-5 text-sky-600" />E-mail
-          </a>
+        <div className="grid grid-cols-4 gap-2">
+          {actions.map(a => {
+            const inner = (
+              <>
+                <span className="grid size-14 place-items-center rounded-[14px] text-white" style={{ background: a.color }}><a.icon className="size-6" /></span>
+                <span className="text-[12px] text-neutral-700 dark:text-neutral-300">{a.label}</span>
+              </>
+            )
+            const cls = 'press flex flex-col items-center gap-1.5'
+            return a.href
+              ? <a key={a.label} href={a.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
+              : <button key={a.label} onClick={a.onClick} className={cls}>{inner}</button>
+          })}
         </div>
 
         {qr && (
-          <div className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-            <img src={qr} alt="QR Code do tutorial" className="size-28 rounded-lg bg-white p-1.5 ring-1 ring-slate-200" />
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              <div className="font-semibold text-slate-800 dark:text-slate-200">QR Code</div>
-              Aponte a câmera do celular para abrir o tutorial em campo.
-              <a href={qr} download={`tutorial-qr.png`} className="mt-2 block text-xs font-semibold text-indigo-600 hover:underline">Baixar QR Code</a>
-            </div>
-          </div>
+          <a href={qr} download="tutorial-qrcode.png" className="flex h-11 items-center justify-center gap-2 rounded-[10px] bg-neutral-100 text-[15px] font-medium text-accent-600 dark:bg-neutral-800 dark:text-accent-400">
+            <Download className="size-4" />Salvar QR Code para imprimir
+          </a>
         )}
+        <p className="text-center text-[12px] text-neutral-500">Quem abrir o link precisa entrar na central. A visualização fica registrada.</p>
       </div>
     </Modal>
   )

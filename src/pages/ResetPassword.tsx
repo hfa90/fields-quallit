@@ -22,8 +22,8 @@ export default function ResetPassword() {
         toast.success('Senha atualizada!')
         finishRecovery()
       }}>
-        <div className="mb-6 grid size-14 place-items-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15"><KeyRound className="size-7" /></div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Defina uma nova senha</h1>
+        <div className="mb-6 grid size-14 place-items-center rounded-2xl bg-accent-100 text-accent-600 dark:bg-accent-500/15"><KeyRound className="size-7" /></div>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Defina uma nova senha</h1>
         <div>
           <label className={labelCls}>Nova senha</label>
           <input type="password" autoFocus className={inputCls} value={pw} onChange={e => setPw(e.target.value)} autoComplete="new-password" minLength={8} required />

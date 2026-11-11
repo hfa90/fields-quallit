@@ -100,7 +100,7 @@ export default function TutorialContent({ html, onHeadings }: { html: string; on
       const t = (c.dataset.callout || 'info') as CalloutType
       const meta = CALLOUTS[t] ?? CALLOUTS.info
       const title = document.createElement('div'); title.className = 'callout-title'
-      title.textContent = `${meta.emoji} ${meta.label}`
+      title.textContent = meta.label
       c.classList.add('callout', `callout-${t}`)
       c.prepend(title)
     })
@@ -129,7 +129,7 @@ export default function TutorialContent({ html, onHeadings }: { html: string; on
     <>
       <div ref={ref} className="tutorial-content" dangerouslySetInnerHTML={{ __html: clean }} />
       {zoom && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur" onClick={() => setZoom(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/85 p-4 backdrop-blur" onClick={() => setZoom(null)}>
           <button className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Fechar"><X className="size-6" /></button>
           <img src={zoom} alt="" className="max-h-full max-w-full rounded-lg shadow-2xl pop-in" />
         </div>

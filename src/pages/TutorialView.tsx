@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import {
-  Share2, Pencil, Trash2, Printer, Clock, CalendarDays, Eye, Paperclip, Link2, ListTree, Users, ArrowLeft, FileEdit, Share,
-} from 'lucide-react'
+import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -12,7 +10,7 @@ import { DIFFICULTY, cn, errMsg, fmtDate, fmtDateTime, readingTime, shortUrl, ti
 import TutorialContent, { type Heading } from '../components/TutorialContent'
 import ShareDialog from '../components/ShareDialog'
 import { AttachmentList, LinkList } from '../components/Attachments'
-import { Avatar, Button, CategoryIcon, Modal, Spinner } from '../components/ui'
+import { Avatar, Button, CategoryIcon, Modal, SectionTitle, Spinner } from '../components/ui'
 import NotFound from './NotFound'
 
 type Full = Tutorial & {
@@ -34,6 +32,7 @@ export default function TutorialView() {
   const [confirmDel, setConfirmDel] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [allViewers, setAllViewers] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -57,23 +56,28 @@ export default function TutorialView() {
       const v = await supabase.rpc('kb_tutorial_viewers', { p_tutorial: data.id })
       if (alive) setViewers((v.data as Viewer[]) ?? [])
     })()
-    return () => { alive = false; document.title = 'Fields Quallit · Central de Tutoriais' }
+    return () => { alive = false; document.title = 'Fields Quallit' }
   }, [code])
 
-  if (t === undefined) return <Spinner label="Abrindo tutorial…" />
+  if (t === undefined) return <Spinner />
   if (t === null) return <NotFound message="Tutorial não encontrado ou sem permissão de acesso" />
 
   const canEdit = isModerator || t.author_id === profile?.id
   const d = DIFFICULTY[t.difficulty]
-  const color = t.category?.color ?? '#64748b'
+  const color = t.category?.color ?? '#8e8e93'
   const url = shortUrl(t.short_code)
   const totalViews = viewers?.reduce((s, v) => s + Number(v.views), 0) ?? 0
+  const hasText = !!t.content_html.replace(/<[^>]+>/g, '').trim() || t.content_html.includes('<img')
 
   const quickShare = async () => {
-    if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
+    if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
       try { await navigator.share({ title: t.title, url }); return } catch { /* cancelado */ }
     }
     setShare(true)
+  }
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); toast.success('Link copiado'); setTimeout(() => setCopied(false), 1800) }
+    catch { setShare(true) }
   }
 
   const remove = async () => {
@@ -89,135 +93,135 @@ export default function TutorialView() {
 
   return (
     <article className="fade-up">
-      <div className="no-print mb-5 flex items-center justify-between gap-3">
-        <button onClick={() => (window.history.length > 1 ? nav(-1) : nav('/'))} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 hover:bg-white hover:text-slate-800 dark:hover:bg-slate-900 dark:hover:text-slate-200">
-          <ArrowLeft className="size-4" />Voltar
+      {/* Barra de navegação */}
+      <div className="no-print -mt-1 mb-4 flex items-center justify-between gap-2">
+        <button onClick={() => (window.history.length > 1 ? nav(-1) : nav('/'))} className="-ml-2 inline-flex h-9 items-center text-[17px] text-accent-600 dark:text-accent-400">
+          <ChevronLeft className="size-6" strokeWidth={2.2} />Voltar
         </button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.print()} title="Imprimir ou salvar como PDF"><Printer className="size-4" /><span className="hidden sm:inline">Imprimir</span></Button>
-          {canEdit && <Button variant="outline" size="sm" onClick={() => nav(`/t/${t.short_code}/editar`)}><Pencil className="size-4" /><span className="hidden sm:inline">Editar</span></Button>}
-          {canEdit && <Button variant="outline" size="sm" onClick={() => setConfirmDel(true)} className="text-rose-600"><Trash2 className="size-4" /></Button>}
-          <Button size="sm" onClick={quickShare}><Share2 className="size-4" />Compartilhar</Button>
+        <div className="flex items-center gap-1">
+          <IconBtn title="Imprimir / PDF" onClick={() => window.print()} className="hidden sm:grid"><Printer className="size-[18px]" /></IconBtn>
+          {canEdit && <IconBtn title="Editar" onClick={() => nav(`/t/${t.short_code}/editar`)}><Pencil className="size-[18px]" /></IconBtn>}
+          {canEdit && <IconBtn title="Excluir" onClick={() => setConfirmDel(true)} className="text-[#ff3b30]"><Trash2 className="size-[18px]" /></IconBtn>}
+          <IconBtn title="Compartilhar" onClick={quickShare}><Share className="size-[18px]" /></IconBtn>
         </div>
       </div>
 
-      {/* Cabeçalho */}
-      <header className="relative overflow-hidden rounded-3xl bg-white p-6 ring-1 ring-slate-200 sm:p-10 dark:bg-slate-900 dark:ring-slate-800">
-        <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }} />
-        <div className="absolute -right-16 -top-16 size-56 rounded-full opacity-[0.08] blur-2xl" style={{ background: color }} />
-        <div className="relative flex flex-wrap items-center gap-2">
-          <Link to={`/?c=${t.category_id ?? ''}`} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-semibold" style={{ color, background: `${color}14` }}>
-            <CategoryIcon name={t.category?.icon} className="size-4" />{t.category?.name ?? 'Sem categoria'}
-          </Link>
-          <span className={cn('rounded-lg bg-slate-100 px-2.5 py-1 text-sm font-medium dark:bg-slate-800', d.style)}>{'●'.repeat(d.dots)}<span className="opacity-30">{'●'.repeat(3 - d.dots)}</span> {d.label}</span>
-          {t.status === 'draft' && <span className="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"><FileEdit className="size-3.5" />Rascunho — só você e moderadores veem</span>}
-        </div>
-        <h1 className="relative mt-4 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl dark:text-white">{t.title}</h1>
-        {t.summary && <p className="relative mt-3 max-w-3xl text-lg text-slate-600 dark:text-slate-400">{t.summary}</p>}
-        <div className="relative mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-500">
-          <div className="flex items-center gap-2.5">
-            <Avatar name={t.author?.full_name} email={t.author?.email} url={t.author?.avatar_url} size={36} />
-            <div>
-              <div className="font-semibold text-slate-800 dark:text-slate-200">{t.author?.full_name}</div>
-              <div className="text-xs">Autor</div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="min-w-0">
+          {/* Cabeçalho */}
+          <header className="mx-auto max-w-[720px]">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-medium">
+              <Link to={`/?c=${t.category_id ?? ''}`} className="inline-flex items-center gap-1.5" style={{ color }}>
+                <CategoryIcon name={t.category?.icon} className="size-4" />{t.category?.name ?? 'Geral'}
+              </Link>
+              <span className="text-neutral-300 dark:text-neutral-700">·</span>
+              <span className="text-neutral-500">{d.label}</span>
+              {t.status === 'draft' && <><span className="text-neutral-300 dark:text-neutral-700">·</span><span className="text-[#ff9500]">Rascunho — visível só para você e moderadores</span></>}
             </div>
-          </div>
-          <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4" />{fmtDate(t.created_at)}</span>
-          <span className="inline-flex items-center gap-1.5"><Clock className="size-4" />{readingTime(t.content_html)} min de leitura</span>
-          <span className="inline-flex items-center gap-1.5"><Eye className="size-4" />{viewers?.length ?? '–'} pessoas · {totalViews} visualizações</span>
-        </div>
-        {t.tags.length > 0 && (
-          <div className="relative mt-5 flex flex-wrap gap-1.5">
-            {t.tags.map(tag => <Link key={tag} to={`/?q=${encodeURIComponent(tag)}`} className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-400">#{tag}</Link>)}
-          </div>
-        )}
-      </header>
+            <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-neutral-900 sm:text-[36px] dark:text-white">{t.title}</h1>
+            {t.summary && <p className="mt-3 text-[17px] leading-relaxed text-neutral-500 sm:text-[19px]">{t.summary}</p>}
+            <div className="mt-5 flex items-center gap-3">
+              <Avatar name={t.author?.full_name} email={t.author?.email} url={t.author?.avatar_url} size={36} />
+              <div className="min-w-0 text-[13px] leading-tight">
+                <div className="truncate text-[15px] font-medium text-neutral-900 dark:text-neutral-100">{t.author?.full_name}</div>
+                <div className="mt-0.5 text-neutral-500">{fmtDate(t.created_at)} · {readingTime(t.content_html)} min de leitura · {viewers?.length ?? '–'} {viewers?.length === 1 ? 'leitor' : 'leitores'}</div>
+              </div>
+            </div>
+            {t.tags.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {t.tags.map(tag => <Link key={tag} to={`/?q=${encodeURIComponent(tag)}`} className="rounded-md bg-neutral-900/[.05] px-2 py-0.5 text-[13px] text-neutral-600 hover:text-neutral-900 dark:bg-white/10 dark:text-neutral-400">{tag}</Link>)}
+              </div>
+            )}
+          </header>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        {/* Conteúdo */}
-        <div className="min-w-0 space-y-6">
-          <div className="rounded-3xl bg-white p-6 ring-1 ring-slate-200 sm:p-10 dark:bg-slate-900 dark:ring-slate-800">
-            {t.content_html.replace(/<[^>]+>/g, '').trim() || t.content_html.includes('<img')
+          <div className="mx-auto mt-6 max-w-[720px] border-t border-neutral-200 pt-7 dark:border-neutral-800">
+            {hasText
               ? <TutorialContent html={t.content_html} onHeadings={setHeadings} />
-              : <p className="text-slate-400 italic">Este tutorial ainda não tem conteúdo escrito — veja os anexos e links.</p>}
+              : <p className="text-neutral-400">Este tutorial não tem texto — veja os anexos e links.</p>}
           </div>
-          <p className="no-print text-center text-xs text-slate-400">
-            Última atualização {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
+          <p className="no-print mx-auto mt-10 max-w-[720px] text-[13px] text-neutral-400">
+            Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
           </p>
         </div>
 
         {/* Lateral */}
-        <aside className="no-print space-y-5 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pb-4">
-          <button onClick={() => setShare(true)} className="group flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-500 p-4 text-left text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-xl">
-            <span className="grid size-10 place-items-center rounded-xl bg-white/20"><Share className="size-5" /></span>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold">Compartilhar link curto</div>
-              <div className="truncate font-mono text-xs text-indigo-100">{url.replace(/^https?:\/\//, '')}</div>
+        <aside className="no-print space-y-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto lg:pb-4">
+          <section>
+            <SectionTitle>Link curto</SectionTitle>
+            <div className="card flex items-center gap-2 p-1.5 pl-3.5">
+              <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-neutral-700 dark:text-neutral-300">{url.replace(/^https?:\/\//, '')}</span>
+              <Button size="sm" variant="tinted" onClick={copy}>{copied ? <Check className="size-4" /> : <Copy className="size-4" />}{copied ? 'Copiado' : 'Copiar'}</Button>
             </div>
-          </button>
+            <button onClick={() => setShare(true)} className="mt-2 px-1 text-[13px] font-medium text-accent-600 dark:text-accent-400">Mais opções de compartilhamento</button>
+          </section>
 
           {headings.length > 1 && (
-            <Panel icon={<ListTree className="size-4" />} title="Neste tutorial">
-              <nav className="space-y-0.5">
+            <section className="hidden lg:block">
+              <SectionTitle>Neste tutorial</SectionTitle>
+              <nav className="border-l border-neutral-200 dark:border-neutral-800">
                 {headings.map(h => (
                   <a key={h.id} href={`#${h.id}`}
                     onClick={e => { e.preventDefault(); document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' }) }}
-                    className={cn('block truncate rounded-lg px-2.5 py-1.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800',
-                      h.level === 3 && 'pl-6 text-[13px]', h.level === 1 && 'font-semibold')}>{h.text}</a>
+                    className={cn('-ml-px block truncate border-l border-transparent py-1 pl-3.5 text-[14px] text-neutral-500 hover:border-neutral-400 hover:text-neutral-900 dark:hover:text-white',
+                      h.level === 3 && 'pl-6 text-[13px]')}>{h.text}</a>
                 ))}
               </nav>
-            </Panel>
+            </section>
           )}
 
-          {files.length > 0 && <Panel icon={<Paperclip className="size-4" />} title={`Anexos (${files.length})`}><AttachmentList items={files} /></Panel>}
-          {links.length > 0 && <Panel icon={<Link2 className="size-4" />} title={`Links úteis (${links.length})`}><LinkList items={links} /></Panel>}
+          {files.length > 0 && <section><SectionTitle>Anexos · {files.length}</SectionTitle><AttachmentList items={files} /></section>}
+          {links.length > 0 && <section><SectionTitle>Links úteis · {links.length}</SectionTitle><LinkList items={links} /></section>}
 
-          <Panel icon={<Users className="size-4" />} title={`Visualizado por${viewers ? ` (${viewers.length})` : ''}`}>
-            {!viewers ? <div className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" /> : viewers.length === 0 ? (
-              <p className="text-sm text-slate-400">Ninguém ainda.</p>
-            ) : (
-              <>
-                <ul className="space-y-1">
-                  {viewers.slice(0, allViewers ? undefined : 8).map(v => (
-                    <li key={v.user_id} className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5" title={`Primeira vez: ${fmtDateTime(v.first_viewed)}\nÚltima vez: ${fmtDateTime(v.last_viewed)}`}>
-                      <Avatar name={v.full_name} email={v.email} url={v.avatar_url} size={30} />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
-                          {v.full_name || v.email}{v.user_id === profile?.id && <span className="ml-1 text-xs font-normal text-slate-400">(você)</span>}
+          <section>
+            <SectionTitle>Visualizado por{viewers ? ` · ${viewers.length}` : ''}</SectionTitle>
+            <div className="card overflow-hidden">
+              {!viewers ? <div className="h-16 animate-pulse" /> : viewers.length === 0 ? (
+                <p className="p-4 text-[14px] text-neutral-400">Ninguém ainda.</p>
+              ) : (
+                <>
+                  <ul className="divide-y divide-neutral-200/70 dark:divide-neutral-800">
+                    {viewers.slice(0, allViewers ? undefined : 8).map(v => (
+                      <li key={v.user_id} className="flex items-center gap-3 px-3.5 py-2.5" title={`Primeira vez: ${fmtDateTime(v.first_viewed)}\nÚltima vez: ${fmtDateTime(v.last_viewed)}`}>
+                        <Avatar name={v.full_name} email={v.email} url={v.avatar_url} size={30} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[14px] font-medium text-neutral-900 dark:text-neutral-100">
+                            {v.full_name || v.email}{v.user_id === profile?.id && <span className="font-normal text-neutral-400"> (você)</span>}
+                          </div>
+                          <div className="text-[12px] text-neutral-500">{timeAgo(v.last_viewed)}{Number(v.views) > 1 && ` · ${v.views} vezes`}{v.via_share && ' · via link'}</div>
                         </div>
-                        <div className="text-xs text-slate-400">{timeAgo(v.last_viewed)}{Number(v.views) > 1 && ` · ${v.views}×`}{v.via_share && ' · via link'}</div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                {viewers.length > 8 && (
-                  <button onClick={() => setAllViewers(a => !a)} className="mt-2 w-full rounded-lg py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
-                    {allViewers ? 'Mostrar menos' : `Ver todos (${viewers.length})`}
-                  </button>
-                )}
-              </>
-            )}
-          </Panel>
+                      </li>
+                    ))}
+                  </ul>
+                  {viewers.length > 8 && (
+                    <button onClick={() => setAllViewers(a => !a)} className="w-full border-t border-neutral-200/70 py-2.5 text-[14px] font-medium text-accent-600 dark:border-neutral-800 dark:text-accent-400">
+                      {allViewers ? 'Mostrar menos' : `Ver todos (${viewers.length})`}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            {viewers && viewers.length > 0 && <p className="mt-2 px-1 text-[12px] text-neutral-400">{totalViews} visualizações no total</p>}
+          </section>
         </aside>
       </div>
 
       <ShareDialog open={share} onClose={() => setShare(false)} url={url} title={t.title} />
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="Excluir tutorial?">
-        <p className="text-sm text-slate-600 dark:text-slate-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Essa ação não pode ser desfeita.</p>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button variant="danger" loading={deleting} onClick={remove}><Trash2 className="size-4" />Excluir</Button>
+        <p className="text-[15px] text-neutral-600 dark:text-neutral-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Não é possível desfazer.</p>
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <Button variant="secondary" onClick={() => setConfirmDel(false)}>Cancelar</Button>
+          <Button variant="danger" loading={deleting} onClick={remove}>Excluir</Button>
         </div>
       </Modal>
     </article>
   )
 }
 
-function Panel({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function IconBtn({ children, title, onClick, className }: { children: React.ReactNode; title: string; onClick: () => void; className?: string }) {
   return (
-    <section className="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">{icon}{title}</h2>
+    <button onClick={onClick} title={title} aria-label={title}
+      className={cn('press grid size-9 place-items-center rounded-full text-accent-600 hover:bg-neutral-900/5 dark:text-accent-400 dark:hover:bg-white/10', className)}>
       {children}
-    </section>
+    </button>
   )
 }

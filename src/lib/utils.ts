@@ -9,7 +9,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 }
 
 export const ROLE_STYLE: Record<Role, string> = {
-  admin: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+  admin: 'bg-accent-100 text-accent-700 dark:bg-accent-500/15 dark:text-accent-300',
   field_admin: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
   field: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
   pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',

@@ -43,18 +43,18 @@ export function AttachmentList({ items }: { items: Attachment[] }) {
           const k = fileKind(a.file_name, a.mime_type)
           const st = FILE_STYLE[k]
           return (
-            <li key={a.id} className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <li key={a.id} className="group flex items-center gap-3 rounded-xl card p-2.5 transition hover:bg-neutral-50 dark:hover:bg-neutral-800/60">
               <span className="grid size-10 shrink-0 place-items-center rounded-lg text-white" style={{ background: st.color }}>
                 <FileIcon kind={k} className="size-5" />
               </span>
               <button onClick={() => open(a)} className="min-w-0 flex-1 text-left">
-                <div className="truncate text-sm font-medium text-slate-800 group-hover:text-indigo-600 dark:text-slate-200">{a.file_name}</div>
-                <div className="text-xs text-slate-400">{st.label} · {fileSize(a.size_bytes)}</div>
+                <div className="truncate text-sm font-medium text-neutral-800 group-hover:text-accent-600 dark:text-neutral-200">{a.file_name}</div>
+                <div className="text-xs text-neutral-400">{st.label} · {fileSize(a.size_bytes)}</div>
               </button>
-              {busy === a.id ? <Loader2 className="size-4 animate-spin text-slate-400" /> : (
+              {busy === a.id ? <Loader2 className="size-4 animate-spin text-neutral-400" /> : (
                 <div className="flex shrink-0 gap-0.5">
-                  <button onClick={() => open(a)} title="Visualizar" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"><Eye className="size-4" /></button>
-                  <button onClick={() => download(a)} title="Baixar" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"><Download className="size-4" /></button>
+                  <button onClick={() => open(a)} title="Visualizar" className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800"><Eye className="size-4" /></button>
+                  <button onClick={() => download(a)} title="Baixar" className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800"><Download className="size-4" /></button>
                 </div>
               )}
             </li>
@@ -73,26 +73,26 @@ function PreviewModal({ a, url, onClose, onDownload }: { a: Attachment; url: str
   return (
     <Modal open onClose={onClose} title={a.file_name} wide>
       <div className="space-y-3">
-        {k === 'pdf' && <iframe src={url} title={a.file_name} className="h-[70vh] w-full rounded-xl border border-slate-200 dark:border-slate-800" />}
+        {k === 'pdf' && <iframe src={url} title={a.file_name} className="h-[70vh] w-full rounded-xl border border-neutral-200 dark:border-neutral-800" />}
         {k === 'image' && <img src={url} alt={a.file_name} className="mx-auto max-h-[70vh] rounded-xl" />}
         {k === 'video' && <video src={url} controls className="w-full rounded-xl" />}
-        {k === 'text' && <iframe src={url} title={a.file_name} className="h-[60vh] w-full rounded-xl border border-slate-200 bg-white dark:border-slate-800" />}
+        {k === 'text' && <iframe src={url} title={a.file_name} className="h-[60vh] w-full rounded-xl border border-neutral-200 bg-white dark:border-neutral-800" />}
         {office && (useOffice ? (
-          <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`} title={a.file_name} className="h-[70vh] w-full rounded-xl border border-slate-200 dark:border-slate-800" />
+          <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`} title={a.file_name} className="h-[70vh] w-full rounded-xl border border-neutral-200 dark:border-neutral-800" />
         ) : (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center dark:border-slate-700">
+          <div className="rounded-2xl border-2 border-dashed border-neutral-200 p-8 text-center dark:border-neutral-700">
             <span className="mx-auto grid size-14 place-items-center rounded-xl text-white" style={{ background: FILE_STYLE[k].color }}><FileIcon kind={k} className="size-7" /></span>
-            <p className="mt-4 font-semibold text-slate-800 dark:text-slate-100">Arquivo {FILE_STYLE[k].label}</p>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Baixe para abrir no Office, ou visualize online pelo Microsoft Office Viewer (o arquivo é enviado temporariamente ao serviço da Microsoft).</p>
+            <p className="mt-4 font-semibold text-neutral-800 dark:text-neutral-100">Arquivo {FILE_STYLE[k].label}</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-neutral-500">Baixe para abrir no Office, ou visualize online pelo Microsoft Office Viewer (o arquivo é enviado temporariamente ao serviço da Microsoft).</p>
             <div className="mt-5 flex justify-center gap-2">
-              <button onClick={onDownload} className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"><Download className="size-4" />Baixar</button>
-              <button onClick={() => setUseOffice(true)} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"><Eye className="size-4" />Visualizar online</button>
+              <button onClick={onDownload} className="inline-flex items-center gap-1.5 rounded-xl bg-accent-600 px-4 py-2 text-sm font-semibold text-white hover:bg-accent-500"><Download className="size-4" />Baixar</button>
+              <button onClick={() => setUseOffice(true)} className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"><Eye className="size-4" />Visualizar online</button>
             </div>
           </div>
         ))}
         <div className="flex justify-end gap-2">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"><ExternalLink className="size-4" />Abrir em nova aba</a>
-          <button onClick={onDownload} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200"><Download className="size-4" />Baixar</button>
+          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"><ExternalLink className="size-4" />Abrir em nova aba</a>
+          <button onClick={onDownload} className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200"><Download className="size-4" />Baixar</button>
         </div>
       </div>
     </Modal>
@@ -105,13 +105,13 @@ export function LinkList({ items }: { items: LinkItem[] }) {
       {items.map((l, i) => (
         <li key={l.id ?? i}>
           <a href={l.url} target="_blank" rel="noopener noreferrer nofollow"
-            className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2.5 transition hover:border-indigo-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10"><Globe className="size-4" /></span>
+            className="group flex items-center gap-3 rounded-xl card p-2.5 transition hover:bg-neutral-50 dark:hover:bg-neutral-800/60">
+            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent-50 text-accent-500 dark:bg-accent-500/10"><Globe className="size-4" /></span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-slate-800 group-hover:text-indigo-600 dark:text-slate-200">{l.title || hostOf(l.url)}</div>
-              <div className="truncate text-xs text-slate-400">{hostOf(l.url)}</div>
+              <div className="truncate text-sm font-medium text-neutral-800 group-hover:text-accent-600 dark:text-neutral-200">{l.title || hostOf(l.url)}</div>
+              <div className="truncate text-xs text-neutral-400">{hostOf(l.url)}</div>
             </div>
-            <ExternalLink className="size-4 shrink-0 text-slate-300 group-hover:text-indigo-500" />
+            <ExternalLink className="size-4 shrink-0 text-neutral-300 group-hover:text-accent-500" />
           </a>
         </li>
       ))}

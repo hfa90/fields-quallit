@@ -75,7 +75,7 @@ export default function RichEditor({ initialContent, userId, onChange }: Props) 
 
   if (!editor) return null
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+    <div className="card">
       <Toolbar editor={editor} onImages={files => handleFiles(files)} uploading={uploading > 0} />
       <EditorContent editor={editor} />
     </div>
@@ -87,12 +87,12 @@ function TB({ active, onClick, title, children, disabled }: { active?: boolean; 
     <button
       type="button" title={title} aria-label={title} onClick={onClick} disabled={disabled}
       onMouseDown={e => e.preventDefault()}
-      className={cn('inline-flex size-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
-        active && 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300')}
+      className={cn('inline-flex size-8 items-center justify-center rounded-lg text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white',
+        active && 'bg-accent-50 text-accent-600 dark:bg-accent-500/15 dark:text-accent-300')}
     >{children}</button>
   )
 }
-const Sep = () => <span className="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+const Sep = () => <span className="mx-1 h-6 w-px bg-neutral-200 dark:bg-neutral-700" />
 
 function Popover({ icon, title, children, active }: { icon: React.ReactNode; title: string; children: (close: () => void) => React.ReactNode; active?: boolean }) {
   const [open, setOpen] = useState(false)
@@ -107,7 +107,7 @@ function Popover({ icon, title, children, active }: { icon: React.ReactNode; tit
     <div className="relative" ref={ref}>
       <TB title={title} active={active || open} onClick={() => setOpen(o => !o)}>{icon}</TB>
       {open && (
-        <div className="absolute left-0 top-10 z-30 min-w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900 pop-in">
+        <div className="absolute left-0 top-10 z-30 min-w-52 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 pop-in">
           {children(() => setOpen(false))}
         </div>
       )}
@@ -150,14 +150,14 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
   const inCode = editor.isActive('codeBlock')
 
   return (
-    <div className="sticky top-16 z-20 rounded-t-2xl border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5">
+    <div className="material hairline-b sticky top-[calc(56px+env(safe-area-inset-top))] z-20 rounded-t-2xl">
+      <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto px-2 py-1.5 sm:flex-wrap sm:overflow-visible">
         <TB title="Desfazer (Ctrl+Z)" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></TB>
         <TB title="Refazer (Ctrl+Y)" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></TB>
         <Sep />
         <select
           value={block} onChange={e => setBlock(e.target.value)} title="Estilo do texto"
-          className="h-8 rounded-lg border-0 bg-transparent px-2 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-500/30 dark:text-slate-200 dark:hover:bg-slate-800 dark:bg-slate-900"
+          className="h-8 rounded-lg border-0 bg-transparent px-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus:ring-2 focus:ring-accent-500/30 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:bg-neutral-900"
         >
           <option value="p">Texto normal</option>
           <option value="h1">Título 1</option>
@@ -178,7 +178,7 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
                 <button key={c} type="button" className="size-7 rounded-md ring-1 ring-black/10" style={{ background: c }}
                   onClick={() => { editor.chain().focus().toggleHighlight({ color: c }).run(); close() }} />
               ))}
-              <button type="button" className="ml-1 rounded-md px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              <button type="button" className="ml-1 rounded-md px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 onClick={() => { editor.chain().focus().unsetHighlight().run(); close() }}>Remover</button>
             </div>
           )}
@@ -190,7 +190,7 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
                 <button key={c} type="button" className="size-7 rounded-md ring-1 ring-black/10" style={{ background: c }}
                   onClick={() => { editor.chain().focus().setColor(c).run(); close() }} />
               ))}
-              <button type="button" className="col-span-5 mt-1 rounded-md px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              <button type="button" className="col-span-5 mt-1 rounded-md px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 onClick={() => { editor.chain().focus().unsetColor().run(); close() }}>Cor padrão</button>
             </div>
           )}
@@ -212,9 +212,9 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
             <div className="flex flex-col">
               {(Object.keys(CALLOUTS) as CalloutType[]).map(t => (
                 <button key={t} type="button"
-                  className={cn('callout-pick flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-800', `pick-${t}`)}
+                  className={cn('callout-pick flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800', `pick-${t}`)}
                   onClick={() => { editor.chain().focus().toggleCallout(t).run(); close() }}>
-                  <span>{CALLOUTS[t].emoji}</span><span className="font-medium">{CALLOUTS[t].label}</span>
+                  <span className="size-2.5 rounded-full" style={{ background: CALLOUTS[t].color }} /><span className="font-medium">{CALLOUTS[t].label}</span>
                 </button>
               ))}
             </div>
@@ -232,26 +232,26 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
         <Sep />
         <TB title="Limpar formatação" onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}><Eraser className="size-4" /></TB>
         <button type="button" onClick={() => setTplOpen(true)}
-          className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-sky-500 px-3 text-xs font-semibold text-white shadow-sm hover:opacity-90">
+          className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg bg-accent-600/10 px-3 text-[13px] font-medium text-accent-600 hover:bg-accent-600/15 dark:bg-accent-500/15 dark:text-accent-400">
           <LayoutTemplate className="size-3.5" /> Usar modelo
         </button>
       </div>
 
       {(inTable || inCode) && (
-        <div className="flex flex-wrap items-center gap-1 border-t border-slate-100 px-3 py-1.5 text-xs dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-1 border-t border-neutral-100 px-3 py-1.5 text-xs dark:border-neutral-800">
           {inTable && <>
-            <span className="mr-1 font-medium text-slate-500">Tabela:</span>
+            <span className="mr-1 font-medium text-neutral-500">Tabela:</span>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().addRowAfter().run()}><Rows3 className="size-3.5" />+ Linha</Button>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().addColumnAfter().run()}><Columns3 className="size-3.5" />+ Coluna</Button>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().deleteRow().run()}>− Linha</Button>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().deleteColumn().run()}>− Coluna</Button>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().toggleHeaderRow().run()}>Cabeçalho</Button>
-            <Button size="sm" variant="ghost" type="button" className="text-rose-600" onClick={() => editor.chain().focus().deleteTable().run()}><Trash2 className="size-3.5" />Excluir tabela</Button>
+            <Button size="sm" variant="ghost" type="button" className="text-[#ff3b30]" onClick={() => editor.chain().focus().deleteTable().run()}><Trash2 className="size-3.5" />Excluir tabela</Button>
           </>}
           {inCode && <>
-            <span className="mr-1 font-medium text-slate-500">Linguagem:</span>
+            <span className="mr-1 font-medium text-neutral-500">Linguagem:</span>
             <select
-              className="h-7 rounded-md border border-slate-200 bg-white px-2 text-xs dark:border-slate-700 dark:bg-slate-900"
+              className="h-7 rounded-md border border-neutral-200 bg-white px-2 text-xs dark:border-neutral-700 dark:bg-neutral-900"
               value={editor.getAttributes('codeBlock').language ?? 'plaintext'}
               onChange={e => editor.chain().focus().updateAttributes('codeBlock', { language: e.target.value }).run()}
             >{LANGS.map(l => <option key={l} value={l}>{l}</option>)}</select>
@@ -281,7 +281,7 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
       </Modal>
 
       <Modal open={tplOpen} onClose={() => setTplOpen(false)} title="Escolha um modelo de tutorial">
-        <p className="mb-4 text-sm text-slate-500">O modelo é inserido na posição do cursor. Depois é só substituir os textos de exemplo.</p>
+        <p className="mb-4 text-sm text-neutral-500">O modelo é inserido na posição do cursor. Depois é só substituir os textos de exemplo.</p>
         <div className="grid gap-3">
           {TEMPLATES.map(t => (
             <button key={t.id} type="button"
@@ -290,9 +290,9 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
                 else editor.chain().focus().insertContent(t.html).run()
                 setTplOpen(false)
               }}
-              className="group rounded-xl border border-slate-200 p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-slate-700 dark:hover:bg-indigo-500/5">
-              <div className="font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-100">{t.name}</div>
-              <div className="text-sm text-slate-500">{t.description}</div>
+              className="group rounded-xl border border-neutral-200 p-4 text-left transition hover:border-accent-400 hover:bg-accent-50/50 dark:border-neutral-700 dark:hover:bg-accent-500/5">
+              <div className="font-semibold text-neutral-800 group-hover:text-accent-600 dark:text-neutral-100">{t.name}</div>
+              <div className="text-sm text-neutral-500">{t.description}</div>
             </button>
           ))}
         </div>
