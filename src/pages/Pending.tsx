@@ -11,11 +11,11 @@ export default function Pending() {
         <div className="mx-auto mb-5 text-neutral-300 dark:text-neutral-600">
           {blocked ? <Ban className="mx-auto size-14" strokeWidth={1.4} /> : <Clock className="mx-auto size-14" strokeWidth={1.4} />}
         </div>
-        <h1 className="text-[22px] font-bold tracking-tight text-neutral-900 dark:text-white">{blocked ? 'Acesso bloqueado' : 'Aguardando aprovação'}</h1>
+        <h1 className="text-[22px] font-bold tracking-tight text-neutral-900 dark:text-white">{blocked ? 'Acesso bloqueado' : 'Acesso não liberado'}</h1>
         <p className="mt-2 text-[15px] leading-relaxed text-neutral-500">
           {blocked
             ? 'Seu acesso à central foi bloqueado por um administrador.'
-            : <>Olá, {profile?.full_name}. Seu cadastro foi recebido — um administrador vai definir seu nível de acesso em breve.</>}
+            : <>Olá, {profile?.full_name}. Seu login ainda não tem acesso à central Fields. Peça ao administrador para liberar seu usuário.</>}
         </p>
         <div className="mt-8 flex flex-col gap-2">
           {!blocked && <Button onClick={refreshProfile} className="h-11">Verificar novamente</Button>}

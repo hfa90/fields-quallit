@@ -48,6 +48,7 @@ function Gate() {
   }
   if (!profile) return <div className="grid min-h-dvh place-items-center"><Spinner label="Preparando seu perfil…" /></div>
   if (!isMember) return <Pending />
+  if (session.user.user_metadata?.must_change_password) return <ResetPassword firstAccess />
 
   const from = (loc.state as { from?: string } | null)?.from
   return (

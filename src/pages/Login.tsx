@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react'
-import { MicrosoftLogo, azureEnabled } from './AdminExtra'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { Button, inputCls } from '../components/ui'
 import { Logo } from '../components/Layout'
 import { cn, errMsg } from '../lib/utils'
 
-type Mode = 'login' | 'signup' | 'forgot'
+type Mode = 'login' | 'forgot'
 
 const appUrl = () => window.location.origin + import.meta.env.BASE_URL
 
@@ -14,15 +13,8 @@ export default function Login() {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState<string | null>(null)
-  const [ms, setMs] = useState(false)
-  useEffect(() => { azureEnabled().then(setMs) }, [])
-  const microsoft = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'azure', options: { scopes: 'openid email profile', redirectTo: appUrl() } })
-    if (error) toast.error(errMsg(error))
-  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,18 +23,10 @@ export default function Login() {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
         if (error) throw error.message.includes('Invalid login') ? new Error('E-mail ou senha incorretos') : error
-      } else if (mode === 'signup') {
-        if (password.length < 8) throw new Error('A senha precisa ter pelo menos 8 caracteres')
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(), password,
-          options: { data: { full_name: name.trim() }, emailRedirectTo: appUrl() },
-        })
-        if (error) throw error
-        if (!data.session) setSent('Enviamos um link de confirmação para o seu e-mail. Depois de confirmar, volte aqui e entre.')
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: appUrl() })
         if (error) throw error
-        setSent('Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.')
+        setSent('Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha. Se não chegar, peça ao administrador para redefinir sua senha.')
       }
     } catch (err) {
       toast.error(errMsg(err))
@@ -59,12 +43,10 @@ export default function Login() {
         <div className="flex flex-col items-center text-center">
           <Logo size={64} />
           <h1 className="mt-5 text-[28px] font-bold tracking-tight text-neutral-900 dark:text-white">
-            {mode === 'login' ? 'Fields' : mode === 'signup' ? 'Criar conta' : 'Recuperar senha'}
+            {mode === 'login' ? 'Fields' : 'Recuperar senha'}
           </h1>
           <p className="mt-1 text-[15px] text-neutral-500">
-            {mode === 'login' ? 'Central de tutoriais · Quallit Soluções em TI'
-              : mode === 'signup' ? 'Um administrador libera seu acesso após o cadastro'
-              : 'Enviaremos um link para o seu e-mail'}
+            {mode === 'login' ? 'Central de tutoriais · Quallit Soluções em TI' : 'Enviaremos um link para o seu e-mail'}
           </p>
         </div>
 
@@ -76,36 +58,26 @@ export default function Login() {
         ) : (
           <form onSubmit={submit} className="mt-8 space-y-4">
             <div className="card divide-y divide-neutral-200 overflow-hidden dark:divide-neutral-800">
-              {mode === 'signup' && (
-                <input required className={cn(inputCls, field)} value={name} onChange={e => setName(e.target.value)} placeholder="Nome completo" autoComplete="name" />
-              )}
               <input required type="email" className={cn(inputCls, field)} value={email} onChange={e => setEmail(e.target.value)} placeholder="E-mail" autoComplete="email" inputMode="email" autoCapitalize="none" />
-              {mode !== 'forgot' && (
-                <input required type="password" className={cn(inputCls, field)} value={password} onChange={e => setPassword(e.target.value)} placeholder={mode === 'signup' ? 'Senha (mín. 8 caracteres)' : 'Senha'}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={mode === 'signup' ? 8 : undefined} />
+              {mode === 'login' && (
+                <input required type="password" className={cn(inputCls, field)} value={password} onChange={e => setPassword(e.target.value)} placeholder="Senha" autoComplete="current-password" />
               )}
             </div>
             <Button type="submit" loading={busy} className="h-12 w-full text-[17px] font-semibold">
-              {mode === 'login' ? 'Entrar' : mode === 'signup' ? 'Criar conta' : 'Enviar link'}
+              {mode === 'login' ? 'Entrar' : 'Enviar link'}
             </Button>
             {mode === 'login' && (
-              <p className="text-center text-[13px] text-neutral-500">Use o mesmo e-mail e senha do Inventário Quallit.</p>
-            )}
-            {mode === 'login' && ms && (
-              <>
-                <div className="flex items-center gap-3 text-[13px] text-neutral-400"><span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />ou<span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" /></div>
-                <Button type="button" variant="outline" className="h-12 w-full text-[16px]" onClick={microsoft}><MicrosoftLogo />Entrar com Microsoft</Button>
-              </>
+              <p className="text-center text-[13px] leading-relaxed text-neutral-500">
+                Acesso restrito a usuários cadastrados pelo administrador.<br />Usuários do Inventário Quallit entram com o mesmo e-mail e senha.
+              </p>
             )}
           </form>
         )}
 
         <div className="mt-8 flex flex-col items-center gap-3 text-[15px]">
-          {mode === 'login' && <>
-            <button onClick={() => setMode('forgot')} className="font-medium text-accent-600 dark:text-accent-400">Esqueci minha senha</button>
-            <div className="text-neutral-500">Não tem conta? <button onClick={() => { setMode('signup'); setSent(null) }} className="font-medium text-accent-600 dark:text-accent-400">Cadastre-se</button></div>
-          </>}
-          {mode !== 'login' && <button onClick={() => { setMode('login'); setSent(null) }} className="font-medium text-accent-600 dark:text-accent-400">Já tenho conta</button>}
+          {mode === 'login'
+            ? <button onClick={() => setMode('forgot')} className="font-medium text-accent-600 dark:text-accent-400">Esqueci minha senha</button>
+            : <button onClick={() => { setMode('login'); setSent(null) }} className="font-medium text-accent-600 dark:text-accent-400">Voltar para o login</button>}
         </div>
       </div>
     </div>

@@ -1,134 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Mail, CheckCircle2, AlertTriangle, Send, KeyRound, ExternalLink, CalendarClock, ThumbsDown, Copy } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, CalendarClock, ThumbsDown, Copy, UserPlus, KeyRound, RefreshCw, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
-import { cn, errMsg, timeAgo } from '../lib/utils'
+import { ROLE_LABEL, cn, errMsg, timeAgo } from '../lib/utils'
+import type { Role } from '../lib/types'
 import { LIST_COLS } from '../lib/library'
 import type { TutorialListItem } from '../lib/types'
-import { Button, Spinner, inputCls, labelCls } from '../components/ui'
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://wrmlmtxkukjxkivtsuex.supabase.co'
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_P1k3Dual0gTDKLApeGseyQ_Ym_HaIWN'
-
-export async function azureEnabled(): Promise<boolean> {
-  try {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_KEY } })
-    const j = await r.json()
-    return !!j?.external?.azure
-  } catch { return false }
-}
-
-function Status({ ok, label }: { ok: boolean | null; label: [string, string] }) {
-  if (ok === null) return <span className="text-[13px] text-neutral-400">verificando…</span>
-  return ok
-    ? <span className="inline-flex items-center gap-1 rounded-full bg-[#34c759]/15 px-2.5 py-0.5 text-[12px] font-semibold text-[#248a3d] dark:text-[#30d158]"><CheckCircle2 className="size-3.5" />{label[0]}</span>
-    : <span className="inline-flex items-center gap-1 rounded-full bg-brand-orange/15 px-2.5 py-0.5 text-[12px] font-semibold text-brand-orange-dark"><AlertTriangle className="size-3.5" />{label[1]}</span>
-}
-
-function Step({ n, children }: { n: number; children: React.ReactNode }) {
-  return (
-    <li className="flex gap-3">
-      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent-500/10 text-[12px] font-semibold text-accent-700 dark:text-accent-300">{n}</span>
-      <div className="min-w-0 flex-1 text-[14px] leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</div>
-    </li>
-  )
-}
-
-function CopyField({ value }: { value: string }) {
-  return (
-    <span className="mt-1 flex items-center gap-2 rounded-lg bg-neutral-100 px-2.5 py-1.5 font-mono text-[12px] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
-      <span className="min-w-0 flex-1 truncate">{value}</span>
-      <button onClick={() => { navigator.clipboard.writeText(value); toast.success('Copiado') }} className="text-accent-600"><Copy className="size-3.5" /></button>
-    </span>
-  )
-}
-
-export function IntegrationsTab() {
-  const [email, setEmail] = useState<{ configured: boolean; from: string | null } | null>(null)
-  const [azure, setAzure] = useState<boolean | null>(null)
-  const [key, setKey] = useState('')
-  const [from, setFrom] = useState('')
-  const [busy, setBusy] = useState<'save' | 'test' | null>(null)
-
-  const load = () => supabase.rpc('kb_email_config_status').then(({ data }) => { setEmail(data as typeof email); setFrom((data as { from?: string })?.from ?? '') })
-  useEffect(() => { load(); azureEnabled().then(setAzure) }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const save = async () => {
-    if (!email?.configured && !key.trim()) return toast.error('Cole a chave da API do Resend')
-    setBusy('save')
-    const { error } = await supabase.rpc('kb_email_config_set', { p_api_key: key, p_from: from })
-    setBusy(null)
-    if (error) return toast.error(errMsg(error))
-    setKey(''); toast.success('Configuração de e-mail salva'); load()
-  }
-  const test = async () => {
-    setBusy('test')
-    const { error } = await supabase.rpc('kb_email_test')
-    setBusy(null)
-    if (error) return toast.error(errMsg(error))
-    toast.success('E-mail de teste enviado para você', { description: 'Se não chegar em 1 minuto, confira o spam e o remetente/domínio no Resend.' })
-  }
-
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {/* E-mail */}
-      <section className="card space-y-4 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="flex items-center gap-2 text-[17px] font-semibold text-neutral-900 dark:text-white"><Mail className="size-5 text-accent-600" />Notificações por e-mail</h3>
-          <Status ok={email ? email.configured : null} label={['Ativo', 'Não configurado']} />
-        </div>
-        <p className="text-[14px] text-neutral-500">Os e-mails são enviados pelo <b>Resend</b> (plano grátis: 3.000 e-mails/mês). Cada pessoa escolhe em Notificações se quer resumo diário (padrão), e-mail imediato ou nenhum.</p>
-        <ol className="space-y-3">
-          <Step n={1}>Crie uma conta grátis em <a href="https://resend.com/signup" target="_blank" rel="noopener noreferrer" className="font-medium text-accent-600">resend.com <ExternalLink className="inline size-3" /></a>.</Step>
-          <Step n={2}>Em <b>Domains</b>, adicione o domínio da empresa (ex.: <code>quallit.com.br</code>) e crie os registros DNS que o Resend mostrar. <span className="text-neutral-500">Sem domínio verificado, o Resend só entrega para o e-mail dono da conta.</span></Step>
-          <Step n={3}>Em <b>API Keys</b>, crie uma chave com permissão <b>Sending access</b> e cole abaixo.</Step>
-        </ol>
-        <div>
-          <label className={labelCls}>Chave da API do Resend</label>
-          <input type="password" autoComplete="off" className={inputCls} value={key} onChange={e => setKey(e.target.value)} placeholder={email?.configured ? '•••••••• (já configurada — preencha só para trocar)' : 're_...'} />
-        </div>
-        <div>
-          <label className={labelCls}>Remetente</label>
-          <input className={inputCls} value={from} onChange={e => setFrom(e.target.value)} placeholder="Fields Quallit <fields@quallit.com.br>" />
-        </div>
-        <p className="text-[12px] text-neutral-500">A chave fica guardada no servidor e nunca é exibida de novo, nem para administradores.</p>
-        <div className="flex gap-2">
-          <Button loading={busy === 'save'} onClick={save}><KeyRound className="size-4" />Salvar</Button>
-          <Button variant="secondary" loading={busy === 'test'} disabled={!email?.configured} onClick={test}><Send className="size-4" />Enviar e-mail de teste</Button>
-        </div>
-      </section>
-
-      {/* Microsoft */}
-      <section className="card space-y-4 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="flex items-center gap-2 text-[17px] font-semibold text-neutral-900 dark:text-white"><MicrosoftLogo />Login com Microsoft</h3>
-          <Status ok={azure} label={['Ativo no login', 'Não configurado']} />
-        </div>
-        <p className="text-[14px] text-neutral-500">Permite entrar com o e-mail corporativo (ex.: <code>@rd.com.br</code>) em um clique. Quem já tem conta com o mesmo e-mail continua com o mesmo perfil e tutoriais. O botão aparece no login assim que estiver configurado.</p>
-        <ol className="space-y-3">
-          <Step n={1}>No <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener noreferrer" className="font-medium text-accent-600">portal do Azure <ExternalLink className="inline size-3" /></a> → <b>Microsoft Entra ID → Registros de aplicativo → Novo registro</b>. Nome: <i>Fields Quallit</i>. Tipo de conta: <b>somente este diretório organizacional</b>. URI de redirecionamento (<b>Web</b>):
-            <CopyField value={`${SUPABASE_URL}/auth/v1/callback`} /></Step>
-          <Step n={2}>Em <b>Configuração de token → Adicionar declaração opcional → ID</b>, marque <b>email</b>.</Step>
-          <Step n={3}>Em <b>Certificados e segredos → Novo segredo do cliente</b>, copie o <b>Valor</b>. Na página <b>Visão geral</b>, copie o <b>ID do aplicativo (cliente)</b> e o <b>ID do diretório (locatário)</b>.</Step>
-          <Step n={4}>No <a href="https://supabase.com/dashboard/project/wrmlmtxkukjxkivtsuex/auth/providers" target="_blank" rel="noopener noreferrer" className="font-medium text-accent-600">Supabase → Authentication → Providers <ExternalLink className="inline size-3" /></a>, abra <b>Azure</b>, ative e cole o ID do cliente e o segredo. Em <b>Azure Tenant URL</b> use:
-            <CopyField value="https://login.microsoftonline.com/SEU-ID-DO-LOCATARIO" /></Step>
-          <Step n={5}>Volte aqui e recarregue: o status muda para <b>Ativo</b> e o botão “Entrar com Microsoft” aparece no login.</Step>
-        </ol>
-        <Button variant="secondary" onClick={() => { setAzure(null); azureEnabled().then(setAzure) }}>Verificar novamente</Button>
-      </section>
-    </div>
-  )
-}
-
-export function MicrosoftLogo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 21 21" className={cn('size-5', className)} aria-hidden>
-      <rect x="1" y="1" width="9" height="9" fill="#f25022" /><rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-      <rect x="1" y="11" width="9" height="9" fill="#00a4ef" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" />
-    </svg>
-  )
-}
+import { Button, Modal, Spinner, inputCls, labelCls } from '../components/ui'
 
 /** Tutoriais que precisam de atenção: revisão vencida, passo desatualizado ou avaliação ruim */
 export function ReviewTab() {
@@ -167,5 +46,136 @@ export function ReviewTab() {
         ))}
       </div>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------- Gestão de usuários
+/** Senha temporária legível (sem caracteres ambíguos) */
+export function tempPassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const rnd = crypto.getRandomValues(new Uint32Array(10))
+  const s = Array.from(rnd, n => chars[n % chars.length]).join('')
+  return `${s.slice(0, 5)}-${s.slice(5)}`
+}
+
+async function callAdmin(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke('kb-admin-users', { body })
+  if (error) {
+    let msg = error.message
+    try { const j = await (error as { context?: Response }).context?.json(); if (j?.error) msg = j.error } catch { /* ignore */ }
+    throw new Error(msg)
+  }
+  if (data?.error) throw new Error(data.error)
+  return data
+}
+
+function Credentials({ name, email, password }: { name: string; email: string; password: string }) {
+  const appUrl = window.location.origin + import.meta.env.BASE_URL
+  const text = `Olá, ${name.split(' ')[0]}! Seu acesso à central de tutoriais Fields foi criado.\n\nEndereço: ${appUrl}\nE-mail: ${email}\nSenha temporária: ${password}\n\nNo primeiro acesso você vai criar uma senha pessoal.`
+  return (
+    <div className="space-y-3">
+      <div className="rounded-[12px] bg-neutral-100 p-4 font-mono text-[13px] leading-relaxed text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200">
+        <div>E-mail: <b>{email}</b></div>
+        <div>Senha temporária: <b className="select-all">{password}</b></div>
+      </div>
+      <p className="text-[13px] text-neutral-500">Envie estes dados à pessoa por um canal seguro. No primeiro acesso ela será obrigada a criar uma senha pessoal. Esta senha não será exibida novamente.</p>
+      <div className="grid grid-cols-2 gap-2">
+        <Button variant="secondary" onClick={() => { navigator.clipboard.writeText(text); toast.success('Mensagem copiada') }}><Copy className="size-4" />Copiar mensagem</Button>
+        <a className="press inline-flex h-10 items-center justify-center gap-1.5 rounded-[10px] bg-[#25d366] text-[15px] font-medium text-white"
+          href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer"><Share2 className="size-4" />WhatsApp</a>
+      </div>
+    </div>
+  )
+}
+
+export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState<Role>('field')
+  const [password, setPassword] = useState(tempPassword)
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState<{ existed: boolean } | null>(null)
+  useEffect(() => { if (open) { setName(''); setEmail(''); setRole('field'); setPassword(tempPassword()); setDone(null) } }, [open])
+
+  const create = async () => {
+    setBusy(true)
+    try {
+      const r = await callAdmin({ action: 'create', email, full_name: name, role, password })
+      setDone({ existed: !!r.existed }); onCreated()
+      toast.success(r.existed ? 'Acesso liberado para usuário existente' : 'Usuário criado')
+    } catch (e) { toast.error(errMsg(e)) } finally { setBusy(false) }
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title={done ? 'Usuário pronto' : 'Novo usuário'}>
+      {done ? (
+        done.existed ? (
+          <div className="space-y-3 text-[15px] text-neutral-700 dark:text-neutral-300">
+            <p><b>{email}</b> já tinha conta (por exemplo, no Inventário). O acesso à central foi liberado como <b>{ROLE_LABEL[role]}</b>.</p>
+            <p className="text-neutral-500">A pessoa entra com a senha que já usa. Se ela não lembrar, use “Redefinir senha” na lista de usuários.</p>
+            <Button className="w-full" onClick={onClose}>Concluir</Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <Credentials name={name} email={email} password={password} />
+            <Button className="w-full" onClick={onClose}>Concluir</Button>
+          </div>
+        )
+      ) : (
+        <div className="space-y-4">
+          <div><label className={labelCls}>Nome completo</label><input autoFocus className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="Nome do field" /></div>
+          <div><label className={labelCls}>E-mail</label><input type="email" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@empresa.com.br" autoCapitalize="none" /></div>
+          <div>
+            <label className={labelCls}>Nível de acesso</label>
+            <div className="grid grid-cols-3 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
+              {(['field', 'field_admin', 'admin'] as Role[]).map(r => (
+                <button key={r} type="button" onClick={() => setRole(r)}
+                  className={cn('h-9 rounded-[7px] text-[13px] font-medium', role === r ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+                  {r === 'field' ? 'Field' : r === 'field_admin' ? 'Field Admin' : 'Admin'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Senha temporária</label>
+            <div className="flex gap-2">
+              <input className={cn(inputCls, 'font-mono')} value={password} onChange={e => setPassword(e.target.value)} />
+              <Button type="button" variant="secondary" onClick={() => setPassword(tempPassword())} title="Gerar outra"><RefreshCw className="size-4" /></Button>
+            </div>
+            <p className="mt-1 text-[12px] text-neutral-500">A pessoa troca no primeiro acesso.</p>
+          </div>
+          <Button className="h-11 w-full" loading={busy} onClick={create} disabled={!name.trim() || !email.trim()}><UserPlus className="size-4" />Criar usuário</Button>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+export function ResetPasswordModal({ user, onClose }: { user: { id: string; full_name: string | null; email: string } | null; onClose: () => void }) {
+  const [password, setPassword] = useState(tempPassword)
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState(false)
+  useEffect(() => { if (user) { setPassword(tempPassword()); setDone(false) } }, [user])
+  if (!user) return null
+  const reset = async () => {
+    setBusy(true)
+    try { await callAdmin({ action: 'reset_password', user_id: user.id, password }); setDone(true); toast.success('Senha redefinida') }
+    catch (e) { toast.error(errMsg(e)) } finally { setBusy(false) }
+  }
+  return (
+    <Modal open onClose={onClose} title={`Redefinir senha · ${user.full_name ?? user.email}`}>
+      {done ? (
+        <div className="space-y-4"><Credentials name={user.full_name ?? ''} email={user.email} password={password} /><Button className="w-full" onClick={onClose}>Concluir</Button></div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-[14px] text-neutral-500">A senha atual deixa de funcionar. A pessoa entra com a senha temporária abaixo e cria uma nova. Atenção: se ela também usa o Inventário, a senha muda lá também (é o mesmo login).</p>
+          <div className="flex gap-2">
+            <input className={cn(inputCls, 'font-mono')} value={password} onChange={e => setPassword(e.target.value)} />
+            <Button type="button" variant="secondary" onClick={() => setPassword(tempPassword())}><RefreshCw className="size-4" /></Button>
+          </div>
+          <Button className="h-11 w-full" loading={busy} onClick={reset}><KeyRound className="size-4" />Redefinir senha</Button>
+        </div>
+      )}
+    </Modal>
   )
 }

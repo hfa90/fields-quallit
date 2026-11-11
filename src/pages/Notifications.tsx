@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { BellRing, Smartphone, Mail } from 'lucide-react'
+import { BellRing, Smartphone } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { useNotifications } from '../lib/notifications'
@@ -32,11 +32,10 @@ export function PushSettings() {
   const [on, setOn] = useState(false)
   const [busy, setBusy] = useState(false)
   const [prefs, setPrefs] = useState<Record<PrefKey, boolean>>({ notify_new: true, notify_updates: true, notify_comments: true, notify_requests: true })
-  const [emailMode, setEmailMode] = useState<'off' | 'instant' | 'daily'>('daily')
 
   useEffect(() => {
     currentSubscription().then(s => setOn(!!s && Notification.permission === 'granted')).catch(() => {})
-    supabase.from('kb_notification_prefs').select('*').maybeSingle().then(({ data }) => { if (data) { setPrefs(data); setEmailMode(data.email_mode ?? 'daily') } })
+    supabase.from('kb_notification_prefs').select('*').maybeSingle().then(({ data }) => { if (data) setPrefs(data) })
   }, [])
 
   const togglePush = async (v: boolean) => {
@@ -51,15 +50,9 @@ export function PushSettings() {
   const setPref = async (k: PrefKey, v: boolean) => {
     const next = { ...prefs, [k]: v }
     setPrefs(next)
-    const { error } = await supabase.from('kb_notification_prefs').upsert({ user_id: profile!.id, ...next, email_mode: emailMode })
+    const { error } = await supabase.from('kb_notification_prefs').upsert({ user_id: profile!.id, ...next })
     if (error) toast.error(errMsg(error))
   }
-  const setEmail = async (m: typeof emailMode) => {
-    setEmailMode(m)
-    const { error } = await supabase.from('kb_notification_prefs').upsert({ user_id: profile!.id, ...prefs, email_mode: m })
-    if (error) toast.error(errMsg(error)); else toast.success(m === 'off' ? 'E-mails desativados' : m === 'instant' ? 'Você receberá um e-mail a cada novidade' : 'Você receberá um resumo diário às 8h')
-  }
-
   return (
     <div className="space-y-6">
       <section>
@@ -82,21 +75,6 @@ export function PushSettings() {
               <Smartphone className="size-4" />Como instalar no iPhone
             </button>
           )}
-        </div>
-      </section>
-      <section>
-        <SectionTitle>Por e-mail · {profile?.email}</SectionTitle>
-        <div className="card divide-y divide-neutral-200/70 overflow-hidden dark:divide-neutral-800">
-          {([['daily', 'Resumo diário', 'Um e-mail às 8h com o que você ainda não viu'], ['instant', 'A cada novidade', 'Um e-mail na hora para cada notificação'], ['off', 'Não enviar e-mails', 'Só notificações no app e no celular']] as const).map(([k, t, d]) => (
-            <button key={k} onClick={() => setEmail(k)} className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left">
-              <Mail className={`size-5 ${emailMode === k ? 'text-accent-600' : 'text-neutral-300 dark:text-neutral-600'}`} />
-              <div className="min-w-0 flex-1">
-                <div className="text-[16px] text-neutral-900 dark:text-white">{t}</div>
-                <div className="text-[13px] text-neutral-500">{d}</div>
-              </div>
-              {emailMode === k && <span className="text-[17px] font-semibold text-accent-600">✓</span>}
-            </button>
-          ))}
         </div>
       </section>
       <section>

@@ -22,8 +22,7 @@ Biblioteca de soluções do time de campo: tutoriais com editor rico, anexos (PD
 - **Modo offline**: salve tutoriais (com imagens, vídeos e anexos) no aparelho para abrir sem internet.
 - **Importar Word (.docx) e PDF**: vira tutorial formatado; imagens do Word são enviadas automaticamente.
 - **Trilhas de aprendizado**: sequências de tutoriais com progresso individual e de quem está fazendo.
-- **E-mail** (Resend): resumo diário ou imediato — configure em Administração → Integrações.
-- **Login com Microsoft** (Azure AD): configure em Administração → Integrações.
+- **Acesso somente por convite**: não há cadastro aberto. O administrador cria cada usuário (Administração → Usuários → Novo usuário) com senha temporária, que a pessoa troca no primeiro acesso. Também é possível redefinir a senha de alguém. Usuários ativos do Inventário entram com o mesmo login.
 - **Acesso multinível**:
 
 | Nível | Pode |
@@ -31,7 +30,7 @@ Biblioteca de soluções do time de campo: tutoriais com editor rico, anexos (PD
 | Administrador | Tudo + definir o nível de cada pessoa (dono: `haydenfernandes.ti@gmail.com`) |
 | Field Administrador | Editar/excluir qualquer tutorial e gerenciar categorias |
 | Field | Ler tudo, criar e editar/excluir os próprios tutoriais |
-| Aguardando aprovação | Cadastro feito, sem acesso até um administrador aprovar |
+| Aguardando aprovação | Conta existe no login, mas sem acesso à central até um administrador liberar |
 | Bloqueado | Sem acesso |
 
 A segurança é garantida no banco por **Row Level Security** — não depende do front-end.

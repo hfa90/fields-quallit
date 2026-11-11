@@ -8,10 +8,10 @@ import type { Category, Profile, Role } from '../lib/types'
 import { ROLE_LABEL, ROLE_STYLE, cn, errMsg, fmtDate, timeAgo } from '../lib/utils'
 import { Avatar, Button, CategoryIcon, Modal, Spinner, inputCls, labelCls } from '../components/ui'
 import { CATEGORY_ICONS } from '../components/categoryIcons'
-import { IntegrationsTab, ReviewTab } from './AdminExtra'
-import { CalendarClock, Plug } from 'lucide-react'
+import { NewUserModal, ResetPasswordModal, ReviewTab } from './AdminExtra'
+import { CalendarClock, UserPlus, KeyRound } from 'lucide-react'
 
-type Tab = 'users' | 'categories' | 'stats' | 'review' | 'integrations'
+type Tab = 'users' | 'categories' | 'stats' | 'review'
 const OWNER = 'haydenfernandes.ti@gmail.com'
 
 export default function Admin() {
@@ -23,7 +23,7 @@ export default function Admin() {
         <p className="text-[15px] text-neutral-500">Gerencie quem acessa a central, as categorias e acompanhe o uso.</p>
       </div>
       <div className="no-scrollbar flex w-fit max-w-full overflow-x-auto rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
-        {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões'], ['integrations', Plug, 'Integrações']] as const).map(([k, I, l]) => (
+        {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões']] as const).map(([k, I, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={cn('inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] px-3.5 text-[13px] font-medium transition',
               tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
@@ -35,7 +35,6 @@ export default function Admin() {
       {tab === 'categories' && <CategoriesTab />}
       {tab === 'stats' && <StatsTab />}
       {tab === 'review' && <ReviewTab />}
-      {tab === 'integrations' && <IntegrationsTab />}
     </div>
   )
 }
@@ -49,6 +48,8 @@ function UsersTab() {
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState<Role | ''>('')
   const [saving, setSaving] = useState<string | null>(null)
+  const [newOpen, setNewOpen] = useState(false)
+  const [resetUser, setResetUser] = useState<UserRow | null>(null)
 
   const load = async () => {
     const [p, t, v] = await Promise.all([
@@ -84,7 +85,7 @@ function UsersTab() {
     <div className="space-y-5">
       {pending.length > 0 && (
         <div className="card p-4">
-          <h3 className="flex items-center gap-2 text-[15px] font-semibold text-neutral-900 dark:text-white"><Clock className="size-4 text-[#ff9500]" />{pending.length} cadastro(s) aguardando aprovação</h3>
+          <h3 className="flex items-center gap-2 text-[15px] font-semibold text-neutral-900 dark:text-white"><Clock className="size-4 text-[#ff9500]" />{pending.length} pessoa(s) aguardando liberação</h3>
           <ul className="mt-3 space-y-2">
             {pending.map(u => (
               <li key={u.id} className="flex flex-wrap items-center gap-3 rounded-xl bg-neutral-50 p-3 dark:bg-neutral-800/60">
@@ -105,6 +106,7 @@ function UsersTab() {
       )}
 
       <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={() => setNewOpen(true)} className="order-first sm:order-last"><UserPlus className="size-4" />Novo usuário</Button>
         <div className="relative min-w-60 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
           <input className={cn(inputCls, 'pl-10')} placeholder="Buscar por nome ou e-mail" value={q} onChange={e => setQ(e.target.value)} />
@@ -119,7 +121,7 @@ function UsersTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:bg-neutral-800/50">
-              <tr><th className="px-4 py-3">Usuário</th><th className="px-4 py-3">Nível de acesso</th><th className="px-4 py-3 text-center">Tutoriais</th><th className="px-4 py-3 text-center">Leituras</th><th className="px-4 py-3">Desde</th></tr>
+              <tr><th className="px-4 py-3">Usuário</th><th className="px-4 py-3">Nível de acesso</th><th className="px-4 py-3 text-center">Tutoriais</th><th className="px-4 py-3 text-center">Leituras</th><th className="px-4 py-3">Desde</th><th className="px-4 py-3"></th></tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {list.map(u => {
@@ -154,6 +156,13 @@ function UsersTab() {
                     <td className="px-4 py-3 text-center font-medium">{u.tutorials}</td>
                     <td className="px-4 py-3 text-center font-medium">{u.views}</td>
                     <td className="px-4 py-3 text-neutral-500">{fmtDate(u.created_at)}</td>
+                    <td className="px-4 py-3 text-right">
+                      {u.id !== me?.id && (
+                        <button onClick={() => setResetUser(u)} title="Redefinir senha" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[13px] font-medium text-accent-600 hover:bg-accent-500/10 dark:text-accent-400">
+                          <KeyRound className="size-3.5" /><span className="hidden lg:inline">Redefinir senha</span>
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
@@ -161,6 +170,9 @@ function UsersTab() {
           </table>
         </div>
       </div>
+
+      <NewUserModal open={newOpen} onClose={() => setNewOpen(false)} onCreated={load} />
+      <ResetPasswordModal user={resetUser} onClose={() => setResetUser(null)} />
 
       <div className="grid gap-3 text-sm sm:grid-cols-3">
         {[
