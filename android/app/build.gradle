@@ -7,8 +7,10 @@ android {
         applicationId "br.com.quallit.fields"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode (System.getenv("APP_VERSION_CODE") ?: "1").toInteger()
-        versionName System.getenv("APP_VERSION_NAME") ?: "1.0"
+        def envCode = System.getenv("APP_VERSION_CODE")
+        def envName = System.getenv("APP_VERSION_NAME")
+        versionCode = envCode ? envCode.toInteger() : 1
+        versionName = envName ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -21,17 +23,17 @@ android {
             // Chave de assinatura fornecida pelo GitHub Actions (segredos do repositório)
             def ks = System.getenv("ANDROID_KEYSTORE_PATH")
             if (ks) {
-                storeFile file(ks)
-                storeType "pkcs12"
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: "fields"
-                keyPassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                storeFile = file(ks)
+                storeType = "pkcs12"
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "fields"
+                keyPassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
             }
         }
     }
     buildTypes {
         release {
-            if (System.getenv("ANDROID_KEYSTORE_PATH")) signingConfig signingConfigs.release
+            if (System.getenv("ANDROID_KEYSTORE_PATH")) { signingConfig = signingConfigs.release }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
