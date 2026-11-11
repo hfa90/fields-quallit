@@ -4,6 +4,7 @@ import { CheckCircle2, AlertTriangle, CalendarClock, ThumbsDown, Copy, UserPlus,
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { ROLE_LABEL, cn, errMsg, timeAgo } from '../lib/utils'
+import { PUBLIC_URL } from '../lib/native'
 import type { Role } from '../lib/types'
 import { LIST_COLS } from '../lib/library'
 import type { TutorialListItem } from '../lib/types'
@@ -70,7 +71,7 @@ async function callAdmin(body: Record<string, unknown>) {
 }
 
 function Credentials({ name, email, password }: { name: string; email: string; password: string }) {
-  const appUrl = window.location.origin + import.meta.env.BASE_URL
+  const appUrl = `${PUBLIC_URL}/`
   const text = `Olá, ${name.split(' ')[0]}! Seu acesso à central de tutoriais Fields foi criado.\n\nEndereço: ${appUrl}\nE-mail: ${email}\nSenha temporária: ${password}\n\nNo primeiro acesso você vai criar uma senha pessoal.`
   return (
     <div className="space-y-3">

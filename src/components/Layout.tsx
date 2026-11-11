@@ -10,6 +10,8 @@ import { QuallitMark } from './QuallitLogo'
 import { SearchPalette, openSearch } from './Search'
 import NotificationList from './NotificationList'
 import { refreshOffline, useOnline } from '../lib/offline'
+import { APK_URL, checkAppUpdate, openExternal, setNativeTheme } from '../lib/native'
+import { Download } from 'lucide-react'
 import { WifiOff } from 'lucide-react'
 
 export function Logo({ size = 30 }: { size?: number }) {
@@ -48,6 +50,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#000000' : '#f5f5f7')
+    setNativeTheme(dark)
     try { localStorage.setItem('fq-theme', dark ? 'dark' : 'light') } catch { /* ignore */ }
   }, [dark])
 
@@ -59,6 +62,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   useEffect(() => { setMenu(null) }, [loc.pathname])
   const online = useOnline()
+  const [appUpdate, setAppUpdate] = useState<{ name: string } | null>(null)
+  useEffect(() => { checkAppUpdate().then(setAppUpdate) }, [])
   useEffect(() => { if (online) refreshOffline() }, [online])
 
   const navCls = ({ isActive }: { isActive: boolean }) => cn(
@@ -157,6 +162,11 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      {appUpdate && (
+        <button onClick={() => openExternal(APK_URL)} className="no-print flex w-full items-center justify-center gap-2 bg-accent-600 px-4 py-2 text-[13px] font-medium text-white">
+          <Download className="size-4" />Nova versão do app ({appUpdate.name}) disponível · toque para atualizar
+        </button>
+      )}
       {!online && (
         <div className="no-print sticky top-[calc(56px+env(safe-area-inset-top))] z-30 flex items-center justify-center gap-2 bg-neutral-800 px-4 py-2 text-[13px] text-white">
           <WifiOff className="size-4" />Sem internet · <Link to="/meus?aba=offline" className="font-semibold underline">abrir tutoriais salvos</Link>

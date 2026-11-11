@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Share, PlusSquare, Smartphone, MoreVertical, Download, Check, Zap, BellRing, WifiOff } from 'lucide-react'
 import { Button } from './ui'
 import { isIOS, isStandalone } from '../lib/push'
+import { ANDROID_PAGE, APK_URL, isNative } from '../lib/native'
 
 export { isStandalone }
 
@@ -48,7 +49,7 @@ export function InstallPrompt() {
     const o = () => setOpen(true)
     listeners.add(l); openers.add(o)
     let t: number | undefined
-    if (isMobile() && !isStandalone() && shouldAutoShow()) t = window.setTimeout(() => setOpen(true), 1200)
+    if (!isNative && isMobile() && !isStandalone() && shouldAutoShow()) t = window.setTimeout(() => setOpen(true), 1200)
     return () => { listeners.delete(l); openers.delete(o); if (t) clearTimeout(t) }
   }, [])
 
@@ -59,7 +60,7 @@ export function InstallPrompt() {
     return () => { document.body.style.overflow = prev }
   }, [open])
 
-  if (!open) return null
+  if (!open || isNative) return null
   const close = (days: number | 'never' = 3) => { snooze(days); setOpen(false) }
   const install = async () => {
     if (!deferred) return
@@ -109,7 +110,15 @@ export function InstallPrompt() {
         </div>
 
         <div className="space-y-1 px-5 pt-4">
-          {deferred && !ios
+          {isAndroid() ? (
+            <>
+              <a href={APK_URL} download onClick={() => close('never')} className="press flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-accent-600 text-[17px] font-semibold text-white">
+                <Download className="size-5" />Baixar app Android
+              </a>
+              <a href={ANDROID_PAGE} className="block py-2 text-center text-[13px] font-medium text-accent-600">Como instalar o app</a>
+              {deferred && <Button variant="ghost" className="h-11 w-full" onClick={install}>Ou instalar versão web</Button>}
+            </>
+          ) : deferred && !ios
             ? <Button className="h-12 w-full text-[17px] font-semibold" onClick={install}><Smartphone className="size-5" />Instalar</Button>
             : <Button className="h-12 w-full text-[17px] font-semibold" onClick={() => close(3)}>Entendi</Button>}
           <Button variant="ghost" className="h-11 w-full" onClick={() => close(3)}>Agora não</Button>
@@ -132,7 +141,7 @@ function Step({ n, icon, children }: { n: number; icon: React.ReactNode; childre
 
 /** Linha para a página de Perfil */
 export function InstallRow() {
-  if (isStandalone()) return null
+  if (isStandalone() || isNative) return null
   return (
     <button onClick={openInstallPrompt} className="flex min-h-12 w-full items-center gap-3 px-4 text-left">
       <span className="grid size-7 place-items-center rounded-[7px] bg-accent-600 text-white"><Smartphone className="size-4" /></span>

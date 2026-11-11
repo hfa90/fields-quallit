@@ -7,7 +7,10 @@ import { cn, errMsg } from '../lib/utils'
 
 type Mode = 'login' | 'forgot'
 
-const appUrl = () => window.location.origin + import.meta.env.BASE_URL
+import { PUBLIC_URL } from '../lib/native'
+
+// Links de recuperação de senha sempre levam ao site público (abre no navegador ou no app)
+const appUrl = () => `${PUBLIC_URL}/`
 
 export default function Login() {
   const [mode, setMode] = useState<Mode>('login')

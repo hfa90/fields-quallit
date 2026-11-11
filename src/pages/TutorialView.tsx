@@ -16,6 +16,7 @@ import { useFavorites, useFollows } from '../lib/library'
 import type { CommentKind } from '../lib/types'
 import NotFound from './NotFound'
 import VersionHistory from '../components/VersionHistory'
+import { isNative, nativeShare } from '../lib/native'
 import { FULL_SELECT, getOfflineByCode, isNetworkError, removeOffline, saveOffline, useOfflineIds, type OfflineBundle } from '../lib/offline'
 import { useTrailNav } from './TrailPage'
 
@@ -103,6 +104,7 @@ export default function TutorialView() {
   const hasText = !!t.content_html.replace(/<[^>]+>/g, '').trim() || t.content_html.includes('<img')
 
   const quickShare = async () => {
+    if (isNative) { try { await nativeShare(t.title, url); return } catch { /* cancelado */ } }
     if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
       try { await navigator.share({ title: t.title, url }); return } catch { /* cancelado */ }
     }

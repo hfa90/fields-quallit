@@ -8,6 +8,8 @@ import { uploadImage } from '../lib/upload'
 import { Avatar, Button, SectionTitle } from '../components/ui'
 import { ROLE_LABEL, errMsg } from '../lib/utils'
 import { InstallRow, isStandalone } from '../components/InstallApp'
+import { isNative } from '../lib/native'
+import { Smartphone } from 'lucide-react'
 
 const row = 'flex items-center gap-3 px-4 min-h-12'
 const fieldCls = 'min-w-0 flex-1 bg-transparent py-3 text-right text-[16px] text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-white'
@@ -111,7 +113,16 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {!isStandalone() && <div className="card overflow-hidden"><InstallRow /></div>}
+      {!isNative && (
+        <div className="card divide-y divide-neutral-200/70 overflow-hidden dark:divide-neutral-800">
+          <button onClick={() => nav('/android')} className={`${row} w-full text-left`}>
+            <span className="grid size-7 place-items-center rounded-[7px] bg-[#34c759] text-white"><Smartphone className="size-4" /></span>
+            <span className="flex-1 text-[16px] text-neutral-900 dark:text-white">App Android (QR code)</span>
+            <ChevronRight className="size-5 text-neutral-300 dark:text-neutral-600" />
+          </button>
+          {!isStandalone() && <InstallRow />}
+        </div>
+      )}
 
       <div className="card overflow-hidden">
         <button onClick={signOut} className={`${row} w-full justify-center text-[16px] text-[#ff3b30]`}><LogOut className="size-4" />Sair</button>

@@ -9,6 +9,7 @@ import { errMsg } from '../lib/utils'
 import NotificationList from '../components/NotificationList'
 import { SectionTitle } from '../components/ui'
 import { openInstallPrompt } from '../components/InstallApp'
+import { isNative } from '../lib/native'
 
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
@@ -63,12 +64,13 @@ export function PushSettings() {
             <div className="min-w-0 flex-1">
               <div className="text-[16px] text-neutral-900 dark:text-white">Notificações push</div>
               <div className="text-[13px] text-neutral-500">
-                {!pushSupported() && !pushNeedsInstall() ? 'Não suportado neste navegador'
+                {isNative ? 'No app Android, os avisos aparecem dentro do app em tempo real'
+                  : !pushSupported() && !pushNeedsInstall() ? 'Não suportado neste navegador'
                   : pushNeedsInstall() ? 'No iPhone, instale o app para ativar'
                   : 'Avisos no celular mesmo com o app fechado'}
               </div>
             </div>
-            <Toggle checked={on} disabled={busy || (!pushSupported() && !pushNeedsInstall())} onChange={togglePush} />
+            <Toggle checked={on} disabled={isNative || busy || (!pushSupported() && !pushNeedsInstall())} onChange={togglePush} />
           </div>
           {pushNeedsInstall() && (
             <button onClick={openInstallPrompt} className="flex min-h-12 w-full items-center gap-3 border-t border-neutral-200/70 px-4 text-left text-[15px] font-medium text-accent-600 dark:border-neutral-800 dark:text-accent-400">

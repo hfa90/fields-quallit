@@ -24,6 +24,7 @@ const RequestPage = lazy(() => import('./pages/RequestPage'))
 const PersonPage = lazy(() => import('./pages/PersonPage'))
 const TrailsList = lazy(() => import('./pages/TrailPage').then(m => ({ default: m.TrailsList })))
 const TrailPage = lazy(() => import('./pages/TrailPage'))
+const AndroidApp = lazy(() => import('./pages/AndroidApp'))
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ function Gate() {
   const nav = useNavigate()
   const openLink = useCallback((link: string) => nav(link.split('#')[0], { state: { inApp: true } }), [nav])
 
+  if (loc.pathname === '/android') return <Suspense fallback={<Spinner />}><AndroidApp /></Suspense>
   if (loading) return <div className="grid min-h-dvh place-items-center"><Spinner /></div>
   if (recovering) return <ResetPassword />
   if (!session) {

@@ -6,6 +6,7 @@ import type { Attachment, LinkItem } from '../lib/types'
 import { FILE_STYLE, fileKind, fileSize, hostOf, errMsg, type FileKind } from '../lib/utils'
 import { Modal } from './ui'
 import { offlineAttachmentUrl } from '../lib/offline'
+import { isNative, openExternal } from '../lib/native'
 
 const PdfViewer = lazy(() => import('./PdfViewer'))
 
@@ -47,6 +48,7 @@ export function AttachmentList({ items }: { items: Attachment[] }) {
     try {
       const url = await resolve(a, a.file_name)
       if (url.startsWith('blob:')) { const el = document.createElement('a'); el.href = url; el.download = a.file_name; el.click() }
+      else if (isNative) await openExternal(url)
       else window.location.href = url
     }
     catch (e) { toast.error(errMsg(e)) } finally { setBusy(null) }

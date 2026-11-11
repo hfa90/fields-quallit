@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fields</string>
+    <string name="title_activity_main">Fields</string>
+    <string name="package_name">br.com.quallit.fields</string>
+    <string name="custom_url_scheme">br.com.quallit.fields</string>
+</resources>

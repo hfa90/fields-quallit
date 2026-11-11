@@ -6,6 +6,7 @@ import './index.css'
 import App from './App'
 import { AuthProvider } from './lib/auth'
 import { entry } from './lib/entry'
+import { initNative } from './lib/native'
 
 // Retorno do redirecionamento do 404.html (GitHub Pages SPA)
 const redirect = sessionStorage.getItem('fq-redirect')
@@ -14,6 +15,7 @@ if (redirect) {
   window.history.replaceState(null, '', redirect)
 }
 entry.path = window.location.pathname
+initNative()
 
 // Comportamento de app nativo: sem zoom por pinça, gesto ou Ctrl+roda
 const stop = (e: Event) => e.preventDefault()

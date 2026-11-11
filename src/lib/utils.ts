@@ -68,7 +68,9 @@ export function readingTime(html: string) {
 /** Link curto e bonito: https://dominio/base/t/AbC123 */
 export function shortUrl(code: string) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-  return `${window.location.origin}${base}/t/${code}`
+  const origin = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(window.location.origin) && (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+    ? 'https://hfa90.github.io' : window.location.origin
+  return `${origin}${base}/t/${code}`
 }
 
 export function safeFileName(name: string) {

@@ -1,4 +1,4 @@
-name: Deploy no GitHub Pages
+name: Deploy no GitHub Pages (site + app Android)
 
 on:
   push:
@@ -24,12 +24,49 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Build
+
+      - name: Build do site
         run: npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_KEY: ${{ vars.VITE_SUPABASE_KEY }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      # O app Android é um "casco" que abre o site publicado (atualizações do site chegam no app na hora).
+      # O APK vai junto com o site em /downloads/fields.apk, com /downloads/version.json para o aviso de atualização.
+      - name: Build do app Android (APK)
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          set -e
+          . android/version.properties
+          export APP_VERSION_CODE=$VERSION_CODE APP_VERSION_NAME=$VERSION_NAME
+          npx cap sync android
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/fields.p12"
+            export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/fields.p12" ANDROID_KEY_ALIAS=fields
+            TASK=assembleRelease; OUT=release/app-release.apk; SIGNED=true
+          else
+            echo "::warning::Segredos de assinatura ausentes: gerando APK de teste (debug)."
+            TASK=assembleDebug; OUT=debug/app-debug.apk; SIGNED=false
+          fi
+          cd android && chmod +x gradlew && ./gradlew "$TASK" --no-daemon --stacktrace
+          cd ..
+          mkdir -p dist/downloads
+          cp "android/app/build/outputs/apk/$OUT" dist/downloads/fields.apk
+          SIZE=$(stat -c%s dist/downloads/fields.apk)
+          printf '{"versionCode":%s,"versionName":"%s","size":%s,"signed":%s,"date":"%s"}\n' \
+            "$VERSION_CODE" "$VERSION_NAME" "$SIZE" "$SIGNED" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > dist/downloads/version.json
+          cat dist/downloads/version.json
+          rm -f "$RUNNER_TEMP/fields.p12"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
