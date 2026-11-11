@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { MicrosoftLogo, azureEnabled } from './AdminExtra'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { Button, inputCls } from '../components/ui'
@@ -16,6 +17,12 @@ export default function Login() {
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState<string | null>(null)
+  const [ms, setMs] = useState(false)
+  useEffect(() => { azureEnabled().then(setMs) }, [])
+  const microsoft = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'azure', options: { scopes: 'openid email profile', redirectTo: appUrl() } })
+    if (error) toast.error(errMsg(error))
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,6 +90,12 @@ export default function Login() {
             </Button>
             {mode === 'login' && (
               <p className="text-center text-[13px] text-neutral-500">Use o mesmo e-mail e senha do Inventário Quallit.</p>
+            )}
+            {mode === 'login' && ms && (
+              <>
+                <div className="flex items-center gap-3 text-[13px] text-neutral-400"><span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />ou<span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" /></div>
+                <Button type="button" variant="outline" className="h-12 w-full text-[16px]" onClick={microsoft}><MicrosoftLogo />Entrar com Microsoft</Button>
+              </>
             )}
           </form>
         )}

@@ -4,7 +4,7 @@ import { supabase } from './supabase'
 import type { TutorialListItem } from './types'
 import { errMsg } from './utils'
 
-export const LIST_COLS = 'id,short_code,title,summary,category_id,tags,difficulty,status,author_id,created_at,updated_at,author_name,author_avatar,category_name,category_color,category_icon,viewer_count,view_count,attachment_count,helpful_count,not_helpful_count,comment_count,outdated_count'
+export const LIST_COLS = 'id,short_code,title,summary,category_id,tags,difficulty,status,author_id,created_at,updated_at,author_name,author_avatar,category_name,category_color,category_icon,viewer_count,view_count,attachment_count,helpful_count,not_helpful_count,comment_count,outdated_count,review_due,reviewed_at'
 
 // Favoritos compartilhados entre telas (cache em memória)
 let favCache: Set<string> | null = null

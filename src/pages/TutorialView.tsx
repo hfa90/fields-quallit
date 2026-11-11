@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck } from 'lucide-react'
+import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck, History, CloudDownload, CloudCheck, Loader2, WifiOff, CalendarCheck, Route, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -15,6 +15,9 @@ import Comments, { Feedback } from '../components/Comments'
 import { useFavorites, useFollows } from '../lib/library'
 import type { CommentKind } from '../lib/types'
 import NotFound from './NotFound'
+import VersionHistory from '../components/VersionHistory'
+import { FULL_SELECT, getOfflineByCode, isNetworkError, removeOffline, saveOffline, useOfflineIds, type OfflineBundle } from '../lib/offline'
+import { useTrailNav } from './TrailPage'
 
 type Full = Tutorial & {
   author: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
@@ -41,16 +44,30 @@ export default function TutorialView() {
   const { favs, toggle: toggleFav } = useFavorites()
   const follows = useFollows()
   const loc = useLocation()
+  const [history, setHistory] = useState(false)
+  const [offlineCopy, setOfflineCopy] = useState<OfflineBundle | null>(null)
+  const [savingOffline, setSavingOffline] = useState<string | null>(null)
+  const [reload, setReload] = useState(0)
+  const offlineIds = useOfflineIds()
+  const trail = useTrailNav(t?.id)
 
   useEffect(() => {
     let alive = true
-    setT(undefined)
+    setT(undefined); setOfflineCopy(null)
     ;(async () => {
-      const { data, error } = await supabase.from('kb_tutorials')
-        .select('*, author:kb_profiles!kb_tutorials_author_id_fkey(id,full_name,email,avatar_url), editor:kb_profiles!kb_tutorials_updated_by_fkey(full_name), category:kb_categories(*)')
-        .eq('short_code', code).maybeSingle()
+      const useOffline = async () => {
+        const b = await getOfflineByCode(code)
+        if (!alive) return true
+        if (b) { setOfflineCopy(b); setT(b.tutorial); setLinks(b.links); setFiles(b.files); setViewers([]); document.title = `${b.title} · Fields`; return true }
+        return false
+      }
+      if (!navigator.onLine && await useOffline()) return
+      const { data, error } = await supabase.from('kb_tutorials').select(FULL_SELECT).eq('short_code', code).maybeSingle()
       if (!alive) return
-      if (error) console.error(error)
+      if (error) {
+        console.error(error)
+        if (isNetworkError(error) && await useOffline()) return
+      }
       setT((data as Full) ?? null)
       if (!data) return
       document.title = `${data.title} · Fields Quallit`
@@ -67,7 +84,7 @@ export default function TutorialView() {
       if (alive) setViewers((v.data as Viewer[]) ?? [])
     })()
     return () => { alive = false; document.title = 'Fields Quallit' }
-  }, [code])
+  }, [code, reload])
 
   // Abre direto nos comentários quando vem de uma notificação
   const wantsComments = loc.hash === '#comentarios' || (loc.state as { hash?: string } | null)?.hash === 'comentarios'
@@ -96,6 +113,26 @@ export default function TutorialView() {
     catch { setShare(true) }
   }
 
+  const isOffline = offlineIds.has(t.id)
+  const toggleOffline = async () => {
+    if (isOffline) {
+      await removeOffline(t.id); toast('Removido do modo offline')
+      return
+    }
+    setSavingOffline('Preparando…')
+    try {
+      const b = await saveOffline(t.short_code, setSavingOffline)
+      toast.success('Disponível offline', { description: `Você pode abrir este tutorial sem internet (${Math.max(1, Math.round(b.bytes / 1048576))} MB).` })
+    } catch (e) { toast.error(errMsg(e)) } finally { setSavingOffline(null) }
+  }
+  const markReviewed = async () => {
+    const { error } = await supabase.rpc('kb_mark_reviewed', { p_tutorial: t.id, p_resolve_outdated: true })
+    if (error) return toast.error(errMsg(error))
+    toast.success('Tutorial marcado como revisado')
+    setReload(r => r + 1)
+  }
+  const reviewDue = !!t.reviewed_at && new Date(t.reviewed_at).getTime() + (t.review_interval_months ?? 6) * 30.44 * 864e5 < Date.now()
+
   const remove = async () => {
     setDeleting(true)
     try {
@@ -116,6 +153,11 @@ export default function TutorialView() {
         </button>
         <div className="flex items-center gap-1">
           <IconBtn title="Imprimir / PDF" onClick={() => window.print()} className="hidden sm:grid"><Printer className="size-[18px]" /></IconBtn>
+          <IconBtn title={isOffline ? 'Disponível offline (toque para remover)' : 'Salvar para usar sem internet'} onClick={toggleOffline}
+            className={isOffline ? 'text-[#34c759] dark:text-[#30d158]' : ''}>
+            {savingOffline ? <Loader2 className="size-[18px] animate-spin" /> : isOffline ? <CloudCheck className="size-[18px]" /> : <CloudDownload className="size-[18px]" />}
+          </IconBtn>
+          {!offlineCopy && <IconBtn title="Histórico de versões" onClick={() => setHistory(true)}><History className="size-[18px]" /></IconBtn>}
           <IconBtn title={favs.has(t.id) ? 'Remover dos favoritos' : 'Favoritar'} onClick={() => toggleFav(t.id)} className={favs.has(t.id) ? 'text-brand-orange dark:text-brand-orange' : ''}>
             <Bookmark className="size-[18px]" fill={favs.has(t.id) ? 'currentColor' : 'none'} />
           </IconBtn>
@@ -124,6 +166,26 @@ export default function TutorialView() {
           <IconBtn title="Compartilhar" onClick={quickShare}><Share className="size-[18px]" /></IconBtn>
         </div>
       </div>
+
+      {offlineCopy && (
+        <div className="no-print mb-4 flex items-center gap-3 rounded-[12px] bg-neutral-900/[.05] px-4 py-3 text-[14px] text-neutral-700 dark:bg-white/10 dark:text-neutral-300">
+          <WifiOff className="size-5 shrink-0 text-neutral-500" />
+          Você está vendo a cópia offline salva {timeAgo(offlineCopy.savedAt)}. Comentários e avaliações voltam quando houver internet.
+        </div>
+      )}
+      {!offlineCopy && canEdit && (reviewDue || outdated > 0) && (
+        <div className="no-print mb-4 flex flex-col gap-3 rounded-[12px] bg-brand-orange/10 px-4 py-3 sm:flex-row sm:items-center">
+          <CalendarCheck className="size-5 shrink-0 text-brand-orange" />
+          <div className="min-w-0 flex-1 text-[14px] text-neutral-800 dark:text-neutral-200">
+            <b>Revisão pendente.</b> {reviewDue ? `Última revisão ${timeAgo(t.reviewed_at!)} (a cada ${t.review_interval_months ?? 6} meses).` : ''}
+            {outdated > 0 && ` ${outdated} relato${outdated > 1 ? 's' : ''} de passo desatualizado.`} Confira os passos, ajuste o que for preciso e confirme.
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => nav(`/t/${t.short_code}/editar`)}>Editar</Button>
+            <Button size="sm" onClick={markReviewed}><CheckCircle2 className="size-4" />Marcar como revisado</Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0">
@@ -177,11 +239,15 @@ export default function TutorialView() {
           </div>
           <p className="no-print mx-auto mt-10 max-w-[720px] text-[13px] text-neutral-400">
             Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
+            {t.reviewed_at && <> · {reviewDue ? <span className="font-medium text-brand-orange">revisão pendente</span> : <>revisado {timeAgo(t.reviewed_at)}</>}</>}
           </p>
-          <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">
-            <Feedback tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
-            <Comments tutorialId={t.id} ownerId={t.author_id} prompt={prompt} />
-          </div>
+          {trail && <TrailBar trail={trail} />}
+          {!offlineCopy && (
+            <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">
+              <Feedback tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
+              <Comments tutorialId={t.id} ownerId={t.author_id} prompt={prompt} />
+            </div>
+          )}
         </div>
 
         {/* Lateral */}
@@ -245,6 +311,7 @@ export default function TutorialView() {
         </aside>
       </div>
 
+      {!offlineCopy && <VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canEdit} onRestored={() => setReload(r => r + 1)} />}
       <ShareDialog open={share} onClose={() => setShare(false)} url={url} title={t.title} />
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="Excluir tutorial?">
         <p className="text-[15px] text-neutral-600 dark:text-neutral-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Não é possível desfazer.</p>
@@ -263,5 +330,27 @@ function IconBtn({ children, title, onClick, className }: { children: React.Reac
       className={cn('press grid size-9 place-items-center rounded-full text-accent-600 hover:bg-neutral-900/5 dark:text-accent-400 dark:hover:bg-white/10', className)}>
       {children}
     </button>
+  )
+}
+
+function TrailBar({ trail }: { trail: NonNullable<ReturnType<typeof useTrailNav>> }) {
+  const nav = useNavigate()
+  return (
+    <div className="no-print mx-auto mt-8 max-w-[720px]">
+      <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center" style={{ boxShadow: `inset 0 0 0 1.5px ${trail.color}55` }}>
+        <span className="grid size-10 shrink-0 place-items-center rounded-[10px] text-white" style={{ background: trail.color }}><Route className="size-5" /></span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] font-medium text-neutral-500">Trilha · passo {trail.index + 1} de {trail.total}</div>
+          <div className="truncate text-[15px] font-semibold text-neutral-900 dark:text-white">{trail.title}</div>
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"><div className="h-full rounded-full transition-all" style={{ width: `${(trail.done / trail.total) * 100}%`, background: trail.color }} /></div>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="secondary" onClick={() => nav(`/trilhas/${trail.id}`)}>Ver trilha</Button>
+          <Button size="sm" onClick={async () => { await trail.complete(); if (trail.next) nav(`/t/${trail.next}?trilha=${trail.id}`); else nav(`/trilhas/${trail.id}`) }}>
+            {trail.completed ? (trail.next ? <>Próximo<ChevronRight className="size-4" /></> : 'Concluir') : <><CheckCircle2 className="size-4" />{trail.next ? 'Concluir e avançar' : 'Concluir trilha'}</>}
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

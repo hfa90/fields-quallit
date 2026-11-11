@@ -16,6 +16,14 @@ Biblioteca de soluções do time de campo: tutoriais com editor rico, anexos (PD
 - **Notificações** no app (tempo real) e **push no celular** (Web Push via Edge Function `kb-push`; no iPhone requer o app instalado, iOS 16.4+).
 - **Captura no celular**: foto pela câmera com marcação (setas, círculos, retângulos, caneta, texto) e vídeo curto (até 50 MB).
 - **App instalável (PWA)**: popup automático no celular explicando como instalar.
+- **Rascunho automático**: salva no aparelho e na nuvem enquanto você escreve; oferece recuperar ao reabrir.
+- **Histórico de versões**: cada edição gera uma versão; compare o que mudou e restaure com um clique.
+- **Revisão periódica**: cada tutorial define a cada quantos meses deve ser revisado; lembrete automático às 8h e selo "Revisão pendente".
+- **Modo offline**: salve tutoriais (com imagens, vídeos e anexos) no aparelho para abrir sem internet.
+- **Importar Word (.docx) e PDF**: vira tutorial formatado; imagens do Word são enviadas automaticamente.
+- **Trilhas de aprendizado**: sequências de tutoriais com progresso individual e de quem está fazendo.
+- **E-mail** (Resend): resumo diário ou imediato — configure em Administração → Integrações.
+- **Login com Microsoft** (Azure AD): configure em Administração → Integrações.
 - **Acesso multinível**:
 
 | Nível | Pode |

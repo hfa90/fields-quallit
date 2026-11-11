@@ -9,6 +9,8 @@ import { Avatar } from './ui'
 import { QuallitMark } from './QuallitLogo'
 import { SearchPalette, openSearch } from './Search'
 import NotificationList from './NotificationList'
+import { refreshOffline, useOnline } from '../lib/offline'
+import { WifiOff } from 'lucide-react'
 
 export function Logo({ size = 30 }: { size?: number }) {
   return <QuallitMark size={size} />
@@ -37,6 +39,8 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [isAdmin, loc.pathname])
 
   useEffect(() => { setMenu(null) }, [loc.pathname])
+  const online = useOnline()
+  useEffect(() => { if (online) refreshOffline() }, [online])
 
   const navCls = ({ isActive }: { isActive: boolean }) => cn(
     'inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[14px] font-medium transition-colors',
@@ -59,6 +63,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <nav className="hidden items-center gap-1 lg:flex">
             <NavLink to="/" end className={navCls}>Biblioteca</NavLink>
             <NavLink to="/comunidade" className={navCls}>Comunidade</NavLink>
+            <NavLink to="/trilhas" className={navCls}>Trilhas</NavLink>
             <NavLink to="/meus" className={navCls}>Meus</NavLink>
             {isAdmin && (
               <NavLink to="/admin" className={navCls}>
@@ -135,6 +140,11 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
+      {!online && (
+        <div className="no-print sticky top-[calc(56px+env(safe-area-inset-top))] z-30 flex items-center justify-center gap-2 bg-neutral-800 px-4 py-2 text-[13px] text-white">
+          <WifiOff className="size-4" />Sem internet · <Link to="/meus?aba=offline" className="font-semibold underline">abrir tutoriais salvos</Link>
+        </div>
+      )}
       <main className={cn('mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8', !editing && 'pb-tabbar')}>{children}</main>
 
       {/* Barra de abas inferior (celular) */}

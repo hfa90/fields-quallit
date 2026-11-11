@@ -9,6 +9,8 @@ import { cn, timeAgo } from '../lib/utils'
 import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/library'
 import TutorialCard, { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { HeroSearch } from '../components/Search'
+import { TrailCard, type Trail } from './TrailPage'
+import { useNavigate } from 'react-router-dom'
 
 type Sort = 'recent' | 'views' | 'helpful' | 'az'
 const SORTS: [Sort, string][] = [['recent', 'Recentes'], ['views', 'Mais vistos'], ['helpful', 'Mais úteis'], ['az', 'A–Z']]
@@ -24,6 +26,8 @@ export default function Home() {
   const [recent, setRecent] = useState<(TutorialListItem & { last_viewed: string })[]>([])
   const [favorites, setFavorites] = useState<TutorialListItem[]>([])
   const follows = useFollows()
+  const nav = useNavigate()
+  const [trails, setTrails] = useState<(Trail & { total: number; done: number })[]>([])
 
   const setParam = (k: string, v: string) => {
     const p = new URLSearchParams(params)
@@ -40,6 +44,14 @@ export default function Home() {
     })
     fetchRecent(10).then(setRecent)
     fetchFavorites().then(setFavorites)
+    Promise.all([
+      supabase.from('kb_trails').select('*, items:kb_trail_items(count)').eq('status', 'published').order('created_at', { ascending: false }).limit(8),
+      supabase.from('kb_trail_progress').select('trail_id').eq('user_id', profile!.id),
+    ]).then(([t, p]) => {
+      const done = new Map<string, number>()
+      p.data?.forEach(r => done.set(r.trail_id, (done.get(r.trail_id) ?? 0) + 1))
+      setTrails(((t.data ?? []) as (Trail & { items: { count: number }[] })[]).map(x => ({ ...x, total: x.items?.[0]?.count ?? 0, done: done.get(x.id) ?? 0 })))
+    })
   }, [])
 
   useEffect(() => {
@@ -75,6 +87,11 @@ export default function Home() {
       {recent.length > 0 && (
         <Shelf title="Continuar lendo" action={<MoreLink to="/meus?aba=recentes">Ver tudo</MoreLink>}>
           {recent.map(t => <MiniCard key={t.id} t={t} sub={`Visto ${timeAgo(t.last_viewed)}`} />)}
+        </Shelf>
+      )}
+      {trails.length > 0 && (
+        <Shelf title="Trilhas de aprendizado" action={<MoreLink to="/trilhas">Ver todas</MoreLink>}>
+          {trails.map(t => <TrailCard key={t.id} t={t} compact onClick={() => nav(`/trilhas/${t.id}`)} />)}
         </Shelf>
       )}
       {favorites.length > 0 && (

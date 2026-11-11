@@ -1,6 +1,7 @@
 // Service worker: app abre instantâneo e funciona com rede ruim em campo.
 // Dados (Supabase) nunca são cacheados aqui — sempre vêm da rede.
-const VERSION = 'fq-v4'
+const VERSION = 'fq-v5'
+const OFFLINE = 'fq-offline-media'
 const SHELL = `${VERSION}-shell`
 const scope = self.registration.scope
 
@@ -9,13 +10,19 @@ self.addEventListener('install', e => {
 })
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => !k.startsWith(VERSION)).map(k => caches.delete(k)))).then(() => self.clients.claim()))
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => !k.startsWith(VERSION) && k !== OFFLINE).map(k => caches.delete(k)))).then(() => self.clients.claim()))
 })
 
 self.addEventListener('fetch', e => {
   const req = e.request
   if (req.method !== 'GET') return
   const url = new URL(req.url)
+
+  // Mídia e anexos de tutoriais salvos para uso offline
+  if (url.pathname.includes('/storage/v1/object/public/') || url.pathname.includes('/__offline__/')) {
+    e.respondWith(caches.open(OFFLINE).then(c => c.match(req.url)).then(hit => hit || fetch(req)))
+    return
+  }
   if (url.origin !== location.origin) return
 
   // Navegação: rede primeiro, cai para o app em cache se estiver offline

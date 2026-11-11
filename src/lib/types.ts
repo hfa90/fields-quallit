@@ -36,6 +36,9 @@ export interface Tutorial {
   updated_by: string | null
   created_at: string
   updated_at: string
+  review_interval_months?: number
+  reviewed_at?: string
+  reviewed_by?: string | null
 }
 
 export interface TutorialListItem {
@@ -62,6 +65,8 @@ export interface TutorialListItem {
   not_helpful_count?: number
   comment_count?: number
   outdated_count?: number
+  review_due?: boolean
+  reviewed_at?: string
 }
 
 export interface LinkItem {

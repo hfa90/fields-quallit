@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare } from 'lucide-react'
+import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare, CalendarClock, CloudCheck } from 'lucide-react'
 import type { TutorialListItem } from '../lib/types'
 import { DIFFICULTY, cn, timeAgo } from '../lib/utils'
 import { useFavorites } from '../lib/library'
+import { useOfflineIds } from '../lib/offline'
 import { Avatar, CategoryIcon } from './ui'
 
 export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: number }) {
@@ -10,6 +11,7 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
   const color = t.category_color ?? '#8e8e93'
   const d = DIFFICULTY[t.difficulty]
   const fav = favs.has(t.id)
+  const offline = useOfflineIds().has(t.id)
   return (
     <div className="card group relative flex flex-col transition-shadow hover:shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_8px_24px_-8px_rgb(0_0_0/0.15)] fade-up"
       style={{ animationDelay: `${Math.min(i, 12) * 25}ms` }}>
@@ -28,6 +30,11 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
             <AlertTriangle className="size-3" />{t.outdated_count} relato{t.outdated_count > 1 ? 's' : ''} de passo desatualizado
           </span>
         )}
+        {t.review_due && !t.outdated_count && (
+          <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-md bg-neutral-900/[.05] px-1.5 py-0.5 text-[12px] font-medium text-neutral-600 dark:bg-white/10 dark:text-neutral-400">
+            <CalendarClock className="size-3" />Revisão pendente
+          </span>
+        )}
         {t.tags.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1">
             {t.tags.slice(0, 4).map(tag => <span key={tag} className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[12px] text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">{tag}</span>)}
@@ -39,6 +46,7 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
           <span className="text-neutral-300 dark:text-neutral-700">·</span>
           <span className="shrink-0">{timeAgo(t.created_at)}</span>
           <span className="ml-auto flex shrink-0 items-center gap-2.5">
+            {offline && <span className="text-[#34c759]" title="Disponível offline"><CloudCheck className="size-3.5" /></span>}
             {!!t.helpful_count && <span className="inline-flex items-center gap-1 text-[#248a3d] dark:text-[#30d158]" title="Funcionou para"><ThumbsUp className="size-3.5" />{t.helpful_count}</span>}
             {!!t.comment_count && <span className="inline-flex items-center gap-1" title="Comentários"><MessageSquare className="size-3.5" />{t.comment_count}</span>}
             {t.attachment_count > 0 && <span className="inline-flex items-center gap-1" title="Anexos"><Paperclip className="size-3.5" />{t.attachment_count}</span>}

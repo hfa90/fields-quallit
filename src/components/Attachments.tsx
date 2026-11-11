@@ -5,6 +5,7 @@ import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import type { Attachment, LinkItem } from '../lib/types'
 import { FILE_STYLE, fileKind, fileSize, hostOf, errMsg, type FileKind } from '../lib/utils'
 import { Modal } from './ui'
+import { offlineAttachmentUrl } from '../lib/offline'
 
 export function FileIcon({ kind, className }: { kind: FileKind; className?: string }) {
   const I = { pdf: FileText, word: FileText, powerpoint: Presentation, excel: FileSpreadsheet, image: FileImage, video: FileVideo, archive: FileArchive, text: FileText, other: File }[kind]
@@ -21,10 +22,19 @@ export function AttachmentList({ items }: { items: Attachment[] }) {
   const [preview, setPreview] = useState<{ a: Attachment; url: string } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
+  const resolve = async (a: Attachment, download?: string) => {
+    if (!navigator.onLine) {
+      const local = await offlineAttachmentUrl(a.id)
+      if (local) return local
+      throw new Error('Sem internet e este anexo não foi salvo para uso offline')
+    }
+    try { return await signed(a.storage_path, download) }
+    catch (e) { const local = await offlineAttachmentUrl(a.id); if (local) return local; throw e }
+  }
   const open = async (a: Attachment) => {
     setBusy(a.id)
     try {
-      const url = await signed(a.storage_path)
+      const url = await resolve(a)
       const k = fileKind(a.file_name, a.mime_type)
       if (['pdf', 'image', 'video', 'word', 'powerpoint', 'excel', 'text'].includes(k)) setPreview({ a, url })
       else window.open(url, '_blank', 'noopener')
@@ -32,7 +42,11 @@ export function AttachmentList({ items }: { items: Attachment[] }) {
   }
   const download = async (a: Attachment) => {
     setBusy(a.id)
-    try { window.location.href = await signed(a.storage_path, a.file_name) }
+    try {
+      const url = await resolve(a, a.file_name)
+      if (url.startsWith('blob:')) { const el = document.createElement('a'); el.href = url; el.download = a.file_name; el.click() }
+      else window.location.href = url
+    }
     catch (e) { toast.error(errMsg(e)) } finally { setBusy(null) }
   }
 

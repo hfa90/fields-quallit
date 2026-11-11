@@ -26,8 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(async (s: Session | null) => {
     if (!s) { setProfile(null); return }
+    const cacheKey = `fq-profile:${s.user.id}`
     const { data, error } = await supabase.rpc('kb_ensure_profile')
-    if (error) { console.error(error); setProfile(null); return }
+    if (error) {
+      // Sem internet: usa o perfil guardado para permitir abrir os tutoriais offline
+      try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null') as Profile | null
+        if (cached) { setProfile(cached); return }
+      } catch { /* ignore */ }
+      console.error(error); setProfile(null); return
+    }
+    try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch { /* ignore */ }
     setProfile(data as Profile)
   }, [])
 

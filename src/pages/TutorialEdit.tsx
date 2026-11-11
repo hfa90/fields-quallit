@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { HandHelping, Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
+import { HandHelping, FileUp, RotateCcw, CloudOff, Check, Loader2, CalendarClock, Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Attachment, Category, Difficulty, LinkItem, Status, Tutorial } from '../lib/types'
-import { DIFFICULTY, FILE_STYLE, cn, errMsg, fileKind, fileSize, safeFileName } from '../lib/utils'
+import { DIFFICULTY, FILE_STYLE, cn, errMsg, fileKind, fileSize, safeFileName, timeAgo } from '../lib/utils'
 import RichEditor from '../components/editor/RichEditor'
 import { FileIcon } from '../components/Attachments'
 import { Button, Spinner, inputCls, labelCls, textareaCls } from '../components/ui'
 import NotFound from './NotFound'
+import { useAutosave, type DraftData } from '../lib/autosave'
+import { importDocument } from '../lib/importDoc'
 
 const MAX_FILE = 50 * 1024 * 1024
 const ACCEPT = '.pdf,.doc,.docx,.odt,.rtf,.ppt,.pptx,.pps,.ppsx,.odp,.xls,.xlsx,.csv,.ods,.txt,.log,.md,.json,.xml,.ps1,.sh,.bat,.conf,.ovpn,.cfg,.ini,.zip,.rar,.7z,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.mov'
@@ -43,6 +45,18 @@ export default function TutorialEdit() {
   const content = useRef<{ json: unknown; html: string }>({ json: null, html: '' })
   const dirty = useRef(false)
   const fileInput = useRef<HTMLInputElement>(null)
+  const importInput = useRef<HTMLInputElement>(null)
+  const [reviewMonths, setReviewMonths] = useState(6)
+  const [initial, setInitial] = useState<unknown>(null)
+  const [editorKey, setEditorKey] = useState(0)
+  const [recover, setRecover] = useState<DraftData | null>(null)
+  const [importing, setImporting] = useState<string | null>(null)
+  const draftKey = isNew ? (requestId ? `novo-${requestId}` : 'novo') : (loaded?.id ?? null)
+  const autosave = useAutosave(profile?.id, draftKey)
+  const latest = useRef<() => DraftData>(() => ({} as DraftData))
+  latest.current = () => ({ title, summary, categoryId, difficulty, tags, links, reviewMonths, json: content.current.json, html: content.current.html, savedAt: '' })
+  const checkedDraft = useRef(false)
+  const editorInit = useRef(false)
 
   useEffect(() => {
     supabase.from('kb_categories').select('*').order('sort_order').then(({ data }) => setCats(data ?? []))
@@ -65,8 +79,9 @@ export default function TutorialEdit() {
       if (!data) { setLoaded(null); return }
       const t = data as Tutorial
       setTitle(t.title); setSummary(t.summary ?? ''); setCategoryId(t.category_id ?? '')
-      setDifficulty(t.difficulty); setTags(t.tags)
+      setDifficulty(t.difficulty); setTags(t.tags); setReviewMonths(t.review_interval_months ?? 6)
       content.current = { json: t.content_json, html: t.content_html }
+      setInitial(t.content_json ?? (t.content_html || null))
       const [l, a] = await Promise.all([
         supabase.from('kb_links').select('*').eq('tutorial_id', t.id).order('sort_order'),
         supabase.from('kb_attachments').select('*').eq('tutorial_id', t.id).order('created_at'),
@@ -75,6 +90,47 @@ export default function TutorialEdit() {
       setLoaded(t)
     })()
   }, [code, isNew])
+
+  // Procura rascunho não salvo (aparelho ou nuvem) mais novo que a versão publicada
+  useEffect(() => {
+    if (checkedDraft.current || !draftKey || (!isNew && !loaded)) return
+    checkedDraft.current = true
+    autosave.load().then(d => {
+      if (!d || !d.savedAt) return
+      if (loaded && (d.savedAt <= loaded.updated_at || d.html === loaded.content_html && d.title === loaded.title)) return
+      if (isNew && !d.title && !(d.html || '').replace(/<[^>]+>/g, '').trim()) return
+      setRecover(d)
+    })
+  }, [draftKey, isNew, loaded, autosave])
+
+  const applyDraft = (d: DraftData) => {
+    setTitle(d.title); setSummary(d.summary); setCategoryId(d.categoryId); setDifficulty(d.difficulty)
+    setTags(d.tags); setLinks(d.links); setReviewMonths(d.reviewMonths || 6)
+    content.current = { json: d.json, html: d.html }
+    editorInit.current = false; setInitial(d.json ?? d.html); setEditorKey(k => k + 1)
+    dirty.current = true; setRecover(null)
+    toast.success('Rascunho recuperado')
+  }
+
+  const runImport = async (file?: File) => {
+    if (!file || !profile) return
+    setImporting('Abrindo documento…')
+    try {
+      const r = await importDocument(file, profile.id, setImporting)
+      const current = (content.current.html || '').replace(/<[^>]+>/g, '').trim()
+      const html = current ? `${content.current.html}<hr>${r.html}` : r.html
+      content.current = { json: null, html }
+      editorInit.current = false; setInitial(html); setEditorKey(k => k + 1)
+      if (!title.trim() && r.title) setTitle(r.title.slice(0, 200))
+      // guarda o arquivo original como anexo
+      setNewFiles(prev => [...prev, { key: crypto.randomUUID(), file }])
+      dirty.current = true
+      autosave.schedule(() => latest.current())
+      toast.success(`Documento importado${r.pages ? ` (${r.pages} páginas)` : ''}${r.images ? ` com ${r.images} imagens` : ''}. Revise a formatação.`, { description: 'O arquivo original foi adicionado aos anexos.' })
+    } catch (e) {
+      toast.error(errMsg(e))
+    } finally { setImporting(null) }
+  }
 
   useEffect(() => {
     const h = (e: BeforeUnloadEvent) => { if (dirty.current) { e.preventDefault() } }
@@ -86,7 +142,7 @@ export default function TutorialEdit() {
   if (!isNew && loaded === null) return <NotFound message="Tutorial não encontrado" />
   if (loaded && !(isModerator || loaded.author_id === profile?.id)) return <NotFound message="Você não tem permissão para editar este tutorial" />
 
-  const touch = () => { dirty.current = true }
+  const touch = () => { dirty.current = true; autosave.schedule(() => latest.current()) }
 
   const addFiles = (list: FileList | File[]) => {
     const arr = Array.from(list)
@@ -118,6 +174,7 @@ export default function TutorialEdit() {
         difficulty,
         tags,
         status,
+        review_interval_months: reviewMonths,
         content_json: content.current.json,
         content_html: content.current.html,
       }
@@ -161,6 +218,7 @@ export default function TutorialEdit() {
         if (ans.error) toast.error(`Tutorial salvo, mas não foi possível vincular ao pedido: ${errMsg(ans.error)}`)
       }
       dirty.current = false
+      await autosave.clear()
       toast.success(status === 'published' ? (request ? 'Publicado e pedido atendido!' : 'Tutorial publicado!') : 'Rascunho salvo')
       nav(`/t/${shortCode}`, { replace: true, state: { inApp: true } })
     } catch (e) {
@@ -181,6 +239,20 @@ export default function TutorialEdit() {
           </div>
         </div>
       </div>
+
+      {recover && (
+        <div className="card flex flex-col gap-3 p-4 ring-1 ring-accent-500/40 sm:flex-row sm:items-center">
+          <RotateCcw className="size-5 shrink-0 text-accent-600" />
+          <div className="min-w-0 flex-1 text-[14px]">
+            <div className="font-semibold text-neutral-900 dark:text-white">Encontramos um rascunho não salvo</div>
+            <div className="text-neutral-500">Salvo automaticamente {timeAgo(recover.savedAt)}{recover.title ? ` · “${recover.title}”` : ''}. Deseja continuar de onde parou?</div>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="ghost" onClick={() => { setRecover(null); autosave.clear() }}>Descartar</Button>
+            <Button size="sm" onClick={() => applyDraft(recover)}>Recuperar rascunho</Button>
+          </div>
+        </div>
+      )}
 
       {request && (
         <div className="card flex items-start gap-3 p-4 ring-1 ring-brand-orange/40">
@@ -244,20 +316,38 @@ export default function TutorialEdit() {
               onBlur={() => tagInput && addTag(tagInput)} />
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <CalendarClock className="size-4 text-neutral-400" />
+          <label className="text-[14px] text-neutral-600 dark:text-neutral-400" htmlFor="rev">Pedir revisão deste tutorial a cada</label>
+          <select id="rev" value={reviewMonths} onChange={e => { setReviewMonths(Number(e.target.value)); touch() }}
+            className="h-9 rounded-[9px] bg-neutral-900/[.06] px-2 text-[14px] font-medium outline-none dark:bg-white/10">
+            {[3, 6, 12, 24].map(m => <option key={m} value={m}>{m} meses</option>)}
+          </select>
+        </div>
       </section>
 
       {/* Editor */}
       <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-800 dark:text-neutral-200">Conteúdo</h2>
-          <span className="hidden items-center gap-1 text-xs text-neutral-400 sm:inline-flex"><Info className="size-3.5" />Cole ou arraste prints direto no texto. Listas numeradas viram passos automaticamente.</span>
+        <div className="mb-2 flex flex-wrap items-center justify-end gap-2">
+          <h2 className="mr-auto font-semibold text-neutral-800 dark:text-neutral-200">Conteúdo</h2>
+          <span className="hidden items-center gap-1 text-xs text-neutral-400 lg:inline-flex"><Info className="size-3.5" />Cole ou arraste prints direto no texto. Listas numeradas viram passos automaticamente.</span>
+          <Button size="sm" variant="tinted" type="button" onClick={() => importInput.current?.click()} disabled={!!importing}>
+            {importing ? <Loader2 className="size-4 animate-spin" /> : <FileUp className="size-4" />}Importar Word ou PDF
+          </Button>
+          <input ref={importInput} type="file" hidden accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={e => { runImport(e.target.files?.[0]); e.target.value = '' }} />
         </div>
+        {importing && <div className="mb-2 flex items-center gap-2 rounded-[10px] bg-accent-500/10 px-3 py-2 text-[13px] text-accent-700 dark:text-accent-300"><Loader2 className="size-4 animate-spin" />{importing}</div>}
         <RichEditor
-          initialContent={loaded?.content_json ?? (loaded?.content_html || null)}
+          key={editorKey}
+          initialContent={initial}
           userId={profile!.id}
           onChange={(json, html) => {
-            if (content.current.json !== null && content.current.html !== html) touch()
+            // a primeira chamada vem da criação do editor (não é edição do usuário)
+            if (!editorInit.current) { editorInit.current = true; content.current = { json, html }; return }
+            const changed = content.current.html !== html
             content.current = { json, html }
+            if (changed) touch()
           }}
         />
       </section>
@@ -308,7 +398,13 @@ export default function TutorialEdit() {
       {/* Ações */}
       <div className="material pb-safe fixed inset-x-0 bottom-0 z-30 shadow-[0_-0.5px_0_rgb(0_0_0/0.15)] sm:sticky sm:bottom-4 sm:rounded-2xl sm:shadow-xl sm:ring-[0.5px] sm:ring-black/10">
         <div className="flex items-center gap-2 p-3">
-          {progress && <span className="mr-auto hidden truncate pl-1 text-[13px] text-neutral-500 sm:block">{progress}</span>}
+          {progress ? <span className="mr-auto hidden truncate pl-1 text-[13px] text-neutral-500 sm:block">{progress}</span> : (
+            <span className="mr-auto flex min-w-0 items-center gap-1.5 pl-1 text-[12px] text-neutral-500">
+              {autosave.state === 'pending' && <><Loader2 className="size-3.5 animate-spin" /><span className="hidden sm:inline">Salvando rascunho…</span></>}
+              {autosave.state === 'saved' && autosave.savedAt && <><Check className="size-3.5 text-[#34c759]" /><span className="hidden sm:inline">Rascunho salvo {timeAgo(autosave.savedAt)}</span></>}
+              {autosave.state === 'offline' && <><CloudOff className="size-3.5" /><span className="hidden sm:inline">Salvo só neste aparelho</span></>}
+            </span>
+          )}
           <Button variant="ghost" onClick={() => nav(-1)} disabled={!!saving} className="hidden sm:inline-flex">Cancelar</Button>
           <Button variant="secondary" loading={saving === 'draft'} disabled={!!saving} onClick={() => save('draft')} className="flex-1 sm:flex-none"><Save className="size-4" />Rascunho</Button>
           <Button loading={saving === 'published'} disabled={!!saving} onClick={() => save('published')} className="flex-1 sm:flex-none"><Send className="size-4" />{saving && progress ? 'Salvando…' : 'Publicar'}</Button>
