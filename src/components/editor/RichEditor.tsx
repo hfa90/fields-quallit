@@ -126,9 +126,11 @@ function Popover({ icon, title, children, active }: { icon: React.ReactNode; tit
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
-    const h = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
+    const h = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', h, true)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('pointerdown', h, true); document.removeEventListener('keydown', esc) }
   }, [open])
   return (
     <div className="relative" ref={ref}>

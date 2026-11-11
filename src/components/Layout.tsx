@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Plus, LogOut, Moon, Sun, UserRound, Library, Search, Bell, Users, Settings } from 'lucide-react'
 import { useAuth } from '../lib/auth'
@@ -22,6 +22,25 @@ export default function Layout({ children }: { children: ReactNode }) {
   const nav = useNavigate()
   const loc = useLocation()
   const [menu, setMenu] = useState<'account' | 'notif' | null>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
+
+  // Fecha o menu aberto ao tocar/clicar em qualquer lugar fora dele ou ao apertar Esc
+  useEffect(() => {
+    if (!menu) return
+    const box = menu === 'notif' ? notifRef : accountRef
+    const outside = (e: Event) => { if (!box.current?.contains(e.target as Node)) setMenu(null) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null) }
+    const close = () => setMenu(null)
+    document.addEventListener('pointerdown', outside, true)
+    document.addEventListener('keydown', esc)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('pointerdown', outside, true)
+      document.removeEventListener('keydown', esc)
+      window.removeEventListener('resize', close)
+    }
+  }, [menu])
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [pending, setPending] = useState(0)
   const mac = /Mac|iPhone|iPad/.test(navigator.platform)
@@ -88,7 +107,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
 
             {/* Notificações */}
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <button onClick={() => (window.innerWidth < 768 ? nav('/notificacoes') : setMenu(m => m === 'notif' ? null : 'notif'))}
                 className="relative grid size-9 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-900/5 dark:text-neutral-300 dark:hover:bg-white/10" aria-label="Notificações">
                 <Bell className="size-5" />
@@ -96,7 +115,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               </button>
               {menu === 'notif' && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
                   <div className="absolute right-0 top-11 z-50 w-[380px] overflow-hidden rounded-[14px] bg-white shadow-2xl ring-[0.5px] ring-black/10 pop-in dark:bg-neutral-900 dark:ring-white/10">
                     <div className="flex items-center justify-between px-4 py-3">
                       <span className="text-[15px] font-semibold text-neutral-900 dark:text-white">Notificações</span>
@@ -114,13 +132,12 @@ export default function Layout({ children }: { children: ReactNode }) {
             <button onClick={() => setDark(d => !d)} className="hidden size-9 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-900/5 sm:grid dark:hover:bg-white/10" title="Alternar tema" aria-label="Alternar tema">
               {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
             </button>
-            <div className="relative hidden md:block">
+            <div className="relative hidden md:block" ref={accountRef}>
               <button onClick={() => setMenu(m => m === 'account' ? null : 'account')} className="ml-1 flex items-center rounded-full" aria-label="Menu da conta">
                 <Avatar name={profile?.full_name} email={profile?.email} url={profile?.avatar_url} size={30} />
               </button>
               {menu === 'account' && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
                   <div className="material absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-[12px] shadow-xl ring-[0.5px] ring-black/10 pop-in dark:ring-white/10">
                     <div className="px-4 py-3">
                       <div className="truncate text-[15px] font-semibold text-neutral-900 dark:text-white">{profile?.full_name}</div>
