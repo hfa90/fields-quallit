@@ -1,6 +1,6 @@
 // Service worker: app abre instantâneo e funciona com rede ruim em campo.
 // Dados (Supabase) nunca são cacheados aqui — sempre vêm da rede.
-const VERSION = 'fq-v9'
+const VERSION = 'fq-v10'
 const OFFLINE = 'fq-offline-media'
 const SHELL = `${VERSION}-shell`
 const scope = self.registration.scope
@@ -30,7 +30,7 @@ self.addEventListener('fetch', e => {
   if (url.pathname.includes('/downloads/')) return
 
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(res => {
       if (res.ok && (res.headers.get('content-type') || '').includes('text/html')) { const copy = res.clone(); caches.open(SHELL).then(c => c.put(scope, copy)) }
       return res
     }).catch(() => caches.match(scope)))

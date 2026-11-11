@@ -5,6 +5,7 @@ import { NotificationsProvider } from './lib/notifications'
 import Layout from './components/Layout'
 import { Spinner } from './components/ui'
 import { InstallPrompt } from './components/InstallApp'
+import ErrorBoundary from './components/ErrorBoundary'
 import Login from './pages/Login'
 import Pending from './pages/Pending'
 import ResetPassword from './pages/ResetPassword'
@@ -41,7 +42,7 @@ function Gate() {
   const nav = useNavigate()
   const openLink = useCallback((link: string) => nav(link.split('#')[0], { state: { inApp: true } }), [nav])
 
-  if (loc.pathname === '/android') return <Suspense fallback={<Spinner />}><AndroidApp /></Suspense>
+  if (loc.pathname === '/android') return <ErrorBoundary full><Suspense fallback={<Spinner />}><AndroidApp /></Suspense></ErrorBoundary>
   if (loading) return <div className="grid min-h-dvh place-items-center"><Spinner /></div>
   if (recovering) return <ResetPassword />
   if (!session) {
@@ -56,6 +57,7 @@ function Gate() {
   return (
     <NotificationsProvider onOpen={openLink}>
       <Layout>
+        <ErrorBoundary resetKey={loc.pathname}>
         <Suspense fallback={<Spinner />}>
           <Routes>
             <Route path="/login" element={<Navigate to={from && from !== '/login' ? from : '/'} replace />} />
@@ -76,6 +78,7 @@ function Gate() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </Layout>
     </NotificationsProvider>
   )

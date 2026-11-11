@@ -7,6 +7,7 @@ import App from './App'
 import { AuthProvider } from './lib/auth'
 import { entry } from './lib/entry'
 import { initNative } from './lib/native'
+import ErrorBoundary, { reloadForNewVersion } from './components/ErrorBoundary'
 
 // Retorno do redirecionamento do 404.html (GitHub Pages SPA)
 const redirect = sessionStorage.getItem('fq-redirect')
@@ -16,6 +17,9 @@ if (redirect) {
 }
 entry.path = window.location.pathname
 initNative()
+
+// Site atualizado enquanto o app estava aberto: busca a versão nova em vez de travar
+window.addEventListener('vite:preloadError', e => { e.preventDefault(); reloadForNewVersion() })
 
 // Comportamento de app nativo: sem zoom por pinça, gesto ou Ctrl+roda
 const stop = (e: Event) => e.preventDefault()
@@ -36,7 +40,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <AuthProvider>
-        <App />
+        <ErrorBoundary full>
+          <App />
+        </ErrorBoundary>
         <Toaster position="top-center" toastOptions={{ style: { fontFamily: 'var(--font-sans)', borderRadius: 14 } }} />
       </AuthProvider>
     </BrowserRouter>
