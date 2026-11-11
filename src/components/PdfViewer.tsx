@@ -46,7 +46,7 @@ export default function PdfViewer({ url }: { url: string }) {
 
   return (
     <div className="relative">
-      <div ref={box} className="h-[70vh] overflow-auto rounded-xl bg-neutral-200/70 p-3 dark:bg-neutral-800">
+      <div ref={box} className="allow-pan h-[70vh] overflow-auto rounded-xl bg-neutral-200/70 p-3 dark:bg-neutral-800">
         {error ? <p className="p-6 text-center text-[15px] text-neutral-600 dark:text-neutral-300">{error}</p>
           : !doc || !width ? <div className="grid h-full place-items-center"><Loader2 className="size-7 animate-spin text-neutral-400" /></div>
           : <div className="mx-auto flex flex-col items-center gap-3" style={{ width: width * zoom }}>

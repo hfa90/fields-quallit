@@ -15,6 +15,14 @@ if (redirect) {
 }
 entry.path = window.location.pathname
 
+// Comportamento de app nativo: sem zoom por pinça, gesto ou Ctrl+roda
+const stop = (e: Event) => e.preventDefault()
+document.addEventListener('gesturestart', stop, { passive: false })
+document.addEventListener('gesturechange', stop, { passive: false })
+document.addEventListener('gestureend', stop, { passive: false })
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault() }, { passive: false })
+document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault() }, { passive: false })
+
 // App instalável / offline (somente em produção)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
