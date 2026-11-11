@@ -114,3 +114,17 @@ export function errMsg(e: unknown) {
   if (e && typeof e === 'object' && 'message' in e) return String((e as { message: unknown }).message)
   return String(e)
 }
+
+/** Nível na comunidade a partir dos pontos */
+export function level(points: number) {
+  if (points >= 400) return { name: 'Mentor', next: null as number | null, color: '#fe811e' }
+  if (points >= 150) return { name: 'Especialista', next: 400, color: '#1a9ca9' }
+  if (points >= 50) return { name: 'Colaborador', next: 150, color: '#34c759' }
+  return { name: 'Iniciante', next: 50, color: '#8e8e93' }
+}
+
+/** Converte o trecho destacado da busca ([[termo]]) em HTML seguro com <mark> */
+export function highlight(snippet: string | null | undefined) {
+  const esc = (snippet ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return esc.replace(/\[\[/g, '<mark>').replace(/\]\]/g, '</mark>')
+}

@@ -1,6 +1,6 @@
 // Service worker: app abre instantâneo e funciona com rede ruim em campo.
 // Dados (Supabase) nunca são cacheados aqui — sempre vêm da rede.
-const VERSION = 'fq-v3'
+const VERSION = 'fq-v4'
 const SHELL = `${VERSION}-shell`
 const scope = self.registration.scope
 
@@ -34,4 +34,33 @@ self.addEventListener('fetch', e => {
       return res
     })))
   }
+})
+
+// ---------- Notificações push ----------
+self.addEventListener('push', e => {
+  let d = {}
+  try { d = e.data ? e.data.json() : {} } catch { d = { title: 'Fields', body: e.data && e.data.text() } }
+  e.waitUntil((async () => {
+    if (navigator.setAppBadge && d.badge) { try { await navigator.setAppBadge(d.badge) } catch {} }
+    await self.registration.showNotification(d.title || 'Fields', {
+      body: d.body || '',
+      icon: `${scope}icons/icon-192.png`,
+      badge: `${scope}icons/favicon-64.png`,
+      tag: d.tag,
+      renotify: !!d.tag,
+      data: { url: d.url || scope },
+    })
+  })())
+})
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close()
+  const url = (e.notification.data && e.notification.data.url) || scope
+  e.waitUntil((async () => {
+    const all = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+    for (const c of all) {
+      if (c.url.startsWith(scope) && 'focus' in c) { await c.focus(); if ('navigate' in c) await c.navigate(url); return }
+    }
+    await clients.openWindow(url)
+  })())
 })

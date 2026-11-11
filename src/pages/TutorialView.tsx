@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check } from 'lucide-react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -11,6 +11,9 @@ import TutorialContent, { type Heading } from '../components/TutorialContent'
 import ShareDialog from '../components/ShareDialog'
 import { AttachmentList, LinkList } from '../components/Attachments'
 import { Avatar, Button, CategoryIcon, Modal, SectionTitle, Spinner } from '../components/ui'
+import Comments, { Feedback } from '../components/Comments'
+import { useFavorites, useFollows } from '../lib/library'
+import type { CommentKind } from '../lib/types'
 import NotFound from './NotFound'
 
 type Full = Tutorial & {
@@ -33,6 +36,11 @@ export default function TutorialView() {
   const [deleting, setDeleting] = useState(false)
   const [allViewers, setAllViewers] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [outdated, setOutdated] = useState(0)
+  const [prompt, setPrompt] = useState<{ kind: CommentKind; n: number }>()
+  const { favs, toggle: toggleFav } = useFavorites()
+  const follows = useFollows()
+  const loc = useLocation()
 
   useEffect(() => {
     let alive = true
@@ -52,12 +60,20 @@ export default function TutorialView() {
       ])
       if (!alive) return
       setLinks(l.data ?? []); setFiles(a.data ?? [])
+      supabase.from('kb_comments').select('id', { count: 'exact', head: true }).eq('tutorial_id', data.id).eq('kind', 'outdated').eq('resolved', false)
+        .then(({ count }) => { if (alive) setOutdated(count ?? 0) })
       await supabase.rpc('kb_register_view', { p_tutorial: data.id, p_via_share: cameFromSharedLink(code) })
       const v = await supabase.rpc('kb_tutorial_viewers', { p_tutorial: data.id })
       if (alive) setViewers((v.data as Viewer[]) ?? [])
     })()
     return () => { alive = false; document.title = 'Fields Quallit' }
   }, [code])
+
+  // Abre direto nos comentários quando vem de uma notificação
+  const wantsComments = loc.hash === '#comentarios' || (loc.state as { hash?: string } | null)?.hash === 'comentarios'
+  useEffect(() => {
+    if (t && wantsComments) setTimeout(() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' }), 400)
+  }, [t, wantsComments])
 
   if (t === undefined) return <Spinner />
   if (t === null) return <NotFound message="Tutorial não encontrado ou sem permissão de acesso" />
@@ -100,6 +116,9 @@ export default function TutorialView() {
         </button>
         <div className="flex items-center gap-1">
           <IconBtn title="Imprimir / PDF" onClick={() => window.print()} className="hidden sm:grid"><Printer className="size-[18px]" /></IconBtn>
+          <IconBtn title={favs.has(t.id) ? 'Remover dos favoritos' : 'Favoritar'} onClick={() => toggleFav(t.id)} className={favs.has(t.id) ? 'text-brand-orange dark:text-brand-orange' : ''}>
+            <Bookmark className="size-[18px]" fill={favs.has(t.id) ? 'currentColor' : 'none'} />
+          </IconBtn>
           {canEdit && <IconBtn title="Editar" onClick={() => nav(`/t/${t.short_code}/editar`)}><Pencil className="size-[18px]" /></IconBtn>}
           {canEdit && <IconBtn title="Excluir" onClick={() => setConfirmDel(true)} className="text-[#ff3b30]"><Trash2 className="size-[18px]" /></IconBtn>}
           <IconBtn title="Compartilhar" onClick={quickShare}><Share className="size-[18px]" /></IconBtn>
@@ -121,12 +140,29 @@ export default function TutorialView() {
             <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-neutral-900 sm:text-[36px] dark:text-white">{t.title}</h1>
             {t.summary && <p className="mt-3 text-[17px] leading-relaxed text-neutral-500 sm:text-[19px]">{t.summary}</p>}
             <div className="mt-5 flex items-center gap-3">
-              <Avatar name={t.author?.full_name} email={t.author?.email} url={t.author?.avatar_url} size={36} />
-              <div className="min-w-0 text-[13px] leading-tight">
-                <div className="truncate text-[15px] font-medium text-neutral-900 dark:text-neutral-100">{t.author?.full_name}</div>
+              <Link to={`/pessoa/${t.author_id}`}><Avatar name={t.author?.full_name} email={t.author?.email} url={t.author?.avatar_url} size={36} /></Link>
+              <div className="min-w-0 flex-1 text-[13px] leading-tight">
+                <Link to={`/pessoa/${t.author_id}`} className="block truncate text-[15px] font-medium text-neutral-900 hover:underline dark:text-neutral-100">{t.author?.full_name}</Link>
                 <div className="mt-0.5 text-neutral-500">{fmtDate(t.created_at)} · {readingTime(t.content_html)} min de leitura · {viewers?.length ?? '–'} {viewers?.length === 1 ? 'leitor' : 'leitores'}</div>
               </div>
+              {t.author_id !== profile?.id && (
+                <button onClick={() => follows.toggle({ author: t.author_id }, t.author?.full_name ?? 'autor')}
+                  className={cn('no-print press inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium',
+                    follows.isFollowing({ author: t.author_id }) ? 'bg-neutral-900/[.06] text-neutral-700 dark:bg-white/10 dark:text-neutral-300' : 'bg-accent-500/10 text-accent-700 dark:text-accent-300')}>
+                  {follows.isFollowing({ author: t.author_id }) ? <UserCheck className="size-3.5" /> : <UserPlus className="size-3.5" />}
+                  {follows.isFollowing({ author: t.author_id }) ? 'Seguindo' : 'Seguir'}
+                </button>
+              )}
             </div>
+            {outdated > 0 && (
+              <button onClick={() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' })}
+                className="no-print mt-5 flex w-full items-center gap-3 rounded-[12px] bg-brand-orange/10 px-4 py-3 text-left">
+                <AlertTriangle className="size-5 shrink-0 text-brand-orange" />
+                <span className="flex-1 text-[14px] text-neutral-800 dark:text-neutral-200">
+                  <b>{outdated} {outdated === 1 ? 'colega reportou' : 'colegas reportaram'}</b> que algum passo pode estar desatualizado. Veja os comentários antes de seguir.
+                </span>
+              </button>
+            )}
             {t.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {t.tags.map(tag => <Link key={tag} to={`/?q=${encodeURIComponent(tag)}`} className="rounded-md bg-neutral-900/[.05] px-2 py-0.5 text-[13px] text-neutral-600 hover:text-neutral-900 dark:bg-white/10 dark:text-neutral-400">{tag}</Link>)}
@@ -142,6 +178,10 @@ export default function TutorialView() {
           <p className="no-print mx-auto mt-10 max-w-[720px] text-[13px] text-neutral-400">
             Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
           </p>
+          <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">
+            <Feedback tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
+            <Comments tutorialId={t.id} ownerId={t.author_id} prompt={prompt} />
+          </div>
         </div>
 
         {/* Lateral */}

@@ -49,6 +49,19 @@ export const Callout = Node.create({
   },
 })
 
+/** Vídeo curto gravado no celular (armazenado no Supabase Storage) */
+export const Video = Node.create({
+  name: 'video',
+  group: 'block',
+  atom: true,
+  draggable: true,
+  addAttributes() { return { src: { default: null } } },
+  parseHTML() { return [{ tag: 'video[src]' }] },
+  renderHTML({ HTMLAttributes }) {
+    return ['video', mergeAttributes(HTMLAttributes, { controls: 'true', playsinline: 'true', preload: 'metadata', class: 'kb-video' })]
+  },
+})
+
 export function buildExtensions(placeholder?: string): Extensions {
   return [
     StarterKit.configure({
@@ -68,6 +81,7 @@ export function buildExtensions(placeholder?: string): Extensions {
     CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'plaintext' }),
     Typography,
     Callout,
+    Video,
     Placeholder.configure({
       placeholder: ({ node }) => {
         if (node.type.name === 'heading') return 'Título da seção'

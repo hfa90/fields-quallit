@@ -1,11 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Plus, ShieldCheck, LogOut, Moon, Sun, UserRound, Library, FileText } from 'lucide-react'
+import { Plus, LogOut, Moon, Sun, UserRound, Library, Search, Bell, Users, Settings } from 'lucide-react'
 import { useAuth } from '../lib/auth'
+import { useNotifications } from '../lib/notifications'
 import { supabase } from '../lib/supabase'
 import { ROLE_LABEL, cn } from '../lib/utils'
 import { Avatar } from './ui'
 import { QuallitMark } from './QuallitLogo'
+import { SearchPalette, openSearch } from './Search'
+import NotificationList from './NotificationList'
 
 export function Logo({ size = 30 }: { size?: number }) {
   return <QuallitMark size={size} />
@@ -13,11 +16,13 @@ export function Logo({ size = 30 }: { size?: number }) {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { profile, isAdmin, signOut } = useAuth()
+  const { unread, markRead } = useNotifications()
   const nav = useNavigate()
   const loc = useLocation()
-  const [menu, setMenu] = useState(false)
+  const [menu, setMenu] = useState<'account' | 'notif' | null>(null)
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [pending, setPending] = useState(0)
+  const mac = /Mac|iPhone|iPad/.test(navigator.platform)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
@@ -31,18 +36,19 @@ export default function Layout({ children }: { children: ReactNode }) {
       .then(({ count }) => setPending(count ?? 0))
   }, [isAdmin, loc.pathname])
 
+  useEffect(() => { setMenu(null) }, [loc.pathname])
+
   const navCls = ({ isActive }: { isActive: boolean }) => cn(
     'inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[14px] font-medium transition-colors',
     isActive ? 'bg-neutral-900/[.06] text-neutral-900 dark:bg-white/10 dark:text-white' : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white',
   )
-
   const editing = loc.pathname === '/novo' || loc.pathname.endsWith('/editar')
 
   return (
     <div className="min-h-dvh">
       <header className="no-print material hairline-b pt-safe sticky top-0 z-40">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:px-6">
-          <Link to="/" className="mr-3 flex items-center gap-2.5">
+          <Link to="/" className="mr-2 flex shrink-0 items-center gap-2.5">
             <Logo />
             <span className="leading-none">
               <span className="block text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">Fields</span>
@@ -50,9 +56,10 @@ export default function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             <NavLink to="/" end className={navCls}>Biblioteca</NavLink>
-            <NavLink to="/meus" className={navCls}>Meus tutoriais</NavLink>
+            <NavLink to="/comunidade" className={navCls}>Comunidade</NavLink>
+            <NavLink to="/meus" className={navCls}>Meus</NavLink>
             {isAdmin && (
               <NavLink to="/admin" className={navCls}>
                 Administração
@@ -62,20 +69,53 @@ export default function Layout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-1">
-            <button onClick={() => nav('/novo')}
-              className="press hidden h-8 items-center gap-1 rounded-lg bg-accent-600 px-3 text-[14px] font-medium text-white hover:bg-accent-700 md:inline-flex dark:bg-accent-500">
-              <Plus className="size-4" strokeWidth={2.4} />Novo tutorial
+            <button onClick={() => openSearch()}
+              className="hidden h-9 w-56 items-center gap-2 rounded-[10px] bg-neutral-900/[.06] px-3 text-[14px] text-neutral-500 transition hover:bg-neutral-900/[.09] md:flex dark:bg-white/10">
+              <Search className="size-4" /><span className="flex-1 text-left">Buscar</span>
+              <kbd className="text-[11px] text-neutral-400">{mac ? '⌘' : 'Ctrl'} K</kbd>
             </button>
-            <button onClick={() => setDark(d => !d)} className="grid size-9 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-900/5 dark:hover:bg-white/10" title="Alternar tema" aria-label="Alternar tema">
+            <button onClick={() => openSearch()} className="grid size-9 place-items-center rounded-lg text-neutral-600 md:hidden dark:text-neutral-300" aria-label="Buscar">
+              <Search className="size-5" />
+            </button>
+            <button onClick={() => nav('/novo')}
+              className="press ml-1 hidden h-9 items-center gap-1 rounded-[10px] bg-accent-600 px-3 text-[14px] font-medium text-white hover:bg-accent-700 md:inline-flex dark:bg-accent-500">
+              <Plus className="size-4" strokeWidth={2.4} />Novo
+            </button>
+
+            {/* Notificações */}
+            <div className="relative">
+              <button onClick={() => (window.innerWidth < 768 ? nav('/notificacoes') : setMenu(m => m === 'notif' ? null : 'notif'))}
+                className="relative grid size-9 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-900/5 dark:text-neutral-300 dark:hover:bg-white/10" aria-label="Notificações">
+                <Bell className="size-5" />
+                {unread > 0 && <span className="absolute right-0.5 top-0.5 grid h-[17px] min-w-[17px] place-items-center rounded-full bg-[#ff3b30] px-1 text-[10px] font-semibold text-white ring-2 ring-[#f5f5f7] dark:ring-black">{unread > 99 ? '99+' : unread}</span>}
+              </button>
+              {menu === 'notif' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
+                  <div className="absolute right-0 top-11 z-50 w-[380px] overflow-hidden rounded-[14px] bg-white shadow-2xl ring-[0.5px] ring-black/10 pop-in dark:bg-neutral-900 dark:ring-white/10">
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-[15px] font-semibold text-neutral-900 dark:text-white">Notificações</span>
+                      {unread > 0 && <button onClick={() => markRead()} className="text-[13px] font-medium text-accent-600 dark:text-accent-400">Marcar todas como lidas</button>}
+                    </div>
+                    <div className="max-h-[60vh] overflow-y-auto border-t border-neutral-200/70 dark:border-neutral-800"><NotificationList compact onNavigate={() => setMenu(null)} /></div>
+                    <Link to="/notificacoes" className="flex items-center justify-center gap-1.5 border-t border-neutral-200/70 py-2.5 text-[13px] font-medium text-accent-600 dark:border-neutral-800 dark:text-accent-400">
+                      <Settings className="size-3.5" />Ver todas e configurar
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button onClick={() => setDark(d => !d)} className="hidden size-9 place-items-center rounded-lg text-neutral-500 hover:bg-neutral-900/5 sm:grid dark:hover:bg-white/10" title="Alternar tema" aria-label="Alternar tema">
               {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
             </button>
             <div className="relative hidden md:block">
-              <button onClick={() => setMenu(m => !m)} className="ml-1 flex items-center rounded-full" aria-label="Menu da conta">
+              <button onClick={() => setMenu(m => m === 'account' ? null : 'account')} className="ml-1 flex items-center rounded-full" aria-label="Menu da conta">
                 <Avatar name={profile?.full_name} email={profile?.email} url={profile?.avatar_url} size={30} />
               </button>
-              {menu && (
+              {menu === 'account' && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />
+                  <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
                   <div className="material absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-[12px] shadow-xl ring-[0.5px] ring-black/10 pop-in dark:ring-white/10">
                     <div className="px-4 py-3">
                       <div className="truncate text-[15px] font-semibold text-neutral-900 dark:text-white">{profile?.full_name}</div>
@@ -83,8 +123,9 @@ export default function Layout({ children }: { children: ReactNode }) {
                       <div className="mt-0.5 text-[12px] font-medium text-accent-600 dark:text-accent-400">{profile && ROLE_LABEL[profile.role]}</div>
                     </div>
                     <div className="hairline-t">
-                      <MenuItem onClick={() => { setMenu(false); nav('/perfil') }} icon={<UserRound className="size-4" />}>Meu perfil</MenuItem>
-                      <MenuItem onClick={() => { setMenu(false); signOut() }} icon={<LogOut className="size-4" />} danger>Sair</MenuItem>
+                      <MenuItem onClick={() => nav(`/pessoa/${profile?.id}`)} icon={<Users className="size-4" />}>Meu perfil público</MenuItem>
+                      <MenuItem onClick={() => nav('/perfil')} icon={<UserRound className="size-4" />}>Conta e preferências</MenuItem>
+                      <MenuItem onClick={() => { setMenu(null); signOut() }} icon={<LogOut className="size-4" />} danger>Sair</MenuItem>
                     </div>
                   </div>
                 </>
@@ -99,17 +140,20 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Barra de abas inferior (celular) */}
       {!editing && (
         <nav className="no-print material hairline-t pb-safe fixed inset-x-0 bottom-0 z-40 md:hidden">
-          <div className="mx-auto grid h-[56px] max-w-md" style={{ gridTemplateColumns: `repeat(${isAdmin ? 5 : 4}, 1fr)` }}>
+          <div className="mx-auto grid h-[56px] max-w-md grid-cols-5">
             <Tab to="/" end icon={Library} label="Biblioteca" />
-            <Tab to="/meus" icon={FileText} label="Meus" />
-            <button onClick={() => nav('/novo')} className="press flex flex-col items-center justify-center" aria-label="Novo tutorial">
-              <span className="grid size-10 place-items-center rounded-full bg-brand-orange text-white shadow-sm"><Plus className="size-5" strokeWidth={2.5} /></span>
+            <button onClick={() => openSearch()} className="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-500">
+              <Search className="size-6" strokeWidth={1.8} />Buscar
             </button>
-            {isAdmin && <Tab to="/admin" icon={ShieldCheck} label="Admin" badge={pending} />}
-            <Tab to="/perfil" icon={UserRound} label="Perfil" />
+            <button onClick={() => nav('/novo')} className="press flex flex-col items-center justify-center" aria-label="Novo tutorial">
+              <span className="grid size-11 place-items-center rounded-full bg-brand-orange text-white shadow-[0_4px_12px_-2px_rgb(254_129_30/0.6)]"><Plus className="size-6" strokeWidth={2.5} /></span>
+            </button>
+            <Tab to="/comunidade" icon={Users} label="Comunidade" />
+            <Tab to="/perfil" icon={UserRound} label="Perfil" badge={isAdmin ? pending : 0} />
           </div>
         </nav>
       )}
+      <SearchPalette />
     </div>
   )
 }

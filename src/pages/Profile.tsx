@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Camera, LogOut, ChevronRight, ShieldCheck } from 'lucide-react'
+import { Camera, LogOut, ChevronRight, ShieldCheck, Bell, Library, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -86,6 +86,20 @@ export default function ProfilePage() {
         {pw && <Button className="mt-3 w-full" loading={pwBusy} onClick={changePw}>Alterar senha</Button>}
         <p className="mt-2 px-4 text-[13px] text-neutral-500">A senha é a mesma do Inventário Quallit.</p>
       </section>
+
+      <div className="card divide-y divide-neutral-200/70 overflow-hidden dark:divide-neutral-800">
+        {([
+          [UserRound, '#1a9ca9', 'Meu perfil público', `/pessoa/${profile.id}`],
+          [Library, '#fe811e', 'Minha biblioteca', '/meus'],
+          [Bell, '#ff3b30', 'Notificações', '/notificacoes'],
+        ] as const).map(([I, c, l, to]) => (
+          <button key={to} onClick={() => nav(to)} className={`${row} w-full text-left`}>
+            <span className="grid size-7 place-items-center rounded-[7px] text-white" style={{ background: c }}><I className="size-4" /></span>
+            <span className="flex-1 text-[16px] text-neutral-900 dark:text-white">{l}</span>
+            <ChevronRight className="size-5 text-neutral-300 dark:text-neutral-600" />
+          </button>
+        ))}
+      </div>
 
       {isAdmin && (
         <div className="card overflow-hidden md:hidden">

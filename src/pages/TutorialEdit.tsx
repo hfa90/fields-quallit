@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { HandHelping, Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -21,6 +21,9 @@ export default function TutorialEdit() {
   const isNew = !code
   const nav = useNavigate()
   const { profile, isModerator } = useAuth()
+  const [sp] = useSearchParams()
+  const requestId = sp.get('pedido')
+  const [request, setRequest] = useState<{ id: string; title: string; details: string | null; category_id: string | null } | null>(null)
 
   const [loaded, setLoaded] = useState<Tutorial | null | undefined>(isNew ? null : undefined)
   const [cats, setCats] = useState<Category[]>([])
@@ -44,6 +47,16 @@ export default function TutorialEdit() {
   useEffect(() => {
     supabase.from('kb_categories').select('*').order('sort_order').then(({ data }) => setCats(data ?? []))
   }, [])
+
+  useEffect(() => {
+    if (!requestId || !isNew) return
+    supabase.from('kb_requests').select('id,title,details,category_id').eq('id', requestId).maybeSingle().then(({ data }) => {
+      if (!data) return
+      setRequest(data)
+      setTitle(t => t || data.title.replace(/\?$/, ''))
+      setCategoryId(c => c || data.category_id || '')
+    })
+  }, [requestId, isNew])
 
   useEffect(() => {
     if (isNew) return
@@ -143,8 +156,12 @@ export default function TutorialEdit() {
         if (ins.error) throw ins.error
       }
 
+      if (request && status === 'published') {
+        const ans = await supabase.rpc('kb_answer_request', { p_request: request.id, p_tutorial: id })
+        if (ans.error) toast.error(`Tutorial salvo, mas não foi possível vincular ao pedido: ${errMsg(ans.error)}`)
+      }
       dirty.current = false
-      toast.success(status === 'published' ? 'Tutorial publicado! 🎉' : 'Rascunho salvo')
+      toast.success(status === 'published' ? (request ? 'Publicado e pedido atendido!' : 'Tutorial publicado!') : 'Rascunho salvo')
       nav(`/t/${shortCode}`, { replace: true, state: { inApp: true } })
     } catch (e) {
       toast.error(`Erro ao salvar: ${errMsg(e)}`)
@@ -164,6 +181,17 @@ export default function TutorialEdit() {
           </div>
         </div>
       </div>
+
+      {request && (
+        <div className="card flex items-start gap-3 p-4 ring-1 ring-brand-orange/40">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-orange/15 text-brand-orange"><HandHelping className="size-4" /></span>
+          <div className="min-w-0 text-[14px]">
+            <div className="font-semibold text-neutral-900 dark:text-white">Respondendo ao pedido: {request.title}</div>
+            {request.details && <div className="mt-0.5 text-neutral-500">{request.details}</div>}
+            <div className="mt-1 text-[13px] text-neutral-500">Ao publicar, o pedido é marcado como atendido e quem pediu é avisado.</div>
+          </div>
+        </div>
+      )}
 
       {/* Informações */}
       <section className="space-y-5 card p-5 sm:p-6">

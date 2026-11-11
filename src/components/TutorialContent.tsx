@@ -13,7 +13,12 @@ DOMPurify.addHook('uponSanitizeElement', (node, data) => {
     if (!YT.test(src)) node.parentNode?.removeChild(node)
   }
 })
+const MEDIA = /^https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/object\/public\//
 DOMPurify.addHook('afterSanitizeAttributes', node => {
+  if (node.tagName === 'VIDEO') {
+    if (!MEDIA.test(node.getAttribute('src') || '')) { node.parentNode?.removeChild(node); return }
+    node.setAttribute('controls', ''); node.setAttribute('playsinline', ''); node.setAttribute('preload', 'metadata')
+  }
   if (node.tagName === 'A') {
     node.setAttribute('target', '_blank')
     node.setAttribute('rel', 'noopener noreferrer nofollow')
@@ -23,7 +28,7 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
 function sanitize(html: string) {
   return DOMPurify.sanitize(html, {
     ADD_TAGS: ['iframe'],
-    ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow', 'data-callout', 'data-type', 'data-checked', 'data-youtube-video', 'colspan', 'rowspan', 'colwidth', 'target', 'start'],
+    ADD_ATTR: ['controls', 'playsinline', 'preload', 'allowfullscreen', 'frameborder', 'allow', 'data-callout', 'data-type', 'data-checked', 'data-youtube-video', 'colspan', 'rowspan', 'colwidth', 'target', 'start'],
   })
 }
 

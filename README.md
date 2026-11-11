@@ -9,7 +9,13 @@ Biblioteca de soluções do time de campo: tutoriais com editor rico, anexos (PD
 - **Anexos** privados (download por URL assinada) com pré‑visualização de PDF, imagem, vídeo e texto; Office via Microsoft Viewer (opcional).
 - **Link curto** `…/t/AbC123` + WhatsApp, Teams, e‑mail e QR Code.
 - **Visualizado por**: lista de quem abriu, quando, quantas vezes e se veio por link compartilhado.
-- **Busca** em texto completo (português), filtros por categoria e ordenação.
+- **Busca inteligente** (Ctrl K ou /): ignora acentos, tolera erros de digitação, completa palavras enquanto digita e procura em títulos, conteúdo, comandos, anexos, links, comentários, pedidos e pessoas, com trecho destacado. Buscas sem resultado viram sugestão de pedido.
+- **Comunidade**: pedidos de tutorial com votos ("eu também preciso"), respostas, ranking com pontos e níveis, perfis públicos e feed de atividade.
+- **Feedback**: "Funcionou para você?" 👍/👎 e comentários por tipo (comentário, passo desatualizado, dica, pergunta) com respostas e "resolvido". O autor é avisado na hora.
+- **Favoritos e vistos recentemente**, seguir categorias e pessoas.
+- **Notificações** no app (tempo real) e **push no celular** (Web Push via Edge Function `kb-push`; no iPhone requer o app instalado, iOS 16.4+).
+- **Captura no celular**: foto pela câmera com marcação (setas, círculos, retângulos, caneta, texto) e vídeo curto (até 50 MB).
+- **App instalável (PWA)**: popup automático no celular explicando como instalar.
 - **Acesso multinível**:
 
 | Nível | Pode |

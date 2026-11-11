@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { EditorContent, useEditor, type Editor } from '@tiptap/react'
 import {
   Bold, Italic, Underline, Strikethrough, Code, Highlighter, List, ListOrdered, ListChecks, Quote, SquareCode,
-  Minus, Link2, ImagePlus, SquarePlay as YoutubeIcon, Table as TableIcon, Undo2, Redo2, AlignLeft, AlignCenter,
+  Minus, Link2, ImagePlus, Camera, Video as VideoIcon, PenTool, SquarePlay as YoutubeIcon, Table as TableIcon, Undo2, Redo2, AlignLeft, AlignCenter,
   AlignRight, AlignJustify, Eraser, LayoutTemplate, Palette, MessageSquareWarning, Rows3, Columns3, Trash2, Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { buildExtensions, CALLOUTS, type CalloutType } from './extensions'
 import { TEMPLATES } from './templates'
-import { uploadImage } from '../../lib/upload'
+import { uploadImage, uploadVideo } from '../../lib/upload'
+
+const Annotator = lazy(() => import('./Annotator'))
 import { cn, errMsg } from '../../lib/utils'
 import { Button, Modal, inputCls } from '../ui'
 
@@ -24,6 +26,18 @@ interface Props {
 
 export default function RichEditor({ initialContent, userId, onChange }: Props) {
   const [uploading, setUploading] = useState(0)
+  const [annot, setAnnot] = useState<File | string | null>(null)
+
+  const handleVideo = async (file?: File) => {
+    if (!file) return
+    setUploading(n => n + 1)
+    const t = toast.loading('Enviando vídeo…')
+    try {
+      const src = await uploadVideo(file, userId)
+      editorRef.current?.chain().focus().insertContent({ type: 'video', attrs: { src } }).run()
+      toast.success('Vídeo inserido', { id: t })
+    } catch (e) { toast.error(errMsg(e), { id: t }) } finally { setUploading(n => n - 1) }
+  }
   const editorRef = useRef<Editor | null>(null)
 
   const handleFiles = async (files: File[], pos?: number) => {
@@ -76,7 +90,20 @@ export default function RichEditor({ initialContent, userId, onChange }: Props) 
   if (!editor) return null
   return (
     <div className="card">
-      <Toolbar editor={editor} onImages={files => handleFiles(files)} uploading={uploading > 0} />
+      <Toolbar editor={editor} onImages={files => handleFiles(files)} uploading={uploading > 0}
+        onAnnotate={src => setAnnot(src)} onVideo={handleVideo} />
+      {annot && (
+        <Suspense fallback={null}>
+          <Annotator source={annot} onCancel={() => setAnnot(null)} onDone={async file => {
+            const src = await uploadImage(file, userId)
+            const ed = editorRef.current!
+            if (typeof annot === 'string' && ed.isActive('image')) ed.chain().focus().updateAttributes('image', { src }).run()
+            else ed.chain().focus().setImage({ src, alt: 'Foto' }).run()
+            setAnnot(null)
+            toast.success('Imagem inserida')
+          }} />
+        </Suspense>
+      )}
       <EditorContent editor={editor} />
     </div>
   )
@@ -115,8 +142,10 @@ function Popover({ icon, title, children, active }: { icon: React.ReactNode; tit
   )
 }
 
-function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f: File[]) => void; uploading: boolean }) {
+function Toolbar({ editor, onImages, uploading, onAnnotate, onVideo }: { editor: Editor; onImages: (f: File[]) => void; uploading: boolean; onAnnotate: (src: File | string) => void; onVideo: (f?: File) => void }) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const camRef = useRef<HTMLInputElement>(null)
+  const vidRef = useRef<HTMLInputElement>(null)
   const [linkOpen, setLinkOpen] = useState(false)
   const [ytOpen, setYtOpen] = useState(false)
   const [tplOpen, setTplOpen] = useState(false)
@@ -148,6 +177,7 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
 
   const inTable = editor.isActive('table')
   const inCode = editor.isActive('codeBlock')
+  const inImage = editor.isActive('image')
 
   return (
     <div className="material hairline-b sticky top-[calc(56px+env(safe-area-inset-top))] z-20 rounded-t-2xl">
@@ -227,6 +257,10 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
           {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
         </TB>
         <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={e => { onImages(Array.from(e.target.files ?? [])); e.target.value = '' }} />
+        <TB title="Tirar foto e marcar (câmera)" onClick={() => camRef.current?.click()}><Camera className="size-4" /></TB>
+        <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={e => { const f = e.target.files?.[0]; if (f) onAnnotate(f); e.target.value = '' }} />
+        <TB title="Gravar ou enviar vídeo curto (até 50 MB)" onClick={() => vidRef.current?.click()}><VideoIcon className="size-4" /></TB>
+        <input ref={vidRef} type="file" accept="video/*" capture="environment" hidden onChange={e => { onVideo(e.target.files?.[0]); e.target.value = '' }} />
         <TB title="Vídeo do YouTube" onClick={() => { setUrl(''); setYtOpen(true) }}><YoutubeIcon className="size-4" /></TB>
         <TB title="Inserir tabela" active={inTable} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><TableIcon className="size-4" /></TB>
         <Sep />
@@ -237,8 +271,12 @@ function Toolbar({ editor, onImages, uploading }: { editor: Editor; onImages: (f
         </button>
       </div>
 
-      {(inTable || inCode) && (
+      {(inTable || inCode || inImage) && (
         <div className="flex flex-wrap items-center gap-1 border-t border-neutral-100 px-3 py-1.5 text-xs dark:border-neutral-800">
+          {inImage && <>
+            <span className="mr-1 font-medium text-neutral-500">Imagem:</span>
+            <Button size="sm" variant="tinted" type="button" onClick={() => onAnnotate(editor.getAttributes('image').src)}><PenTool className="size-3.5" />Marcar com setas e círculos</Button>
+          </>}
           {inTable && <>
             <span className="mr-1 font-medium text-neutral-500">Tabela:</span>
             <Button size="sm" variant="ghost" type="button" onClick={() => editor.chain().focus().addRowAfter().run()}><Rows3 className="size-3.5" />+ Linha</Button>
