@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MoveUpRight, Circle, Square, PenLine, Type, Undo2, Trash2, X, Check, Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { Portal } from '../ui'
 
 type Tool = 'arrow' | 'ellipse' | 'rect' | 'pen' | 'text'
 type Shape =
@@ -133,7 +134,7 @@ export default function Annotator({ source, onCancel, onDone }: { source: File |
     }
   }
 
-  return (
+  return (<Portal>
     <div className="fixed inset-0 z-[80] flex flex-col bg-black text-white">
       <div className="pt-safe flex items-center justify-between gap-2 px-3 py-2">
         <button onClick={onCancel} className="flex h-10 items-center gap-1 rounded-full px-3 text-[15px] text-white/90 hover:bg-white/10"><X className="size-5" />Cancelar</button>
@@ -177,5 +178,5 @@ export default function Annotator({ source, onCancel, onDone }: { source: File |
         </div>
       </div>
     </div>
-  )
+  </Portal>)
 }

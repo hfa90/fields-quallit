@@ -1,4 +1,10 @@
 import { useEffect, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+
+/** Renderiza no <body>: janelas e camadas fixas não ficam presas a transform/overflow dos pais */
+export function Portal({ children }: { children: ReactNode }) {
+  return createPortal(children, document.body)
+}
 import { X, Loader2 } from 'lucide-react'
 import { CATEGORY_ICONS } from './categoryIcons'
 import { avatarColor, cn, initials } from '../lib/utils'
@@ -55,7 +61,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
     return () => { window.removeEventListener('keydown', h); document.body.style.overflow = prev }
   }, [open, onClose])
   if (!open) return null
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <div className="absolute inset-0 bg-black/40 animate-in" onClick={onClose} />
       <div className={cn('sheet-in relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[14px] bg-white shadow-2xl dark:bg-neutral-900 sm:rounded-[14px]', wide ? 'sm:max-w-4xl' : 'sm:max-w-md')}>
@@ -67,7 +73,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
         <div className="overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </div>
-  )
+  , document.body)
 }
 
 export function CategoryIcon({ name, className, style }: { name?: string | null; className?: string; style?: React.CSSProperties }) {

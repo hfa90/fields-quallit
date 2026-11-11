@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Download, Eye, FileText, FileImage, FileVideo, FileArchive, FileSpreadsheet, Presentation, File, ExternalLink, Loader2, Globe } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
@@ -6,6 +6,8 @@ import type { Attachment, LinkItem } from '../lib/types'
 import { FILE_STYLE, fileKind, fileSize, hostOf, errMsg, type FileKind } from '../lib/utils'
 import { Modal } from './ui'
 import { offlineAttachmentUrl } from '../lib/offline'
+
+const PdfViewer = lazy(() => import('./PdfViewer'))
 
 export function FileIcon({ kind, className }: { kind: FileKind; className?: string }) {
   const I = { pdf: FileText, word: FileText, powerpoint: Presentation, excel: FileSpreadsheet, image: FileImage, video: FileVideo, archive: FileArchive, text: FileText, other: File }[kind]
@@ -87,7 +89,7 @@ function PreviewModal({ a, url, onClose, onDownload }: { a: Attachment; url: str
   return (
     <Modal open onClose={onClose} title={a.file_name} wide>
       <div className="space-y-3">
-        {k === 'pdf' && <iframe src={url} title={a.file_name} className="h-[70vh] w-full rounded-xl border border-neutral-200 dark:border-neutral-800" />}
+        {k === 'pdf' && <Suspense fallback={<div className="h-[70vh] animate-pulse rounded-xl bg-neutral-100 dark:bg-neutral-800" />}><PdfViewer url={url} /></Suspense>}
         {k === 'image' && <img src={url} alt={a.file_name} className="mx-auto max-h-[70vh] rounded-xl" />}
         {k === 'video' && <video src={url} controls className="w-full rounded-xl" />}
         {k === 'text' && <iframe src={url} title={a.file_name} className="h-[60vh] w-full rounded-xl border border-neutral-200 bg-white dark:border-neutral-800" />}

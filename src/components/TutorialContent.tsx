@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DOMPurify from 'dompurify'
 import { X } from 'lucide-react'
+import { Portal } from './ui'
 import { lowlight, CALLOUTS, type CalloutType } from './editor/shared'
 
 export interface Heading { id: string; text: string; level: number }
@@ -133,12 +134,12 @@ export default function TutorialContent({ html, onHeadings }: { html: string; on
   return (
     <>
       <div ref={ref} className="tutorial-content" dangerouslySetInnerHTML={{ __html: clean }} />
-      {zoom && (
+      {zoom && (<Portal>
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/85 p-4 backdrop-blur" onClick={() => setZoom(null)}>
           <button className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Fechar"><X className="size-6" /></button>
           <img src={zoom} alt="" className="max-h-full max-w-full rounded-lg shadow-2xl pop-in" />
         </div>
-      )}
+      </Portal>)}
     </>
   )
 }
