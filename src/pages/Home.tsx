@@ -9,6 +9,7 @@ import { cn, timeAgo } from '../lib/utils'
 import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/library'
 import TutorialCard, { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { HeroSearch } from '../components/Search'
+import AndroidAppCard from '../components/AndroidAppCard'
 import { TrailCard, type Trail } from './TrailPage'
 import { useNavigate } from 'react-router-dom'
 
@@ -83,6 +84,8 @@ export default function Home() {
       </div>
 
       <HeroSearch />
+
+      <AndroidAppCard />
 
       {recent.length > 0 && (
         <Shelf title="Continuar lendo" action={<MoreLink to="/meus?aba=recentes">Ver tudo</MoreLink>}>
