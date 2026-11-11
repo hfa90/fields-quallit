@@ -10,18 +10,22 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", system-ui, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
 
-  /* Azul do sistema iOS */
-  --color-accent-50: #eef6ff;
-  --color-accent-100: #d9eaff;
-  --color-accent-200: #b9d8ff;
-  --color-accent-300: #8cbfff;
-  --color-accent-400: #4d9bff;
-  --color-accent-500: #0a84ff;
-  --color-accent-600: #007aff;
-  --color-accent-700: #0062cc;
-  --color-accent-800: #0050a6;
-  --color-accent-900: #003f82;
-  --color-accent-950: #00264f;
+  /* Teal da marca Quallit (#1A9CA9 = 500). Botões usam 600 para manter contraste AA com texto branco. */
+  --color-accent-50: #ebf8f9;
+  --color-accent-100: #cdeef1;
+  --color-accent-200: #9fdde3;
+  --color-accent-300: #66c6cf;
+  --color-accent-400: #34aebb;
+  --color-accent-500: #1a9ca9;
+  --color-accent-600: #15828d;
+  --color-accent-700: #136b74;
+  --color-accent-800: #14575e;
+  --color-accent-900: #15494f;
+  --color-accent-950: #062e33;
+
+  /* Laranja da marca Quallit */
+  --color-brand-orange: #fe811e;
+  --color-brand-orange-dark: #e56d0c;
 
   /* Cinzas do sistema Apple */
   --color-neutral-50: #f5f5f7;
@@ -91,14 +95,14 @@ h1, h2, h3 { letter-spacing: -0.021em; }
    Conteúdo do tutorial (editor e leitura)
    ================================================================ */
 .tutorial-content {
-  --c-text: #3a3a3c; --c-head: #1c1c1e; --c-muted: #8e8e93; --c-border: #e2e2e7; --c-soft: #f5f5f7; --c-accent: #007aff;
+  --c-text: #3a3a3c; --c-head: #1c1c1e; --c-muted: #8e8e93; --c-border: #e2e2e7; --c-soft: #f5f5f7; --c-accent: #15828d;
   color: var(--c-text);
   font-size: 1.0625rem;
   line-height: 1.7;
   word-wrap: break-word;
 }
 .dark .tutorial-content {
-  --c-text: #d1d1d6; --c-head: #f5f5f7; --c-muted: #8e8e93; --c-border: #2c2c2e; --c-soft: #1c1c1e; --c-accent: #0a84ff;
+  --c-text: #d1d1d6; --c-head: #f5f5f7; --c-muted: #8e8e93; --c-border: #2c2c2e; --c-soft: #1c1c1e; --c-accent: #34aebb;
 }
 .tutorial-content > * + * { margin-top: 1em; }
 .tutorial-content p:empty::before { content: "\00a0"; }
@@ -172,12 +176,12 @@ h1, h2, h3 { letter-spacing: -0.021em; }
 
 /* Caixas de destaque */
 .tutorial-content div[data-callout] {
-  --cl: #007aff;
+  --cl: #1a9ca9;
   background: color-mix(in oklab, var(--cl) 7%, transparent);
   border-radius: 12px; padding: .85em 1.05em;
 }
 .tutorial-content div[data-callout="tip"] { --cl: #af52de; }
-.tutorial-content div[data-callout="warning"] { --cl: #ff9500; }
+.tutorial-content div[data-callout="warning"] { --cl: #fe811e; }
 .tutorial-content div[data-callout="danger"] { --cl: #ff3b30; }
 .tutorial-content div[data-callout="success"] { --cl: #34c759; }
 .dark .tutorial-content div[data-callout] { background: color-mix(in oklab, var(--cl) 13%, #000); }
@@ -238,7 +242,7 @@ h1, h2, h3 { letter-spacing: -0.021em; }
 .tutorial-content td + td, .tutorial-content th + th { border-left: .5px solid var(--c-border); }
 .tutorial-content th { background: var(--c-soft); color: var(--c-head); font-weight: 600; font-size: .9em; }
 .tutorial-content tr:last-child td { border-bottom: 0; }
-.tutorial-content .selectedCell::after { content: ""; position: absolute; inset: 0; background: rgb(0 122 255 / .1); pointer-events: none; }
+.tutorial-content .selectedCell::after { content: ""; position: absolute; inset: 0; background: rgb(26 156 169 / .12); pointer-events: none; }
 .tutorial-content .column-resize-handle { position: absolute; right: -2px; top: 0; bottom: 0; width: 4px; background: var(--c-accent); pointer-events: none; }
 
 .tutorial-content hr { border: 0; height: .5px; margin: 2em 0; background: var(--c-border); }

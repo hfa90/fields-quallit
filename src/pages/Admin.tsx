@@ -186,7 +186,7 @@ function CategoriesTab() {
   const save = async () => {
     if (!edit?.name?.trim()) return toast.error('Informe o nome')
     setBusy(true)
-    const payload = { name: edit.name.trim(), icon: edit.icon || 'folder', color: edit.color || '#007aff', sort_order: edit.sort_order ?? (cats?.length ?? 0) + 1 }
+    const payload = { name: edit.name.trim(), icon: edit.icon || 'folder', color: edit.color || '#1a9ca9', sort_order: edit.sort_order ?? (cats?.length ?? 0) + 1 }
     const { error } = edit.id
       ? await supabase.from('kb_categories').update(payload).eq('id', edit.id)
       : await supabase.from('kb_categories').insert(payload)
@@ -204,7 +204,7 @@ function CategoriesTab() {
   if (!cats) return <Spinner />
   return (
     <div className="space-y-4">
-      <div className="flex justify-end"><Button onClick={() => setEdit({ color: '#007aff', icon: 'folder' })}><Plus className="size-4" />Nova categoria</Button></div>
+      <div className="flex justify-end"><Button onClick={() => setEdit({ color: '#1a9ca9', icon: 'folder' })}><Plus className="size-4" />Nova categoria</Button></div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {cats.map(c => (
           <div key={c.id} className="flex items-center gap-3 card p-4 ">
@@ -222,7 +222,7 @@ function CategoriesTab() {
             <div>
               <label className={labelCls}>Cor</label>
               <div className="flex flex-wrap gap-2">
-                {['#007aff', '#5ac8fa', '#af52de', '#ff9500', '#34c759', '#ff3b30', '#30b0c7', '#ff2d55', '#8e8e93', '#1c1c1e'].map(c => (
+                {['#1a9ca9', '#fe811e', '#007aff', '#af52de', '#ff9500', '#34c759', '#ff3b30', '#30b0c7', '#ff2d55', '#8e8e93', '#1c1c1e'].map(c => (
                   <button key={c} type="button" onClick={() => setEdit({ ...edit, color: c })} className={cn('size-8 rounded-lg ring-offset-2 dark:ring-offset-neutral-900', edit.color === c && 'ring-2 ring-accent-500')} style={{ background: c }} />
                 ))}
                 <input type="color" value={edit.color} onChange={e => setEdit({ ...edit, color: e.target.value })} className="size-8 cursor-pointer rounded-lg" />
@@ -272,7 +272,7 @@ function StatsTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {([[BookOpen, 'Tutoriais publicados', data.tutorials, '#007aff'], [Users, 'Fields ativos', data.members, '#5ac8fa'], [Eye, 'Visualizações', data.views, '#34c759'], [Share2, 'Via link compartilhado', data.shared, '#ff9500']] as const).map(([I, l, n, c]) => (
+        {([[BookOpen, 'Tutoriais publicados', data.tutorials, '#1a9ca9'], [Users, 'Fields ativos', data.members, '#5ac8fa'], [Eye, 'Visualizações', data.views, '#34c759'], [Share2, 'Via link compartilhado', data.shared, '#fe811e']] as const).map(([I, l, n, c]) => (
           <div key={l} className="card p-5 ">
             <I className="size-5" style={{ color: c }} />
             <div className="mt-3 text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{n}</div>

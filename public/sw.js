@@ -1,6 +1,6 @@
 // Service worker: app abre instantâneo e funciona com rede ruim em campo.
 // Dados (Supabase) nunca são cacheados aqui — sempre vêm da rede.
-const VERSION = 'fq-v2'
+const VERSION = 'fq-v3'
 const SHELL = `${VERSION}-shell`
 const scope = self.registration.scope
 

@@ -1,19 +1,23 @@
-// Gera os ícones do app (PWA / iOS / Android) a partir de um SVG.
+// Gera os ícones do app (PWA / iOS / Android) com a marca Quallit.
 import sharp from 'sharp'
 
-const glyph = (scale) => `
-  <g transform="translate(512 512) scale(${scale}) translate(-12 -12)" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 7v14"/>
-    <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
-  </g>`
-const svg = (scale, radius = 0) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c2c2e"/><stop offset="1" stop-color="#1c1c1e"/></linearGradient></defs>
-  <rect width="1024" height="1024" rx="${radius}" fill="url(#g)"/>${glyph(scale)}</svg>`)
+// pad = espaço em volta do "Q" (maior para ícones "maskable" do Android)
+const svg = (pad, radius = 0) => {
+  const size = 160 + pad * 2, x = 29 - pad, y = -5.5 - pad
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} ${y} ${size} ${size}" width="1024" height="1024">
+  <defs><mask id="c" maskUnits="userSpaceOnUse" x="${x}" y="${y}" width="${size}" height="${size}">
+    <rect x="${x}" y="${y}" width="${size}" height="${size}" fill="#fff"/>
+    <line x1="128" y1="91" x2="240" y2="203" stroke="#000" stroke-width="46"/></mask></defs>
+  <rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${size * radius}" fill="#1A9CA9"/>
+  <circle cx="109" cy="74" r="54" fill="none" stroke="#fff" stroke-width="26" mask="url(#c)"/>
+  <line x1="132" y1="95" x2="162" y2="125" stroke="#FE811E" stroke-width="28" stroke-linecap="round"/>
+</svg>`)
+}
 
 const out = 'public/icons'
-await sharp(svg(22)).resize(180).png().toFile(`${out}/apple-touch-icon.png`)
-await sharp(svg(22)).resize(192).png().toFile(`${out}/icon-192.png`)
-await sharp(svg(22)).resize(512).png().toFile(`${out}/icon-512.png`)
-await sharp(svg(16)).resize(512).png().toFile(`${out}/maskable-512.png`)
-await sharp(svg(22, 230)).resize(64).png().toFile(`${out}/favicon-64.png`)
+await sharp(svg(28)).resize(180).png().toFile(`${out}/apple-touch-icon.png`)
+await sharp(svg(28)).resize(192).png().toFile(`${out}/icon-192.png`)
+await sharp(svg(28)).resize(512).png().toFile(`${out}/icon-512.png`)
+await sharp(svg(70)).resize(512).png().toFile(`${out}/maskable-512.png`)
+await sharp(svg(14, 0.22)).resize(64).png().toFile(`${out}/favicon-64.png`)
 console.log('ícones gerados')

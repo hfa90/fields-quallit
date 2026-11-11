@@ -1,17 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Plus, ShieldCheck, LogOut, Moon, Sun, UserRound, Library, FileText } from 'lucide-react'
+import { Plus, ShieldCheck, LogOut, Moon, Sun, UserRound, Library, FileText } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { supabase } from '../lib/supabase'
 import { ROLE_LABEL, cn } from '../lib/utils'
 import { Avatar } from './ui'
+import { QuallitMark } from './QuallitLogo'
 
 export function Logo({ size = 30 }: { size?: number }) {
-  return (
-    <span className="grid shrink-0 place-items-center rounded-[9px] bg-neutral-900 text-white dark:bg-white dark:text-neutral-900" style={{ width: size, height: size }}>
-      <BookOpen style={{ width: size * 0.55, height: size * 0.55 }} strokeWidth={2.2} />
-    </span>
-  )
+  return <QuallitMark size={size} />
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -47,7 +44,10 @@ export default function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:px-6">
           <Link to="/" className="mr-3 flex items-center gap-2.5">
             <Logo />
-            <span className="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">Fields Quallit</span>
+            <span className="leading-none">
+              <span className="block text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">Fields</span>
+              <span className="mt-0.5 block text-[11px] font-medium text-neutral-500">Quallit Soluções em TI</span>
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -103,7 +103,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <Tab to="/" end icon={Library} label="Biblioteca" />
             <Tab to="/meus" icon={FileText} label="Meus" />
             <button onClick={() => nav('/novo')} className="press flex flex-col items-center justify-center" aria-label="Novo tutorial">
-              <span className="grid size-10 place-items-center rounded-full bg-accent-600 text-white shadow-sm dark:bg-accent-500"><Plus className="size-5" strokeWidth={2.5} /></span>
+              <span className="grid size-10 place-items-center rounded-full bg-brand-orange text-white shadow-sm"><Plus className="size-5" strokeWidth={2.5} /></span>
             </button>
             {isAdmin && <Tab to="/admin" icon={ShieldCheck} label="Admin" badge={pending} />}
             <Tab to="/perfil" icon={UserRound} label="Perfil" />

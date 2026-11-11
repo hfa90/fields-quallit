@@ -50,12 +50,12 @@ export default function Login() {
     <div className="pt-safe pb-safe flex min-h-dvh flex-col items-center justify-center px-5 py-10">
       <div className="w-full max-w-[360px] fade-up">
         <div className="flex flex-col items-center text-center">
-          <Logo size={56} />
+          <Logo size={64} />
           <h1 className="mt-5 text-[28px] font-bold tracking-tight text-neutral-900 dark:text-white">
-            {mode === 'login' ? 'Fields Quallit' : mode === 'signup' ? 'Criar conta' : 'Recuperar senha'}
+            {mode === 'login' ? 'Fields' : mode === 'signup' ? 'Criar conta' : 'Recuperar senha'}
           </h1>
           <p className="mt-1 text-[15px] text-neutral-500">
-            {mode === 'login' ? 'Central de tutoriais do time de campo'
+            {mode === 'login' ? 'Central de tutoriais · Quallit Soluções em TI'
               : mode === 'signup' ? 'Um administrador libera seu acesso após o cadastro'
               : 'Enviaremos um link para o seu e-mail'}
           </p>
