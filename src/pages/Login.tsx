@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { Button, inputCls } from '../components/ui'
 import { Logo } from '../components/Layout'
 import { cn, errMsg } from '../lib/utils'
+import AndroidAppCard from '../components/AndroidAppCard'
 
 /**
  * Login da central. Não há cadastro nem recuperação de senha por e-mail:
@@ -54,6 +55,8 @@ export default function Login() {
           <KeyRound className="mt-0.5 size-4 shrink-0 text-neutral-400" />
           <span>Esqueceu a senha? Peça ao administrador da central para redefinir o seu acesso.</span>
         </div>
+
+        <div className="mt-6"><AndroidAppCard compact /></div>
       </div>
     </div>
   )

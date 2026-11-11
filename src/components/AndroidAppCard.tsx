@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { Download, WifiOff, Zap, Share2, ChevronRight } from 'lucide-react'
 import { ANDROID_PAGE, APK_URL, isNative } from '../lib/native'
+import { cn } from '../lib/utils'
 
 /** Logotipo do Android (robô) */
 function AndroidLogo({ className }: { className?: string }) {
@@ -18,7 +19,7 @@ function AndroidLogo({ className }: { className?: string }) {
  * No celular Android: botão de download direto. No computador: QR code para apontar a câmera.
  * Dentro do próprio app não aparece.
  */
-export default function AndroidAppCard() {
+export default function AndroidAppCard({ compact }: { compact?: boolean }) {
   const [qr, setQr] = useState('')
   const [info, setInfo] = useState<{ versionName: string; size?: number } | null>(null)
   const onAndroid = /Android/i.test(navigator.userAgent)
@@ -35,7 +36,7 @@ export default function AndroidAppCard() {
     <section className="relative overflow-hidden rounded-[20px] bg-neutral-900 text-white dark:bg-neutral-900 dark:ring-1 dark:ring-white/10">
       {/* detalhe decorativo: robô do Android em marca d'água */}
       <AndroidLogo className="pointer-events-none absolute -bottom-6 -right-4 size-40 text-[#3ddc84] opacity-[.08]" />
-      <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
+      <div className={cn('relative flex flex-col gap-5 p-5', !compact && 'sm:flex-row sm:items-center sm:p-6')}>
         <div className="flex min-w-0 flex-1 items-start gap-4">
           <div className="relative shrink-0">
             <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" className="size-16 rounded-[16px] shadow-lg" />
@@ -47,7 +48,7 @@ export default function AndroidAppCard() {
             <div className="text-[12px] font-semibold uppercase tracking-wider text-[#3ddc84]">Novo · App para Android</div>
             <h2 className="mt-0.5 text-[20px] font-bold leading-tight tracking-tight">Fields no seu celular</h2>
             <p className="mt-1 text-[14px] leading-relaxed text-white/65">Abra os tutoriais com um toque, use a câmera nos passos e consulte mesmo sem sinal em campo.</p>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-white/55">
+            <div className={cn('mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-white/55', compact && 'hidden')}>
               <span className="inline-flex items-center gap-1"><Zap className="size-3.5" />Abre rápido</span>
               <span className="inline-flex items-center gap-1"><WifiOff className="size-3.5" />Funciona offline</span>
               <span className="inline-flex items-center gap-1"><Share2 className="size-3.5" />Compartilha pelo WhatsApp</span>
@@ -56,7 +57,7 @@ export default function AndroidAppCard() {
         </div>
 
         {onAndroid ? (
-          <div className="flex flex-col gap-2 sm:w-56">
+          <div className={cn('flex flex-col gap-2', !compact && 'sm:w-56')}>
             <a href={APK_URL} download className="press flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#3ddc84] text-[16px] font-semibold text-neutral-900">
               <Download className="size-5" />Baixar o app
             </a>
