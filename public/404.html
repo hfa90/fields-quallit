@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Fields Quallit</title>
+  <script>
+    // GitHub Pages não conhece as rotas do app: guarda o caminho e volta para o index.
+    (function () {
+      var l = window.location;
+      var segs = l.pathname.split('/').filter(Boolean);
+      var isProjectPage = l.hostname.endsWith('github.io') && segs.length > 0;
+      var base = isProjectPage ? '/' + segs[0] + '/' : '/';
+      sessionStorage.setItem('fq-redirect', l.pathname + l.search + l.hash);
+      l.replace(l.origin + base);
+    })();
+  </script>
+</head>
+<body></body>
+</html>

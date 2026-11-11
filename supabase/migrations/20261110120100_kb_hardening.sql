@@ -1,0 +1,10 @@
+alter function public.kb_random_code(int) set search_path = public;
+alter function public.kb_tags_text(text[]) set search_path = public;
+revoke execute on function public.kb_current_role() from public, anon;
+revoke execute on function public.kb_is_member() from public, anon;
+revoke execute on function public.kb_is_moderator() from public, anon;
+revoke execute on function public.kb_is_admin() from public, anon;
+revoke execute on function public.kb_is_owner_email(text) from public, anon;
+revoke execute on function public.kb_can_edit_tutorial(uuid) from public, anon;
+grant execute on function public.kb_current_role(), public.kb_is_member(), public.kb_is_moderator(), public.kb_is_admin(), public.kb_is_owner_email(text), public.kb_can_edit_tutorial(uuid) to authenticated;
+revoke all on public.kb_tutorials_list from anon;
