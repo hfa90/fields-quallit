@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare, CalendarClock, CloudCheck } from 'lucide-react'
+import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare, CalendarClock, CloudCheck, Zap, Heart } from 'lucide-react'
 import type { TutorialListItem } from '../lib/types'
 import { DIFFICULTY, cn, timeAgo } from '../lib/utils'
 import { useFavorites } from '../lib/library'
@@ -23,7 +23,12 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
           <span className="text-neutral-300 dark:text-neutral-700">·</span>
           {t.status === 'draft' ? <span className="text-brand-orange">Rascunho</span> : <span className="text-neutral-500">{d.label}</span>}
         </div>
-        {t.verified && <div className="mt-2"><VerifiedBadge title={t.verified_by_name ? `Verificado por ${t.verified_by_name}` : undefined} /></div>}
+        {(t.verified || t.kind === 'quick') && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {t.verified && <VerifiedBadge title={t.verified_by_name ? `Verificado por ${t.verified_by_name}` : undefined} />}
+            {t.kind === 'quick' && <span className="inline-flex items-center gap-1 rounded-full bg-brand-orange/12 px-2 py-0.5 text-[11px] font-semibold text-brand-orange-dark"><Zap className="size-3" />Dica rápida</span>}
+          </div>
+        )}
         <h3 className="mt-2 text-[17px] font-semibold leading-snug tracking-tight text-neutral-900 line-clamp-2 dark:text-white">{t.title}</h3>
         {t.summary && <p className="mt-1 text-[14px] leading-relaxed text-neutral-500 line-clamp-2">{t.summary}</p>}
         {!!t.outdated_count && (
@@ -48,6 +53,7 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
           <span className="shrink-0">{timeAgo(t.created_at)}</span>
           <span className="ml-auto flex shrink-0 items-center gap-2.5">
             {offline && <span className="text-[#34c759]" title="Disponível offline"><CloudCheck className="size-3.5" /></span>}
+            {!!t.thanks_count && <span className="inline-flex items-center gap-1 text-[#ff2d55]" title="Agradecimentos"><Heart className="size-3.5" />{t.thanks_count}</span>}
             {!!t.helpful_count && <span className="inline-flex items-center gap-1 text-[#248a3d] dark:text-[#30d158]" title="Funcionou para"><ThumbsUp className="size-3.5" />{t.helpful_count}</span>}
             {!!t.comment_count && <span className="inline-flex items-center gap-1" title="Comentários"><MessageSquare className="size-3.5" />{t.comment_count}</span>}
             {t.attachment_count > 0 && <span className="inline-flex items-center gap-1" title="Anexos"><Paperclip className="size-3.5" />{t.attachment_count}</span>}

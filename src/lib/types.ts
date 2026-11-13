@@ -41,6 +41,7 @@ export interface Tutorial {
   reviewed_by?: string | null
   verified_at?: string | null
   verified_by?: string | null
+  kind?: 'tutorial' | 'quick'
 }
 
 export interface TutorialListItem {
@@ -72,6 +73,8 @@ export interface TutorialListItem {
   verified?: boolean
   verified_at?: string | null
   verified_by_name?: string | null
+  kind?: 'tutorial' | 'quick'
+  thanks_count?: number
 }
 
 export interface LinkItem {

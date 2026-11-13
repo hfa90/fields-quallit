@@ -9,6 +9,8 @@ import { Avatar } from './ui'
 import { QuallitMark } from './QuallitLogo'
 import { SearchPalette, openSearch } from './Search'
 import NotificationList from './NotificationList'
+import { NewChooser, openNewChooser } from './Engagement'
+import { WhatsNewOnce } from './VersionInfo'
 import { refreshOffline, useOnline } from '../lib/offline'
 import { APK_URL, checkAppUpdate, openExternal, setNativeTheme } from '../lib/native'
 import { Download } from 'lucide-react'
@@ -70,7 +72,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     'inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[14px] font-medium transition-colors',
     isActive ? 'bg-neutral-900/[.06] text-neutral-900 dark:bg-white/10 dark:text-white' : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white',
   )
-  const editing = loc.pathname === '/novo' || loc.pathname.endsWith('/editar')
+  const editing = loc.pathname === '/novo' || loc.pathname === '/dica' || loc.pathname.endsWith('/editar')
 
   return (
     <div className="min-h-dvh">
@@ -106,7 +108,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <button onClick={() => openSearch()} className="grid size-9 place-items-center rounded-lg text-neutral-600 md:hidden dark:text-neutral-300" aria-label="Buscar">
               <Search className="size-5" />
             </button>
-            <button onClick={() => nav('/novo')}
+            <button onClick={openNewChooser}
               className="press ml-1 hidden h-9 items-center gap-1 rounded-[10px] bg-accent-600 px-3 text-[14px] font-medium text-white hover:bg-accent-700 md:inline-flex dark:bg-accent-500">
               <Plus className="size-4" strokeWidth={2.4} />Novo
             </button>
@@ -182,7 +184,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <button onClick={() => openSearch()} className="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-500">
               <Search className="size-6" strokeWidth={1.8} />Buscar
             </button>
-            <button onClick={() => nav('/novo')} className="press flex flex-col items-center justify-center" aria-label="Novo tutorial">
+            <button onClick={openNewChooser} className="press flex flex-col items-center justify-center" aria-label="Compartilhar conhecimento">
               <span className="grid size-11 place-items-center rounded-full bg-brand-orange text-white shadow-[0_4px_12px_-2px_rgb(254_129_30/0.6)]"><Plus className="size-6" strokeWidth={2.5} /></span>
             </button>
             <Tab to="/comunidade" icon={Users} label="Comunidade" />
@@ -191,6 +193,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         </nav>
       )}
       <SearchPalette />
+      <NewChooser />
+      <WhatsNewOnce />
     </div>
   )
 }

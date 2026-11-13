@@ -11,6 +11,7 @@ import { CATEGORY_ICONS } from '../components/categoryIcons'
 import { NewUserModal, ResetPasswordModal, ReviewTab } from './AdminExtra'
 import { CalendarClock, UserPlus, KeyRound, DatabaseBackup } from 'lucide-react'
 import BackupTab from './BackupTab'
+import { versionLabel } from '../lib/version'
 
 type Tab = 'users' | 'categories' | 'stats' | 'review' | 'backup'
 const OWNER = 'haydenfernandes.ti@gmail.com'
@@ -22,6 +23,7 @@ export default function Admin() {
       <div>
         <h1 className="pt-1 text-[32px] font-bold tracking-tight text-neutral-900 dark:text-white">Administração</h1>
         <p className="text-[15px] text-neutral-500">Gerencie quem acessa a central, as categorias e acompanhe o uso.</p>
+        <p className="mt-0.5 font-mono text-[12px] text-neutral-400">Sistema {versionLabel()}</p>
       </div>
       <div className="no-scrollbar flex w-fit max-w-full overflow-x-auto rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
         {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões'], ['backup', DatabaseBackup, 'Backup']] as const).map(([k, I, l]) => (

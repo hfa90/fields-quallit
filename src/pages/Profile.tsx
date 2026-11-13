@@ -10,6 +10,8 @@ import { ROLE_LABEL, errMsg } from '../lib/utils'
 import { InstallRow, isStandalone } from '../components/InstallApp'
 import { isNative } from '../lib/native'
 import { Smartphone } from 'lucide-react'
+import { VersionCard } from '../components/VersionInfo'
+import { ImpactCard } from '../components/Engagement'
 
 const row = 'flex items-center gap-3 px-4 min-h-12'
 const fieldCls = 'min-w-0 flex-1 bg-transparent py-3 text-right text-[16px] text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-white'
@@ -61,6 +63,8 @@ export default function ProfilePage() {
         <div className="mt-3 text-[20px] font-semibold text-neutral-900 dark:text-white">{profile.full_name}</div>
         <div className="text-[15px] text-neutral-500">{ROLE_LABEL[profile.role]}</div>
       </div>
+
+      <ImpactCard userId={profile.id} me />
 
       <section>
         <SectionTitle>Conta</SectionTitle>
@@ -123,6 +127,8 @@ export default function ProfilePage() {
           {!isStandalone() && <InstallRow />}
         </div>
       )}
+
+      <VersionCard />
 
       <div className="card overflow-hidden">
         <button onClick={signOut} className={`${row} w-full justify-center text-[16px] text-[#ff3b30]`}><LogOut className="size-4" />Sair</button>

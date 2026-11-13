@@ -9,6 +9,7 @@ import { ROLE_LABEL, cn, fmtDate, level } from '../lib/utils'
 import { Avatar, Empty, Spinner } from '../components/ui'
 import TutorialCard from '../components/TutorialCard'
 import { LevelBadge } from './Community'
+import { ImpactCard } from '../components/Engagement'
 import NotFound from './NotFound'
 
 export default function PersonPage() {
@@ -66,6 +67,8 @@ export default function PersonPage() {
           ))}
         </div>
       </div>
+
+      <ImpactCard userId={u.user_id} me={me} />
 
       <section>
         <h2 className="mb-3 px-1 text-[20px] font-bold tracking-tight text-neutral-900 dark:text-white">Tutoriais publicados</h2>

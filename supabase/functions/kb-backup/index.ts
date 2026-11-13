@@ -17,7 +17,7 @@ const TABLES: Record<string, string> = {
   kb_profiles: '*',
   kb_settings: '*',
   kb_categories: '*',
-  kb_tutorials: 'id,short_code,title,summary,content_html,content_json,category_id,tags,difficulty,status,author_id,updated_by,created_at,updated_at,review_interval_months,reviewed_at,reviewed_by,verified_at,verified_by',
+  kb_tutorials: 'id,short_code,title,summary,content_html,content_json,category_id,tags,difficulty,status,author_id,updated_by,created_at,updated_at,review_interval_months,reviewed_at,reviewed_by,verified_at,verified_by,kind',
   kb_tutorial_versions: '*',
   kb_links: '*',
   kb_attachments: '*',
@@ -33,6 +33,7 @@ const TABLES: Record<string, string> = {
   kb_views: '*',
   kb_notification_prefs: '*',
   kb_search_log: '*',
+  kb_thanks: '*',
 }
 
 const cors = {

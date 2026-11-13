@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Bell, MessageSquare, AlertTriangle, ThumbsDown, FilePlus2, RefreshCw, HandHelping, CheckCircle2, Reply, X } from 'lucide-react'
+import { Bell, MessageSquare, AlertTriangle, ThumbsDown, FilePlus2, RefreshCw, HandHelping, CheckCircle2, Reply, X, Heart, Sparkles, Zap } from 'lucide-react'
 import { useNotifications } from '../lib/notifications'
 import { cn, timeAgo } from '../lib/utils'
 
@@ -18,6 +18,9 @@ const ICON: Record<string, { icon: typeof Bell; color: string }> = {
   verified: { icon: CheckCircle2, color: '#1a9ca9' },
   review_due: { icon: RefreshCw, color: '#fe811e' },
   new_trail: { icon: FilePlus2, color: '#1a9ca9' },
+  thanks: { icon: Heart, color: '#ff2d55' },
+  impact: { icon: Sparkles, color: '#fe811e' },
+  gap_reminder: { icon: Zap, color: '#fe811e' },
 }
 
 export default function NotificationList({ onNavigate, compact }: { onNavigate?: () => void; compact?: boolean }) {

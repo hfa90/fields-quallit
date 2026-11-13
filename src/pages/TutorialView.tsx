@@ -17,6 +17,7 @@ import type { CommentKind } from '../lib/types'
 import NotFound from './NotFound'
 import VersionHistory from '../components/VersionHistory'
 import { isNative, nativeShare } from '../lib/native'
+import { ThanksBox } from '../components/Engagement'
 import { FULL_SELECT, getOfflineByCode, isNetworkError, removeOffline, saveOffline, useOfflineIds, type OfflineBundle } from '../lib/offline'
 import { useTrailNav } from './TrailPage'
 
@@ -210,6 +211,7 @@ export default function TutorialView() {
               </Link>
               <span className="text-neutral-300 dark:text-neutral-700">·</span>
               <span className="text-neutral-500">{d.label}</span>
+              {t.kind === 'quick' && <><span className="text-neutral-300 dark:text-neutral-700">·</span><span className="text-brand-orange-dark">Dica rápida</span></>}
               {t.status === 'draft' && <><span className="text-neutral-300 dark:text-neutral-700">·</span><span className="text-[#ff9500]">Rascunho — visível só para você e moderadores</span></>}
             </div>
             {t.verified_at && (
@@ -260,6 +262,14 @@ export default function TutorialView() {
             Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
             {t.reviewed_at && <> · {reviewDue ? <span className="font-medium text-brand-orange">revisão pendente</span> : <>revisado {timeAgo(t.reviewed_at)}</>}</>}
           </p>
+          {!offlineCopy && t.kind === 'quick' && canEdit && (
+            <div className="no-print mx-auto mt-6 flex max-w-[720px] flex-col gap-3 rounded-[14px] bg-brand-orange/[.08] p-4 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1 text-[14px] text-neutral-700 dark:text-neutral-300">
+                <b>Esta é uma dica rápida.</b> Quando tiver um tempinho, transforme em tutorial completo com mais passos, prints e anexos.
+              </div>
+              <Button size="sm" variant="secondary" onClick={() => nav(`/t/${t.short_code}/editar`)}>Transformar em tutorial</Button>
+            </div>
+          )}
           {!offlineCopy && isModerator && (
             <div className="no-print mx-auto mt-6 flex max-w-[720px] flex-col gap-3 rounded-[14px] bg-accent-500/[.07] p-4 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1 text-[14px] text-neutral-700 dark:text-neutral-300">
@@ -276,6 +286,7 @@ export default function TutorialView() {
           {!offlineCopy && (
             <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">
               <Feedback tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
+              <ThanksBox tutorialId={t.id} authorId={t.author_id} authorName={t.author?.full_name} />
               <Comments tutorialId={t.id} ownerId={t.author_id} prompt={prompt} />
             </div>
           )}

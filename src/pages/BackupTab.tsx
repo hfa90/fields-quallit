@@ -12,7 +12,7 @@ const BACKUPS = 'kb-backups'
 const TABLES = [
   'kb_profiles', 'kb_settings', 'kb_categories', 'kb_tutorials', 'kb_tutorial_versions', 'kb_links', 'kb_attachments',
   'kb_comments', 'kb_feedback', 'kb_favorites', 'kb_follows', 'kb_requests', 'kb_request_votes',
-  'kb_trails', 'kb_trail_items', 'kb_trail_progress', 'kb_views', 'kb_search_log',
+  'kb_trails', 'kb_trail_items', 'kb_trail_progress', 'kb_views', 'kb_search_log', 'kb_thanks',
 ]
 
 const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'tutorial'
@@ -63,7 +63,7 @@ export default function BackupTab() {
         setProgress(`Lendo ${t.replace('kb_', '').replace(/_/g, ' ')}…`)
         const rows: unknown[] = []
         for (let from = 0; ; from += 1000) {
-          const cols = t === 'kb_tutorials' ? 'id,short_code,title,summary,content_html,content_json,category_id,tags,difficulty,status,author_id,updated_by,created_at,updated_at,review_interval_months,reviewed_at,reviewed_by,verified_at,verified_by' : '*'
+          const cols = t === 'kb_tutorials' ? 'id,short_code,title,summary,content_html,content_json,category_id,tags,difficulty,status,author_id,updated_by,created_at,updated_at,review_interval_months,reviewed_at,reviewed_by,verified_at,verified_by,kind' : '*'
           const { data: page, error } = await supabase.from(t).select(cols).range(from, from + 999)
           if (error) throw new Error(`${t}: ${error.message}`)
           rows.push(...(page ?? []))

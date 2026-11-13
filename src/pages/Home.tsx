@@ -10,6 +10,7 @@ import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/libra
 import TutorialCard, { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { HeroSearch } from '../components/Search'
 import AndroidAppCard from '../components/AndroidAppCard'
+import { GapCard, ShareCallout, useGaps } from '../components/Engagement'
 import { TrailCard, type Trail } from './TrailPage'
 import { useNavigate } from 'react-router-dom'
 
@@ -29,6 +30,7 @@ export default function Home() {
   const follows = useFollows()
   const nav = useNavigate()
   const [trails, setTrails] = useState<(Trail & { total: number; done: number })[]>([])
+  const gaps = useGaps()
 
   const setParam = (k: string, v: string) => {
     const p = new URLSearchParams(params)
@@ -86,6 +88,14 @@ export default function Home() {
       </div>
 
       <HeroSearch />
+
+      <ShareCallout />
+
+      {gaps && gaps.length > 0 && (
+        <Shelf title="Colegas precisam de ajuda" action={<MoreLink to="/comunidade">Ver todas</MoreLink>}>
+          {gaps.slice(0, 8).map(g => <GapCard key={g.query} g={g} compact />)}
+        </Shelf>
+      )}
 
       <AndroidAppCard />
 

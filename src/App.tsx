@@ -26,6 +26,7 @@ const PersonPage = lazy(() => import('./pages/PersonPage'))
 const TrailsList = lazy(() => import('./pages/TrailPage').then(m => ({ default: m.TrailsList })))
 const TrailPage = lazy(() => import('./pages/TrailPage'))
 const AndroidApp = lazy(() => import('./pages/AndroidApp'))
+const QuickTip = lazy(() => import('./pages/QuickTip'))
 
 export default function App() {
   return (
@@ -71,6 +72,7 @@ function Gate() {
             <Route path="/trilhas" element={<TrailsList />} />
             <Route path="/trilhas/:id" element={<TrailPage />} />
             <Route path="/novo" element={<TutorialEdit />} />
+            <Route path="/dica" element={<QuickTip />} />
             <Route path="/t/:code" element={<TutorialView />} />
             <Route path="/t/:code/editar" element={<TutorialEdit />} />
             <Route path="/perfil" element={<ProfilePage />} />

@@ -91,6 +91,21 @@ export default function TutorialEdit() {
     })()
   }, [code, isNew])
 
+  // Vindo da dica rápida ("Tutorial completo"): aproveita o que já foi escrito
+  const fromTip = useRef(false)
+  useEffect(() => {
+    const st = (window.history.state?.usr ?? null) as { problem?: string; solution?: string } | null
+    if (!isNew || fromTip.current || !st || (!st.problem && !st.solution)) return
+    fromTip.current = true
+    if (st.problem) setTitle(st.problem)
+    if (st.solution) {
+      const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const html = `<h2>Problema</h2><p>${esc(st.problem ?? '')}</p><h2>Solução</h2>${st.solution.split(/\n+/).filter(Boolean).map(l => `<p>${esc(l)}</p>`).join('')}`
+      content.current = { json: null, html }
+      editorInit.current = false; setInitial(html); setEditorKey(k => k + 1)
+    }
+  }, [isNew])
+
   // Procura rascunho não salvo (aparelho ou nuvem) mais novo que a versão publicada
   useEffect(() => {
     if (checkedDraft.current || !draftKey || (!isNew && !loaded)) return
@@ -174,6 +189,7 @@ export default function TutorialEdit() {
         difficulty,
         tags,
         status,
+        kind: 'tutorial',
         review_interval_months: reviewMonths,
         content_json: content.current.json,
         content_html: content.current.html,

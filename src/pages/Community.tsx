@@ -7,6 +7,7 @@ import { useAuth } from '../lib/auth'
 import type { Category, RequestItem, UserStats } from '../lib/types'
 import { cn, errMsg, level, timeAgo } from '../lib/utils'
 import { Avatar, Button, CategoryIcon, Empty, Modal, Spinner, inputCls, labelCls, textareaCls } from '../components/ui'
+import { GapsWall } from '../components/Engagement'
 
 type Tab = 'pedidos' | 'ranking' | 'atividade'
 const TABS: [Tab, string, typeof Trophy][] = [['pedidos', 'Pedidos', HandHelping], ['ranking', 'Ranking', Trophy], ['atividade', 'Atividade', Activity]]
@@ -69,7 +70,7 @@ export default function Community() {
         {tab === 'pedidos' && <Button onClick={() => setAsk('')} className="bg-brand-orange hover:bg-brand-orange-dark dark:bg-brand-orange"><Plus className="size-4" />Pedir um tutorial</Button>}
       </div>
 
-      {tab === 'pedidos' && <Requests />}
+      {tab === 'pedidos' && <><GapsWall /><h2 className="px-1 pt-2 text-[20px] font-bold tracking-tight text-neutral-900 dark:text-white">Pedidos de tutorial</h2><Requests /></>}
       {tab === 'ranking' && <Ranking />}
       {tab === 'atividade' && <Feed />}
 

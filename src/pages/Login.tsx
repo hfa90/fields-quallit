@@ -6,6 +6,7 @@ import { Button, inputCls } from '../components/ui'
 import { Logo } from '../components/Layout'
 import { cn, errMsg } from '../lib/utils'
 import AndroidAppCard from '../components/AndroidAppCard'
+import { VersionTag } from '../components/VersionInfo'
 
 /**
  * Login da central. Não há cadastro nem recuperação de senha por e-mail:
@@ -57,6 +58,7 @@ export default function Login() {
         </div>
 
         <div className="mt-6"><AndroidAppCard compact /></div>
+        <VersionTag className="mt-6" />
       </div>
     </div>
   )
