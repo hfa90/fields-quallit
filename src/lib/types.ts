@@ -9,6 +9,7 @@ export interface Profile {
   created_at: string
   updated_at: string
   cd_id?: string | null
+  prefs?: Record<string, { v: string; t: number }>
 }
 
 export interface Category {

@@ -6,6 +6,7 @@ import { useFavorites } from '../lib/library'
 import { useOfflineIds } from '../lib/offline'
 import { cdShort } from '../lib/cds'
 import { Avatar, CategoryIcon, VerifiedBadge } from './ui'
+import HScroll from './HScroll'
 
 export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: number }) {
   const { favs, toggle } = useFavorites()
@@ -90,7 +91,7 @@ export function Shelf({ title, action, children }: { title: string; action?: Rea
         <h2 className="text-[20px] font-bold tracking-tight text-neutral-900 dark:text-white">{title}</h2>
         {action}
       </div>
-      <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-1 sm:px-1">{children}</div>
+      <HScroll label={title} className="-mx-4 flex gap-3 px-4 pb-1 sm:-mx-1 sm:px-1">{children}</HScroll>
     </section>
   )
 }

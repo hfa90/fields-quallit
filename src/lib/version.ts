@@ -14,6 +14,15 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.8.0', date: '2026-11-13', title: 'Do seu jeito',
+    items: [
+      'Novos modos de ver os tutoriais: Cartões, Lista, Compacto e Por categoria',
+      'O modo escolhido fica salvo na sua conta e abre igual no site e no app',
+      'No computador, as faixas laterais (Fields pelo Brasil, Continuar lendo…) têm setas e podem ser arrastadas com o mouse',
+      'Mais espaço no fim de todas as telas',
+    ],
+  },
+  {
     version: '1.7.1', date: '2026-11-13', title: 'Excluir Field',
     items: [
       'Administrador pode excluir um Field pela lista de usuários ou pelo perfil rápido',

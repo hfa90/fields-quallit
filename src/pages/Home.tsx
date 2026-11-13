@@ -7,7 +7,9 @@ import type { Category, TutorialListItem } from '../lib/types'
 import { CategoryIcon, Empty } from '../components/ui'
 import { cn, timeAgo } from '../lib/utils'
 import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/library'
-import TutorialCard, { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
+import { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
+import { TutorialCollection, VIEW_MODES, ViewSwitcher } from '../components/TutorialViews'
+import { usePref } from '../lib/prefs'
 import { HeroSearch } from '../components/Search'
 import AndroidAppCard from '../components/AndroidAppCard'
 import TeamStrip from '../components/TeamStrip'
@@ -32,6 +34,7 @@ export default function Home() {
   const nav = useNavigate()
   const [trails, setTrails] = useState<(Trail & { total: number; done: number })[]>([])
   const gaps = useGaps()
+  const [view, setView] = usePref('home_view', VIEW_MODES, 'cards')
 
   const setParam = (k: string, v: string) => {
     const p = new URLSearchParams(params)
@@ -130,15 +133,16 @@ export default function Home() {
           )}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="no-scrollbar -mx-4 flex min-w-0 gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <Chip active={!cat} onClick={() => setParam('c', '')} label="Todos" count={counts.all} />
             {visibleCats.map(c => (
               <Chip key={c.id} active={cat === c.id} onClick={() => setParam('c', cat === c.id ? '' : c.id)} label={c.name} count={counts[c.id]}
                 icon={<CategoryIcon name={c.icon} className="size-3.5" style={{ color: cat === c.id ? undefined : c.color }} />} />
             ))}
           </div>
-          <div className="no-scrollbar inline-flex shrink-0 self-start overflow-x-auto rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 self-start">
+          <div className="no-scrollbar inline-flex shrink-0 overflow-x-auto rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
             {SORTS.map(([k, l]) => (
               <button key={k} onClick={() => setParam('o', k === 'recent' ? '' : k)}
                 className={cn('h-7 shrink-0 rounded-[7px] px-3 text-[13px] font-medium transition',
@@ -146,6 +150,8 @@ export default function Home() {
                 {l}
               </button>
             ))}
+          </div>
+          <ViewSwitcher value={view} onChange={setView} />
           </div>
         </div>
 
@@ -158,9 +164,7 @@ export default function Home() {
             <Link to="/novo" className="mt-2 inline-flex items-center gap-1 font-medium text-accent-600"><Plus className="size-4" />Publicar o primeiro</Link>
           </Empty>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((t, i) => <TutorialCard key={t.id} t={t} i={i} />)}
-          </div>
+          <TutorialCollection items={items} mode={view} cats={cats} />
         )}
       </section>
     </div>

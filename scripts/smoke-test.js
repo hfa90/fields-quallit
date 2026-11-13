@@ -26,7 +26,7 @@ window.fieldsSmokeTest = async function () {
   const stats = { user_id: uid, full_name: 'Teste Local', avatar_url: null, email: 'teste@exemplo.invalid', role: 'admin', created_at: now, tutorials: 2, helpful_received: 2, comments: 1, requests_answered: 0, views_received: 5, followers: 1, points: 42, cd_name: 'CD RIO DE JANEIRO' }
   const tables = {
     kb_tutorials_list: [listItem('t1', 'TESTE1', 'quick', true), listItem('t2', 'TESTE2', 'tutorial', false)],
-    kb_tutorials: [tut], kb_categories: [cat], kb_user_stats: [stats, { ...stats, user_id: 'u2', full_name: 'Colega Field', tutorials: 0, points: 5, cd_name: 'CD MANAUS' }],
+    kb_tutorials: [tut], kb_categories: [cat], kb_user_stats: [stats, { ...stats, user_id: 'u2', full_name: 'Colega Field', tutorials: 0, points: 5, cd_name: 'CD MANAUS' }, ...Array.from({ length: 9 }, (_, i) => ({ ...stats, user_id: `x${i}`, full_name: `Field Exemplo ${i + 1}`, tutorials: i % 3, points: 4 - (i % 4), cd_name: i % 2 ? 'CD MANAUS' : 'CD RECIFE' }))],
     kb_profiles: [{ ...author, role: 'admin', created_at: now, updated_at: now }, { id: 'u2', full_name: 'Colega Field', email: 'colega@exemplo.invalid', avatar_url: null, role: 'field', created_at: now, updated_at: now }],
     kb_comments: [{ id: 'm1', tutorial_id: 't1', request_id: null, parent_id: null, user_id: uid, kind: 'tip', body: 'Dica', resolved: false, created_at: now, updated_at: now, author }],
     kb_thanks: [{ user_id: 'u2', message: 'Salvou meu dia!', created_at: now, user: { full_name: 'Colega', email: 'c@exemplo.invalid', avatar_url: null }, tutorial: { title: 'Tutorial TESTE1', short_code: 'TESTE1', author_id: uid } }],

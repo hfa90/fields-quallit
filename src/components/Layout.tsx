@@ -174,7 +174,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <WifiOff className="size-4" />Sem internet · <Link to="/meus?aba=offline" className="font-semibold underline">abrir tutoriais salvos</Link>
         </div>
       )}
-      <main className={cn('mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8', !editing && 'pb-tabbar')}>{children}</main>
+      <main className={cn('mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8', editing ? 'sm:pb-16' : 'pb-tabbar')}>{children}</main>
 
       {/* Barra de abas inferior (celular) */}
       {!editing && (

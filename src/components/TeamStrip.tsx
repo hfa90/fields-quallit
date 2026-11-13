@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import type { UserStats } from '../lib/types'
 import { cdShort, useCdUf } from '../lib/cds'
 import StateBadge from './StateBadge'
+import HScroll from './HScroll'
 import { FieldHoverCard, FieldProfileModal } from './FieldProfile'
 
 /**
@@ -53,7 +54,7 @@ export default function TeamStrip() {
         </div>
         <Link to="/comunidade?aba=ranking" className="flex shrink-0 items-center text-[15px] text-accent-600 dark:text-accent-400">Ver todos<ChevronRight className="size-4" /></Link>
       </div>
-      <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 pt-0.5 sm:-mx-1 sm:px-1">
+      <HScroll label="Fields pelo Brasil" className="-mx-4 flex gap-2.5 px-4 pb-2 pt-0.5 sm:-mx-1 sm:px-1">
         {people.map(p => {
           const uf = ufOf(p.cd_name)
           const first = (p.full_name ?? p.email).split(' ')
@@ -76,7 +77,7 @@ export default function TeamStrip() {
             </Link>
           )
         })}
-      </div>
+      </HScroll>
       {hover && <FieldHoverCard p={hover.p} uf={ufOf(hover.p.cd_name)} rect={hover.rect} onEnter={keep} onLeave={hide} onOpen={() => { const p = hover.p; setHover(null); setOpen(p) }} />}
       <FieldProfileModal userId={open?.user_id ?? null} uf={open ? ufOf(open.cd_name) : null} onClose={() => setOpen(null)} onDeleted={loadPeople} />
     </section>

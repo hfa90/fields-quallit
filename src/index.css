@@ -68,8 +68,9 @@ h1, h2, h3 { letter-spacing: -0.021em; }
 /* Área segura (notch / barra de gestos) */
 .pt-safe { padding-top: env(safe-area-inset-top); }
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-.pb-tabbar { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-@media (min-width: 768px) { .pb-tabbar { padding-bottom: 0; } }
+/* espaço no fim das telas: barra de abas + respiro (celular) / respiro generoso (computador) */
+.pb-tabbar { padding-bottom: calc(56px + 40px + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) { .pb-tabbar { padding-bottom: 72px; } }
 
 /* Materiais translúcidos estilo iOS */
 .material {
