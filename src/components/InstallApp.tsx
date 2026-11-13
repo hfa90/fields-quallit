@@ -3,6 +3,7 @@ import { Share, PlusSquare, Smartphone, MoreVertical, Download, Check, Zap, Bell
 import { Button } from './ui'
 import { isIOS, isStandalone } from '../lib/push'
 import { ANDROID_PAGE, APK_URL, isNative } from '../lib/native'
+import { anyLocalPref } from '../lib/prefs'
 
 export { isStandalone }
 
@@ -25,6 +26,7 @@ const isIOSSafari = () => isIOS() && /Safari/i.test(navigator.userAgent) && !/Cr
 
 const KEY = 'fq-install'
 function shouldAutoShow() {
+  if (anyLocalPref('android_app', ['yes', 'dismissed'])) return false // já usa o app Android
   try {
     const v = JSON.parse(localStorage.getItem(KEY) || '{}') as { never?: boolean; until?: number }
     if (v.never) return false

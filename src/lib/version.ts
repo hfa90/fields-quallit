@@ -14,6 +14,16 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.9.0', date: '2026-11-13', title: 'Página inicial mais leve',
+    items: [
+      'Boas-vindas para quem acabou de chegar: um tour rápido de como buscar, compartilhar por voz e ganhar pontos (dá para rever no Perfil)',
+      '“Continuar lendo” e “Favoritos” juntos numa faixa só, com abas',
+      '“Carregar mais” em Todos os tutoriais, de 100 em 100',
+      '“Resolveu algo hoje?” aparece só uma vez por dia',
+      'O cartão do app Android some para quem já usa o app ou tocou em “Já tenho o app”',
+    ],
+  },
+  {
     version: '1.8.0', date: '2026-11-13', title: 'Do seu jeito',
     items: [
       'Novos modos de ver os tutoriais: Cartões, Lista, Compacto e Por categoria',

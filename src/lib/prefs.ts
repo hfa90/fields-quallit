@@ -54,3 +54,19 @@ export function usePref<T extends string>(key: string, allowed: readonly T[], fa
   }
   return [value, set]
 }
+
+/** Alguma conta deste aparelho já marcou esta preferência com um destes valores? (para telas fora do login) */
+export function anyLocalPref(key: string, values: string[]) {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k?.startsWith('fq-pref:') && k.endsWith(`:${key}`)) {
+        const v = JSON.parse(localStorage.getItem(k) || 'null')?.v
+        if (values.includes(v)) return true
+      }
+    }
+  } catch { /* ignore */ }
+  return false
+}
+
+export const ANDROID_PREF = ['no', 'yes', 'dismissed'] as const

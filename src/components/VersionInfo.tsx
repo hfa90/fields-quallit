@@ -66,12 +66,13 @@ export function VersionTag({ className }: { className?: string }) {
 }
 
 /** Mostra "O que há de novo" uma vez quando a versão muda */
-export function WhatsNewOnce() {
+/** Novidades da versão (não aparece junto com as boas-vindas de quem acabou de chegar) */
+export function WhatsNewOnce({ suppress }: { suppress?: boolean }) {
   const [open, setOpen] = useState(false)
   useEffect(() => {
     try {
       const seen = localStorage.getItem('fq-seen-version')
-      if (seen !== APP_VERSION) setOpen(true)
+      if (seen !== APP_VERSION && !suppress) setOpen(true)
       localStorage.setItem('fq-seen-version', APP_VERSION)
     } catch { /* ignore */ }
   }, [])

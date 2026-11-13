@@ -9,8 +9,9 @@ import { Avatar, Button, SectionTitle } from '../components/ui'
 import { ROLE_LABEL, errMsg } from '../lib/utils'
 import { InstallRow, isStandalone } from '../components/InstallApp'
 import { isNative } from '../lib/native'
-import { Smartphone } from 'lucide-react'
+import { Smartphone, Sparkles } from 'lucide-react'
 import { VersionCard } from '../components/VersionInfo'
+import { openOnboarding } from '../components/Onboarding'
 import { ImpactCard } from '../components/Engagement'
 
 const row = 'flex items-center gap-3 px-4 min-h-12'
@@ -128,6 +129,11 @@ export default function ProfilePage() {
         </div>
       )}
 
+      <button onClick={openOnboarding} className="card press flex w-full items-center gap-3 p-4 text-left">
+        <span className="grid size-9 place-items-center rounded-full bg-accent-500/10 text-accent-600"><Sparkles className="size-4" /></span>
+        <span className="min-w-0 flex-1"><span className="block text-[15px] font-medium text-neutral-900 dark:text-white">Rever as boas-vindas</span><span className="block text-[13px] text-neutral-500">Um tour rápido de como usar o Fields</span></span>
+        <ChevronRight className="size-4 text-neutral-400" />
+      </button>
       <VersionCard />
 
       <div className="card overflow-hidden">

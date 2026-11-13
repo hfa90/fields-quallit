@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Plus, BookOpenText, BellPlus, BellRing } from 'lucide-react'
+import { Plus, BookOpenText, BellPlus, BellRing, ChevronDown, Loader2, History, Bookmark, Zap } from 'lucide-react'
+import HScroll from '../components/HScroll'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Category, TutorialListItem } from '../lib/types'
@@ -18,6 +19,7 @@ import { TrailCard, type Trail } from './TrailPage'
 import { useNavigate } from 'react-router-dom'
 
 type Sort = 'recent' | 'views' | 'helpful' | 'az'
+const PAGE = 100
 const SORTS: [Sort, string][] = [['recent', 'Recentes'], ['views', 'Mais vistos'], ['helpful', 'Mais úteis'], ['az', 'A–Z']]
 
 export default function Home() {
@@ -35,6 +37,9 @@ export default function Home() {
   const [trails, setTrails] = useState<(Trail & { total: number; done: number })[]>([])
   const gaps = useGaps()
   const [view, setView] = usePref('home_view', VIEW_MODES, 'cards')
+  const [shelfTab, setShelfTab] = usePref('home_shelf', ['recent', 'favorites'] as const, 'recent')
+  const [total, setTotal] = useState<number | null>(null)
+  const [moreBusy, setMoreBusy] = useState(false)
 
   const setParam = (k: string, v: string) => {
     const p = new URLSearchParams(params)
@@ -61,10 +66,8 @@ export default function Home() {
     })
   }, [])
 
-  useEffect(() => {
-    let alive = true
-    setItems(null)
-    let query = supabase.from('kb_tutorials_list').select(LIST_COLS).eq('status', 'published')
+  const buildQuery = () => {
+    let query = supabase.from('kb_tutorials_list').select(LIST_COLS, { count: 'exact' }).eq('status', 'published')
     if (cat) query = query.eq('category_id', cat)
     // tutoriais verificados sempre aparecem primeiro
     if (sort !== 'az') query = query.order('verified', { ascending: false })
@@ -72,13 +75,31 @@ export default function Home() {
     else if (sort === 'helpful') query = query.order('helpful_count', { ascending: false }).order('view_count', { ascending: false })
     else if (sort === 'az') query = query.order('title')
     else query = query.order('created_at', { ascending: false })
-    query.limit(200).then(({ data, error }) => {
+    return query.order('id') // desempate estável entre páginas
+  }
+
+  useEffect(() => {
+    let alive = true
+    setItems(null); setTotal(null)
+    buildQuery().range(0, PAGE - 1).then(({ data, error, count }) => {
       if (!alive) return
       if (error) console.error(error)
       setItems((data as unknown as TutorialListItem[]) ?? [])
+      setTotal(count ?? null)
     })
     return () => { alive = false }
-  }, [cat, sort])
+  }, [cat, sort]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadMore = async () => {
+    if (!items) return
+    setMoreBusy(true)
+    const { data, error, count } = await buildQuery().range(items.length, items.length + PAGE - 1)
+    setMoreBusy(false)
+    if (error) { console.error(error); return }
+    const seen = new Set(items.map(t => t.id))
+    setItems([...items, ...((data as unknown as TutorialListItem[]) ?? []).filter(t => !seen.has(t.id))])
+    if (count != null) setTotal(count)
+  }
 
   const visibleCats = cats.filter(c => counts[c.id])
   const selected = cats.find(c => c.id === cat)
@@ -105,22 +126,37 @@ export default function Home() {
 
       <AndroidAppCard />
 
-      {recent.length > 0 && (
-        <Shelf title="Continuar lendo" action={<MoreLink to="/meus?aba=recentes">Ver tudo</MoreLink>}>
-          {recent.map(t => <MiniCard key={t.id} t={t} sub={`Visto ${timeAgo(t.last_viewed)}`} />)}
-        </Shelf>
-      )}
+      {(recent.length > 0 || favorites.length > 0) && (() => {
+        const tabs = ([['recent', 'Continuar lendo', recent.length], ['favorites', 'Favoritos', favorites.length]] as const).filter(t => t[2] > 0)
+        const active = tabs.some(t => t[0] === shelfTab) ? shelfTab : tabs[0][0]
+        return (
+          <section>
+            <div className="mb-2 flex items-center justify-between gap-3 px-1">
+              <div role="tablist" aria-label="Seus tutoriais" className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto">
+                {tabs.map(([k, label, n]) => (
+                  <button key={k} role="tab" aria-selected={active === k} onClick={() => setShelfTab(k)}
+                    className={cn('inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[15px] font-semibold transition-colors',
+                      active === k ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'text-neutral-500 hover:bg-neutral-900/[.05] hover:text-neutral-800 dark:hover:bg-white/[.06] dark:hover:text-neutral-200')}>
+                    {k === 'recent' ? <History className="size-4" /> : <Bookmark className="size-4" />}{label}
+                    <span className={cn('text-[12px] tabular-nums', active === k ? 'opacity-60' : 'text-neutral-400')}>{n}</span>
+                  </button>
+                ))}
+              </div>
+              <MoreLink to={active === 'recent' ? '/meus?aba=recentes' : '/meus?aba=favoritos'}>Ver tudo</MoreLink>
+            </div>
+            <HScroll key={active} label={active === 'recent' ? 'Continuar lendo' : 'Favoritos'} className="-mx-4 flex gap-3 px-4 pb-1 sm:-mx-1 sm:px-1">
+              {active === 'recent'
+                ? recent.map(t => <MiniCard key={t.id} t={t} sub={`Visto ${timeAgo(t.last_viewed)}`} />)
+                : favorites.slice(0, 12).map(t => <MiniCard key={t.id} t={t} sub={t.author_name ?? undefined} />)}
+            </HScroll>
+          </section>
+        )
+      })()}
       {trails.length > 0 && (
         <Shelf title="Trilhas de aprendizado" action={<MoreLink to="/trilhas">Ver todas</MoreLink>}>
           {trails.map(t => <TrailCard key={t.id} t={t} compact onClick={() => nav(`/trilhas/${t.id}`)} />)}
         </Shelf>
       )}
-      {favorites.length > 0 && (
-        <Shelf title="Favoritos" action={<MoreLink to="/meus?aba=favoritos">Ver tudo</MoreLink>}>
-          {favorites.slice(0, 12).map(t => <MiniCard key={t.id} t={t} sub={t.author_name ?? undefined} />)}
-        </Shelf>
-      )}
-
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-3 px-1">
           <h2 className="text-[20px] font-bold tracking-tight text-neutral-900 dark:text-white">Todos os tutoriais</h2>
@@ -161,10 +197,25 @@ export default function Home() {
           </div>
         ) : items.length === 0 ? (
           <Empty icon={<BookOpenText className="size-12" strokeWidth={1.4} />} title={cat ? 'Nada nesta categoria ainda' : 'Nenhum tutorial ainda'}>
-            <Link to="/novo" className="mt-2 inline-flex items-center gap-1 font-medium text-accent-600"><Plus className="size-4" />Publicar o primeiro</Link>
+            <span className="mt-1 block max-w-sm text-[14px] text-neutral-500">Toda solução que você já aplicou em campo pode poupar horas de um colega. Comece com algo simples.</span>
+            <span className="mt-4 flex flex-wrap justify-center gap-2">
+              <Link to="/dica" className="press inline-flex h-10 items-center gap-1.5 rounded-full bg-brand-orange px-4 text-[14px] font-semibold text-white"><Zap className="size-4" />Dica rápida (30 s)</Link>
+              <Link to="/novo" className="press inline-flex h-10 items-center gap-1.5 rounded-full bg-neutral-900/[.06] px-4 text-[14px] font-semibold text-neutral-800 dark:bg-white/10 dark:text-neutral-100"><Plus className="size-4" />Tutorial completo</Link>
+            </span>
           </Empty>
         ) : (
-          <TutorialCollection items={items} mode={view} cats={cats} />
+          <>
+            <TutorialCollection items={items} mode={view} cats={cats} />
+            {total != null && total > items.length && (
+              <div className="flex flex-col items-center gap-2 pt-2">
+                <button onClick={loadMore} disabled={moreBusy}
+                  className="press inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-accent-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_2px_8px_-2px_rgb(0_0_0/0.12)] disabled:opacity-60 dark:bg-neutral-900 dark:text-accent-300">
+                  {moreBusy ? <Loader2 className="size-4 animate-spin" /> : <ChevronDown className="size-4" />}Carregar mais
+                </button>
+                <span className="text-[12.5px] text-neutral-500">Mostrando {items.length} de {total}</span>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>

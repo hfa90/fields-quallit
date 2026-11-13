@@ -41,7 +41,20 @@ export function NewChooser() {
 }
 
 /** Chamada na Biblioteca para incentivar a contribuição */
+// "Resolveu algo hoje?" aparece só na primeira abertura do dia (decidido uma vez por carregamento)
+let calloutToday: boolean | null = null
+function shouldShowCallout() {
+  if (calloutToday !== null) return calloutToday
+  const today = new Date().toLocaleDateString('pt-BR')
+  try {
+    calloutToday = localStorage.getItem('fq-callout-day') !== today
+    if (calloutToday) localStorage.setItem('fq-callout-day', today)
+  } catch { calloutToday = true }
+  return calloutToday
+}
+
 export function ShareCallout() {
+  if (!shouldShowCallout()) return null
   return (
     <button onClick={openNewChooser} className="press group flex w-full items-center gap-4 rounded-[16px] bg-white p-4 text-left ring-1 ring-brand-orange/30 dark:bg-neutral-900">
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-orange/15 text-brand-orange"><Zap className="size-5" /></span>

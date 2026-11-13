@@ -11,6 +11,7 @@ import { SearchPalette, openSearch } from './Search'
 import NotificationList from './NotificationList'
 import { NewChooser, openNewChooser } from './Engagement'
 import { WhatsNewOnce } from './VersionInfo'
+import { MarkAndroidApp, Onboarding, useOnboardingPending } from './Onboarding'
 import { refreshOffline, useOnline } from '../lib/offline'
 import { APK_URL, checkAppUpdate, openExternal, setNativeTheme } from '../lib/native'
 import { Download } from 'lucide-react'
@@ -23,6 +24,7 @@ export function Logo({ size = 30 }: { size?: number }) {
 export default function Layout({ children }: { children: ReactNode }) {
   const { profile, isAdmin, signOut } = useAuth()
   const { unread, markRead } = useNotifications()
+  const onboarding = useOnboardingPending()
   const nav = useNavigate()
   const loc = useLocation()
   const [menu, setMenu] = useState<'account' | 'notif' | null>(null)
@@ -194,7 +196,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
       <SearchPalette />
       <NewChooser />
-      <WhatsNewOnce />
+      <WhatsNewOnce suppress={onboarding} />
+      <Onboarding />
+      <MarkAndroidApp />
     </div>
   )
 }

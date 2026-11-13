@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { Download, WifiOff, Zap, Share2, ChevronRight } from 'lucide-react'
+import { Download, WifiOff, Zap, Share2, ChevronRight, Check } from 'lucide-react'
+import { ANDROID_PREF, usePref } from '../lib/prefs'
 import { ANDROID_PAGE, APK_URL, isNative } from '../lib/native'
 import { cn } from '../lib/utils'
 
@@ -17,25 +18,30 @@ function AndroidLogo({ className }: { className?: string }) {
 /**
  * Cartão de divulgação do app Android na página inicial.
  * No celular Android: botão de download direto. No computador: QR code para apontar a câmera.
- * Dentro do próprio app não aparece.
+ * Some para quem já usa o app (marcado automaticamente ao abrir o app) ou tocou em "Já tenho o app".
  */
 export default function AndroidAppCard({ compact }: { compact?: boolean }) {
   const [qr, setQr] = useState('')
   const [info, setInfo] = useState<{ versionName: string; size?: number } | null>(null)
   const onAndroid = /Android/i.test(navigator.userAgent)
+  const [hasApp, setHasApp] = usePref('android_app', ANDROID_PREF, 'no')
 
   useEffect(() => {
-    if (isNative) return
+    if (isNative || hasApp !== 'no') return
     if (!onAndroid) QRCode.toDataURL(ANDROID_PAGE, { margin: 1, width: 220, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr)
     fetch(`${import.meta.env.BASE_URL}downloads/version.json`).then(r => (r.ok ? r.json() : null)).then(setInfo).catch(() => {})
-  }, [onAndroid])
+  }, [onAndroid, hasApp])
 
-  if (isNative) return null
+  if (isNative || hasApp !== 'no') return null
 
   return (
     <section className="relative overflow-hidden rounded-[20px] bg-neutral-900 text-white dark:bg-neutral-900 dark:ring-1 dark:ring-white/10">
       {/* detalhe decorativo: robô do Android em marca d'água */}
       <AndroidLogo className="pointer-events-none absolute -bottom-6 -right-4 size-40 text-[#3ddc84] opacity-[.08]" />
+      <button onClick={() => setHasApp('dismissed')} title="Não mostrar mais"
+        className="absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[12px] font-medium text-white/75 hover:bg-white/15 hover:text-white">
+        <Check className="size-3.5" />Já tenho o app
+      </button>
       <div className={cn('relative flex flex-col gap-5 p-5', !compact && 'sm:flex-row sm:items-center sm:p-6')}>
         <div className="flex min-w-0 flex-1 items-start gap-4">
           <div className="relative shrink-0">
@@ -45,7 +51,7 @@ export default function AndroidAppCard({ compact }: { compact?: boolean }) {
             </span>
           </div>
           <div className="min-w-0">
-            <div className="text-[12px] font-semibold uppercase tracking-wider text-[#3ddc84]">Novo · App para Android</div>
+            <div className="pr-28 text-[12px] font-semibold uppercase tracking-wider text-[#3ddc84] sm:pr-0">Novo · App para Android</div>
             <h2 className="mt-0.5 text-[20px] font-bold leading-tight tracking-tight">Fields no seu celular</h2>
             <p className="mt-1 text-[14px] leading-relaxed text-white/65">Abra os tutoriais com um toque, use a câmera nos passos e consulte mesmo sem sinal em campo.</p>
             <div className={cn('mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-white/55', compact && 'hidden')}>
