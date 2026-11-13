@@ -21,12 +21,12 @@ window.fieldsSmokeTest = async function () {
   const now = new Date().toISOString()
   const author = { id: uid, full_name: 'Teste Local', email: 'teste@exemplo.invalid', avatar_url: null }
   const cat = { id: 'c1', name: 'Redes & VPN', icon: 'network', color: '#1a9ca9', sort_order: 1 }
-  const listItem = (id, code, kind, verified) => ({ id, short_code: code, title: `Tutorial ${code}`, summary: 'Resumo', category_id: 'c1', tags: ['vpn'], difficulty: 'basico', status: 'published', author_id: uid, created_at: now, updated_at: now, author_name: 'Teste Local', author_avatar: null, category_name: 'Redes & VPN', category_color: '#1a9ca9', category_icon: 'network', viewer_count: 3, view_count: 5, attachment_count: 1, helpful_count: 2, not_helpful_count: 0, comment_count: 1, outdated_count: 0, review_due: false, reviewed_at: now, verified, verified_at: verified ? now : null, verified_by_name: verified ? 'Teste Local' : null, kind, thanks_count: 2 })
-  const tut = { ...listItem('t1', 'TESTE1', 'quick', true), content_html: '<div data-callout="info"><p><strong>Problema:</strong> x</p></div><h2>Como resolver</h2><ol><li><p>Passo</p></li></ol><pre><code class="language-bash">ls</code></pre>', content_json: null, updated_by: null, review_interval_months: 6, reviewed_by: uid, verified_by: uid, author, editor: null, verifier: { full_name: 'Teste Local' }, category: cat }
-  const stats = { user_id: uid, full_name: 'Teste Local', avatar_url: null, email: 'teste@exemplo.invalid', role: 'admin', created_at: now, tutorials: 2, helpful_received: 2, comments: 1, requests_answered: 0, views_received: 5, followers: 1, points: 42 }
+  const listItem = (id, code, kind, verified) => ({ id, short_code: code, title: `Tutorial ${code}`, summary: 'Resumo', category_id: 'c1', tags: ['vpn'], difficulty: 'basico', status: 'published', author_id: uid, created_at: now, updated_at: now, author_name: 'Teste Local', author_avatar: null, category_name: 'Redes & VPN', category_color: '#1a9ca9', category_icon: 'network', viewer_count: 3, view_count: 5, attachment_count: 1, helpful_count: 2, not_helpful_count: 0, comment_count: 1, outdated_count: 0, review_due: false, reviewed_at: now, verified, verified_at: verified ? now : null, verified_by_name: verified ? 'Teste Local' : null, kind, thanks_count: 2, contributors_count: 1, author_cd: 'CD RIO DE JANEIRO' })
+  const tut = { ...listItem('t1', 'TESTE1', 'quick', true), content_html: '<div data-callout="info"><p><strong>Problema:</strong> x</p></div><h2>Como resolver</h2><ol><li><p>Passo</p></li></ol><pre><code class="language-bash">ls</code></pre>', content_json: null, updated_by: 'u2', review_interval_months: 6, reviewed_by: uid, verified_by: uid, author, editor: { full_name: 'Colega Field' }, verifier: { full_name: 'Teste Local' }, category: cat }
+  const stats = { user_id: uid, full_name: 'Teste Local', avatar_url: null, email: 'teste@exemplo.invalid', role: 'admin', created_at: now, tutorials: 2, helpful_received: 2, comments: 1, requests_answered: 0, views_received: 5, followers: 1, points: 42, cd_name: 'CD RIO DE JANEIRO' }
   const tables = {
     kb_tutorials_list: [listItem('t1', 'TESTE1', 'quick', true), listItem('t2', 'TESTE2', 'tutorial', false)],
-    kb_tutorials: [tut], kb_categories: [cat], kb_user_stats: [stats],
+    kb_tutorials: [tut], kb_categories: [cat], kb_user_stats: [stats, { ...stats, user_id: 'u2', full_name: 'Colega Field', tutorials: 0, points: 5, cd_name: 'CD MANAUS' }],
     kb_profiles: [{ ...author, role: 'admin', created_at: now, updated_at: now }],
     kb_comments: [{ id: 'm1', tutorial_id: 't1', request_id: null, parent_id: null, user_id: uid, kind: 'tip', body: 'Dica', resolved: false, created_at: now, updated_at: now, author }],
     kb_thanks: [{ user_id: 'u2', message: 'Salvou meu dia!', created_at: now, user: { full_name: 'Colega', email: 'c@exemplo.invalid', avatar_url: null }, tutorial: { title: 'Tutorial TESTE1', short_code: 'TESTE1', author_id: uid } }],
@@ -38,6 +38,8 @@ window.fieldsSmokeTest = async function () {
     kb_search_suggestions: { popular: ['vpn'], tags: ['vpn'], missing: [] },
     kb_search: [{ kind: 'tutorial', id: 't1', short_code: 'TESTE1', title: 'Tutorial TESTE1', snippet: 'com [[vpn]]', category_name: 'Redes', category_color: '#1a9ca9', category_icon: 'network', author_name: 'Teste', author_avatar: null, matched_in: 'título', score: 1, created_at: now, verified: true }],
     kb_my_recent: [{ tutorial_id: 't1', last_viewed: now }], kb_tutorial_viewers: [], kb_email_config_status: {},
+    kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 1, name: 'CD RIO DE JANEIRO' }, { id: 2, name: 'CD MANAUS' }],
+    kb_contributors: [{ user_id: 'u2', full_name: 'Colega Field', avatar_url: null, edits: 2, last_at: now }],
   }
   const orig = window.__origFetch || window.fetch
   window.__origFetch = orig

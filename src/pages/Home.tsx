@@ -10,6 +10,7 @@ import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/libra
 import TutorialCard, { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { HeroSearch } from '../components/Search'
 import AndroidAppCard from '../components/AndroidAppCard'
+import TeamStrip from '../components/TeamStrip'
 import { GapCard, ShareCallout, useGaps } from '../components/Engagement'
 import { TrailCard, type Trail } from './TrailPage'
 import { useNavigate } from 'react-router-dom'
@@ -86,6 +87,8 @@ export default function Home() {
         <h1 className="text-[32px] font-bold leading-tight tracking-tight text-neutral-900 sm:text-[34px] dark:text-white">Biblioteca</h1>
         <p className="mt-0.5 text-[15px] text-neutral-500">Olá, {profile?.full_name?.split(' ')[0] ?? ''}. Tudo o que o time sabe, em um só lugar.</p>
       </div>
+
+      <TeamStrip />
 
       <HeroSearch />
 

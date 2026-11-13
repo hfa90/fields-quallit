@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Zap, Mic, MicOff, Camera, ImagePlus, X, Send, ChevronLeft, PenTool, Info, HandHelping } from 'lucide-react'
+import { Zap, Camera, ImagePlus, X, Send, ChevronLeft, PenTool, Info, HandHelping } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { uploadImage } from '../lib/upload'
-import { useDictation } from '../lib/speech'
+import VoiceGuide from '../components/VoiceGuide'
 import type { Category } from '../lib/types'
 import { cn, errMsg } from '../lib/utils'
 import { Button, CategoryIcon, inputCls, labelCls, textareaCls } from '../components/ui'
@@ -41,7 +41,7 @@ export default function QuickTip() {
   const [busy, setBusy] = useState(false)
   const camRef = useRef<HTMLInputElement>(null)
   const galRef = useRef<HTMLInputElement>(null)
-  const dict = useDictation(t => setSolution(s => (s ? `${s}${/[.!?]$/.test(s) ? ' ' : '. '}` : '') + t.charAt(0).toUpperCase() + t.slice(1)))
+  const [active, setActive] = useState<'problem' | 'solution' | null>(null)
 
   useEffect(() => {
     supabase.from('kb_categories').select('*').order('sort_order').then(({ data }) => setCats(data ?? []))
@@ -97,30 +97,22 @@ export default function QuickTip() {
         </div>
       )}
 
+      <VoiceGuide name={profile?.full_name} problem={problem} solution={solution} setProblem={setProblem} setSolution={setSolution} onActive={setActive} />
+
       <section className="card space-y-4 p-4 sm:p-5">
         <div>
           <label className={labelCls}>1. Qual era o problema?</label>
-          <input className={inputCls} value={problem} onChange={e => setProblem(e.target.value)} maxLength={200}
+          <input className={cn(inputCls, active === 'problem' && 'shadow-[0_0_0_3px_var(--color-brand-orange)]')} value={problem} onChange={e => setProblem(e.target.value)} maxLength={200}
             placeholder="Ex.: Impressora Zebra imprimindo etiqueta em branco" autoFocus={!problem} />
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label className={cn(labelCls, 'mb-0')}>2. Como você resolveu?</label>
-            {dict.supported && (
-              <button type="button" onClick={dict.listening ? dict.stop : dict.start}
-                className={cn('press inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium',
-                  dict.listening ? 'animate-pulse bg-[#ff3b30] text-white' : 'bg-accent-500/10 text-accent-700 dark:text-accent-300')}>
-                {dict.listening ? <><MicOff className="size-4" />Parar</> : <><Mic className="size-4" />Falar</>}
-              </button>
-            )}
-          </div>
-          <textarea className={cn(textareaCls, 'min-h-[140px] resize-y')} value={solution} onChange={e => setSolution(e.target.value)}
+          <label className={labelCls}>2. Como você resolveu?</label>
+          <textarea className={cn(textareaCls, 'min-h-[140px] resize-y', active === 'solution' && 'shadow-[0_0_0_3px_var(--color-brand-orange)]')} value={solution} onChange={e => setSolution(e.target.value)}
             placeholder={'Ex.: Limpei o cabeçote com álcool isopropílico e recalibrei a mídia segurando o botão FEED por 2 segundos.\n\nDica: escreva um passo por linha (1. 2. 3.) que vira passo a passo automaticamente.'} />
           <p className="mt-1.5 flex items-start gap-1.5 text-[12px] text-neutral-500">
             <Info className="mt-0.5 size-3.5 shrink-0" />
-            {dict.supported ? 'Toque em “Falar” e dite a solução.' : 'Para ditar, toque no ícone de microfone do teclado do celular.'}
-            {dict.error && dict.error !== 'aborted' && ' (Não foi possível usar o microfone — verifique a permissão.)'}
+            Falando, diga “vírgula”, “ponto” ou “passo um, passo dois…” — eu organizo o texto. Sempre dá para corrigir digitando.
           </p>
         </div>
 

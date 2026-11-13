@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { ROLE_LABEL, cn, errMsg, timeAgo } from '../lib/utils'
 import { PUBLIC_URL } from '../lib/native'
+import { useCds } from '../lib/cds'
 import type { Role } from '../lib/types'
 import { LIST_COLS } from '../lib/library'
 import type { TutorialListItem } from '../lib/types'
@@ -93,15 +94,17 @@ export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onCl
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<Role>('field')
+  const [cdId, setCdId] = useState('')
+  const cds = useCds()
   const [password, setPassword] = useState(tempPassword)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<{ existed: boolean } | null>(null)
-  useEffect(() => { if (open) { setName(''); setEmail(''); setRole('field'); setPassword(tempPassword()); setDone(null) } }, [open])
+  useEffect(() => { if (open) { setName(''); setEmail(''); setRole('field'); setCdId(''); setPassword(tempPassword()); setDone(null) } }, [open])
 
   const create = async () => {
     setBusy(true)
     try {
-      const r = await callAdmin({ action: 'create', email, full_name: name, role, password })
+      const r = await callAdmin({ action: 'create', email, full_name: name, role, password, cd_id: cdId || null })
       setDone({ existed: !!r.existed }); onCreated()
       toast.success(r.existed ? 'Acesso liberado para usuário existente' : 'Usuário criado')
     } catch (e) { toast.error(errMsg(e)) } finally { setBusy(false) }
@@ -126,6 +129,13 @@ export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onCl
         <div className="space-y-4">
           <div><label className={labelCls}>Nome completo</label><input autoFocus className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="Nome do field" /></div>
           <div><label className={labelCls}>E-mail</label><input type="email" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@empresa.com.br" autoCapitalize="none" /></div>
+          <div>
+            <label className={labelCls}>CD onde atua</label>
+            <select className={inputCls} value={cdId} onChange={e => setCdId(e.target.value)}>
+              <option value="">Não definido</option>
+              {cds.map(c => <option key={c.id} value={c.id}>{c.nome}{c.uf ? ` · ${c.uf}` : ''}</option>)}
+            </select>
+          </div>
           <div>
             <label className={labelCls}>Nível de acesso</label>
             <div className="grid grid-cols-3 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">

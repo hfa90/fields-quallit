@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { HandHelping, FileUp, RotateCcw, CloudOff, Check, Loader2, CalendarClock, Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
+import { Pencil, HandHelping, FileUp, RotateCcw, CloudOff, Check, Loader2, CalendarClock, Save, Send, UploadCloud, X, Plus, Link2, Paperclip, ArrowLeft, Trash2, Tag, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -155,7 +155,8 @@ export default function TutorialEdit() {
 
   if (!isNew && loaded === undefined) return <Spinner label="Carregando tutorial…" />
   if (!isNew && loaded === null) return <NotFound message="Tutorial não encontrado" />
-  if (loaded && !(isModerator || loaded.author_id === profile?.id)) return <NotFound message="Você não tem permissão para editar este tutorial" />
+  const isOwner = !loaded || isModerator || loaded.author_id === profile?.id
+  if (loaded && !isOwner && loaded.status !== 'published') return <NotFound message="Você não tem permissão para editar este tutorial" />
 
   const touch = () => { dirty.current = true; autosave.schedule(() => latest.current()) }
 
@@ -235,7 +236,7 @@ export default function TutorialEdit() {
       }
       dirty.current = false
       await autosave.clear()
-      toast.success(status === 'published' ? (request ? 'Publicado e pedido atendido!' : 'Tutorial publicado!') : 'Rascunho salvo')
+      toast.success(!isOwner ? 'Melhoria salva! O autor foi avisado. 🙌' : status === 'published' ? (request ? 'Publicado e pedido atendido!' : 'Tutorial publicado!') : 'Rascunho salvo')
       nav(`/t/${shortCode}`, { replace: true, state: { inApp: true } })
     } catch (e) {
       toast.error(`Erro ao salvar: ${errMsg(e)}`)
@@ -255,6 +256,16 @@ export default function TutorialEdit() {
           </div>
         </div>
       </div>
+
+      {loaded && !isOwner && (
+        <div className="card flex items-start gap-3 p-4 ring-1 ring-accent-500/40">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-500/15 text-accent-600"><Pencil className="size-4" /></span>
+          <div className="min-w-0 text-[14px] text-neutral-700 dark:text-neutral-300">
+            <div className="font-semibold text-neutral-900 dark:text-white">Você está melhorando uma publicação de um colega</div>
+            Sua alteração aparece na publicação como <b>“Melhorado por {profile?.full_name}”</b>, o autor é avisado e a versão anterior fica guardada no histórico.
+          </div>
+        </div>
+      )}
 
       {recover && (
         <div className="card flex flex-col gap-3 p-4 ring-1 ring-accent-500/40 sm:flex-row sm:items-center">
@@ -386,7 +397,7 @@ export default function TutorialEdit() {
           </div>
           {(existing.length > 0 || newFiles.length > 0) && (
             <ul className="mt-4 space-y-2">
-              {existing.map(a => <FileRow key={a.id} name={a.file_name} mime={a.mime_type} size={a.size_bytes} onRemove={() => { setExisting(existing.filter(x => x.id !== a.id)); setRemoved([...removed, a]); touch() }} />)}
+              {existing.map(a => <FileRow key={a.id} name={a.file_name} mime={a.mime_type} size={a.size_bytes} onRemove={isOwner ? () => { setExisting(existing.filter(x => x.id !== a.id)); setRemoved([...removed, a]); touch() } : undefined} />)}
               {newFiles.map(f => <FileRow key={f.key} name={f.file.name} mime={f.file.type} size={f.file.size} isNew onRemove={() => setNewFiles(newFiles.filter(x => x.key !== f.key))} />)}
             </ul>
           )}
@@ -422,15 +433,15 @@ export default function TutorialEdit() {
             </span>
           )}
           <Button variant="ghost" onClick={() => nav(-1)} disabled={!!saving} className="hidden sm:inline-flex">Cancelar</Button>
-          <Button variant="secondary" loading={saving === 'draft'} disabled={!!saving} onClick={() => save('draft')} className="flex-1 sm:flex-none"><Save className="size-4" />Rascunho</Button>
-          <Button loading={saving === 'published'} disabled={!!saving} onClick={() => save('published')} className="flex-1 sm:flex-none"><Send className="size-4" />{saving && progress ? 'Salvando…' : 'Publicar'}</Button>
+          {isOwner && <Button variant="secondary" loading={saving === 'draft'} disabled={!!saving} onClick={() => save('draft')} className="flex-1 sm:flex-none"><Save className="size-4" />Rascunho</Button>}
+          <Button loading={saving === 'published'} disabled={!!saving} onClick={() => save('published')} className="flex-1 sm:flex-none"><Send className="size-4" />{saving && progress ? 'Salvando…' : isOwner ? 'Publicar' : 'Salvar melhoria'}</Button>
         </div>
       </div>
     </div>
   )
 }
 
-function FileRow({ name, mime, size, isNew, onRemove }: { name: string; mime?: string | null; size?: number | null; isNew?: boolean; onRemove: () => void }) {
+function FileRow({ name, mime, size, isNew, onRemove }: { name: string; mime?: string | null; size?: number | null; isNew?: boolean; onRemove?: () => void }) {
   const k = fileKind(name, mime)
   return (
     <li className="flex items-center gap-3 rounded-xl border border-neutral-200 p-2.5 dark:border-neutral-700">
@@ -439,7 +450,7 @@ function FileRow({ name, mime, size, isNew, onRemove }: { name: string; mime?: s
         <div className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">{name}</div>
         <div className="text-xs text-neutral-400">{FILE_STYLE[k].label} · {fileSize(size)}{isNew && <span className="ml-1.5 font-medium text-emerald-600">novo</span>}</div>
       </div>
-      <button type="button" onClick={onRemove} className="rounded-lg p-1.5 text-neutral-400 hover:bg-[#ff3b30]/10 hover:text-[#ff3b30] dark:hover:bg-[#ff3b30]/100/10"><X className="size-4" /></button>
+      {onRemove && <button type="button" onClick={onRemove} className="rounded-lg p-1.5 text-neutral-400 hover:bg-[#ff3b30]/10 hover:text-[#ff3b30] dark:hover:bg-[#ff3b30]/100/10"><X className="size-4" /></button>}
     </li>
   )
 }

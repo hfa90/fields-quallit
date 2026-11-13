@@ -19,6 +19,7 @@ const ICON: Record<string, { icon: typeof Bell; color: string }> = {
   review_due: { icon: RefreshCw, color: '#fe811e' },
   new_trail: { icon: FilePlus2, color: '#1a9ca9' },
   thanks: { icon: Heart, color: '#ff2d55' },
+  improved: { icon: RefreshCw, color: '#1a9ca9' },
   impact: { icon: Sparkles, color: '#fe811e' },
   gap_reminder: { icon: Zap, color: '#fe811e' },
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, UserPlus, UserCheck, FileText, ThumbsUp, HandHelping, Eye, Users } from 'lucide-react'
+import { ChevronLeft, UserPlus, UserCheck, FileText, ThumbsUp, HandHelping, Eye, Users, Building2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { TutorialListItem, UserStats } from '../lib/types'
@@ -46,7 +46,8 @@ export default function PersonPage() {
               <h1 className="text-[24px] font-bold tracking-tight text-neutral-900 dark:text-white">{u.full_name}</h1>
               <LevelBadge points={u.points} className="text-[12px]" />
             </div>
-            <div className="text-[14px] text-neutral-500">{ROLE_LABEL[u.role]} · na central desde {fmtDate(u.created_at)}</div>
+            {u.cd_name && <div className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-accent-500/10 px-3 py-1 text-[13px] font-semibold text-accent-700 dark:text-accent-300"><Building2 className="size-3.5" />{u.cd_name}</div>}
+            <div className="mt-1 text-[14px] text-neutral-500">{ROLE_LABEL[u.role]} · na central desde {fmtDate(u.created_at)}</div>
             <div className="mx-auto mt-3 max-w-xs sm:mx-0">
               <div className="flex justify-between text-[12px] text-neutral-500"><span><b className="text-neutral-900 dark:text-white">{u.points}</b> pontos</span>{l.next && <span>{l.next - u.points} para o próximo nível</span>}</div>
               <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"><div className="h-full rounded-full" style={{ width: `${pct}%`, background: l.color }} /></div>

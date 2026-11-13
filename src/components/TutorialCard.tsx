@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare, CalendarClock, CloudCheck, Zap, Heart } from 'lucide-react'
+import { Eye, Paperclip, ChevronRight, ThumbsUp, AlertTriangle, Bookmark, MessageSquare, CalendarClock, CloudCheck, Zap, Heart, Pencil } from 'lucide-react'
 import type { TutorialListItem } from '../lib/types'
 import { DIFFICULTY, cn, timeAgo } from '../lib/utils'
 import { useFavorites } from '../lib/library'
 import { useOfflineIds } from '../lib/offline'
+import { cdShort } from '../lib/cds'
 import { Avatar, CategoryIcon, VerifiedBadge } from './ui'
 
 export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: number }) {
@@ -48,11 +49,12 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
         )}
         <div className="mt-auto flex items-center gap-2 pt-4 text-[12px] text-neutral-500">
           <Avatar name={t.author_name} url={t.author_avatar} size={20} />
-          <span className="truncate">{t.author_name}</span>
+          <span className="truncate">{t.author_name}{t.author_cd && <span className="text-neutral-400"> · {cdShort(t.author_cd)}</span>}</span>
           <span className="text-neutral-300 dark:text-neutral-700">·</span>
           <span className="shrink-0">{timeAgo(t.created_at)}</span>
           <span className="ml-auto flex shrink-0 items-center gap-2.5">
             {offline && <span className="text-[#34c759]" title="Disponível offline"><CloudCheck className="size-3.5" /></span>}
+            {!!t.contributors_count && <span className="inline-flex items-center gap-1" title={`Melhorado por ${t.contributors_count} colega(s)`}><Pencil className="size-3.5" />{t.contributors_count}</span>}
             {!!t.thanks_count && <span className="inline-flex items-center gap-1 text-[#ff2d55]" title="Agradecimentos"><Heart className="size-3.5" />{t.thanks_count}</span>}
             {!!t.helpful_count && <span className="inline-flex items-center gap-1 text-[#248a3d] dark:text-[#30d158]" title="Funcionou para"><ThumbsUp className="size-3.5" />{t.helpful_count}</span>}
             {!!t.comment_count && <span className="inline-flex items-center gap-1" title="Comentários"><MessageSquare className="size-3.5" />{t.comment_count}</span>}

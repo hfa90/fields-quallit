@@ -8,6 +8,7 @@ export interface Profile {
   role: Role
   created_at: string
   updated_at: string
+  cd_id?: string | null
 }
 
 export interface Category {
@@ -75,6 +76,8 @@ export interface TutorialListItem {
   verified_by_name?: string | null
   kind?: 'tutorial' | 'quick'
   thanks_count?: number
+  contributors_count?: number
+  author_cd?: string | null
 }
 
 export interface LinkItem {
@@ -163,6 +166,7 @@ export interface UserStats {
   views_received: number
   followers: number
   points: number
+  cd_name?: string | null
 }
 
 export interface SearchResult {

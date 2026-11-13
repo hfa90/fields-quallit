@@ -14,6 +14,17 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.6.0', date: '2026-11-13', title: 'Voz guiada e time conectado',
+    items: [
+      'Botão “Contar por voz” em destaque: o Fields conduz a conversa — primeiro o problema, depois como resolveu',
+      'Transcrição mais precisa: entende termos como VPN, Wi-Fi, DHCP, Zebra e FortiClient, pontuação falada e “passo um, passo dois”',
+      'No app Android a voz agora usa o reconhecimento nativo do celular (atualize o app para a versão 1.1.0)',
+      'Cada Field vinculado ao CD onde atua, definido pelo administrador',
+      'Equipe Fields na página inicial: veja os colegas, o CD de cada um e as publicações deles',
+      'Edição colaborativa: qualquer Field pode melhorar uma publicação, com destaque “Melhorado por” e aviso ao autor',
+    ],
+  },
+  {
     version: '1.5.0', date: '2026-11-13', title: 'Compartilhar ficou mais fácil',
     items: [
       'Dica rápida: registre um problema resolvido em 30 segundos, com foto e ditado por voz',

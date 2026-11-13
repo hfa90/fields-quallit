@@ -52,6 +52,8 @@ export default function TutorialView() {
   const [savingOffline, setSavingOffline] = useState<string | null>(null)
   const [reload, setReload] = useState(0)
   const [verifying, setVerifying] = useState(false)
+  const [authorCd, setAuthorCd] = useState<string | null>(null)
+  const [contributors, setContributors] = useState<{ user_id: string; full_name: string | null; avatar_url: string | null; cd_name: string | null; edits: number; last_at: string }[]>([])
   const offlineIds = useOfflineIds()
   const trail = useTrailNav(t?.id)
 
@@ -81,6 +83,8 @@ export default function TutorialView() {
       ])
       if (!alive) return
       setLinks(l.data ?? []); setFiles(a.data ?? [])
+      supabase.rpc('kb_cd_of', { p_user: data.author_id }).then(({ data: cd }) => { if (alive) setAuthorCd((cd as string) ?? null) })
+      supabase.rpc('kb_contributors', { p_tutorial: data.id }).then(({ data: cs }) => { if (alive) setContributors((cs as typeof contributors) ?? []) })
       supabase.from('kb_comments').select('id', { count: 'exact', head: true }).eq('tutorial_id', data.id).eq('kind', 'outdated').eq('resolved', false)
         .then(({ count }) => { if (alive) setOutdated(count ?? 0) })
       await supabase.rpc('kb_register_view', { p_tutorial: data.id, p_via_share: cameFromSharedLink(code) })
@@ -100,6 +104,9 @@ export default function TutorialView() {
   if (t === null) return <NotFound message="Tutorial não encontrado ou sem permissão de acesso" />
 
   const canEdit = isModerator || t.author_id === profile?.id
+  // qualquer Field pode melhorar uma publicação publicada (fica registrado com o nome dele)
+  const canImprove = canEdit || t.status === 'published'
+  const improvedByOther = !!t.updated_by && t.updated_by !== t.author_id && !!t.editor?.full_name
   const d = DIFFICULTY[t.difficulty]
   const color = t.category?.color ?? '#8e8e93'
   const url = shortUrl(t.short_code)
@@ -175,7 +182,7 @@ export default function TutorialView() {
           <IconBtn title={favs.has(t.id) ? 'Remover dos favoritos' : 'Favoritar'} onClick={() => toggleFav(t.id)} className={favs.has(t.id) ? 'text-brand-orange dark:text-brand-orange' : ''}>
             <Bookmark className="size-[18px]" fill={favs.has(t.id) ? 'currentColor' : 'none'} />
           </IconBtn>
-          {canEdit && <IconBtn title="Editar" onClick={() => nav(`/t/${t.short_code}/editar`)}><Pencil className="size-[18px]" /></IconBtn>}
+          {canImprove && !offlineCopy && <IconBtn title={canEdit ? 'Editar' : 'Melhorar esta publicação'} onClick={() => nav(`/t/${t.short_code}/editar`)}><Pencil className="size-[18px]" /></IconBtn>}
           {canEdit && <IconBtn title="Excluir" onClick={() => setConfirmDel(true)} className="text-[#ff3b30]"><Trash2 className="size-[18px]" /></IconBtn>}
           <IconBtn title="Compartilhar" onClick={quickShare}><Share className="size-[18px]" /></IconBtn>
         </div>
@@ -225,7 +232,7 @@ export default function TutorialView() {
             <div className="mt-5 flex items-center gap-3">
               <Link to={`/pessoa/${t.author_id}`}><Avatar name={t.author?.full_name} email={t.author?.email} url={t.author?.avatar_url} size={36} /></Link>
               <div className="min-w-0 flex-1 text-[13px] leading-tight">
-                <Link to={`/pessoa/${t.author_id}`} className="block truncate text-[15px] font-medium text-neutral-900 hover:underline dark:text-neutral-100">{t.author?.full_name}</Link>
+                <Link to={`/pessoa/${t.author_id}`} className="block truncate text-[15px] font-medium text-neutral-900 hover:underline dark:text-neutral-100">{t.author?.full_name}{authorCd && <span className="ml-1.5 rounded-md bg-accent-500/10 px-1.5 py-px align-middle text-[11px] font-semibold text-accent-700 dark:text-accent-300">{authorCd}</span>}</Link>
                 <div className="mt-0.5 text-neutral-500">{fmtDate(t.created_at)} · {readingTime(t.content_html)} min de leitura · {viewers?.length ?? '–'} {viewers?.length === 1 ? 'leitor' : 'leitores'}</div>
               </div>
               {t.author_id !== profile?.id && (
@@ -237,6 +244,27 @@ export default function TutorialView() {
                 </button>
               )}
             </div>
+            {(improvedByOther || contributors.length > 0) && (
+              <div className="no-print mt-5 rounded-[12px] border border-accent-500/25 bg-accent-500/[.06] px-4 py-3">
+                {improvedByOther && (
+                  <div className="flex items-center gap-2 text-[14px] text-neutral-800 dark:text-neutral-200">
+                    <Pencil className="size-4 shrink-0 text-accent-600" />
+                    <span><b>Melhorado por {t.editor?.full_name}</b> {timeAgo(t.updated_at)}{(() => { const c = contributors.find(x => x.full_name === t.editor?.full_name); return c?.cd_name ? ` · ${c.cd_name}` : '' })()}</span>
+                  </div>
+                )}
+                {contributors.length > 0 && (
+                  <div className={cn('flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-600 dark:text-neutral-400', improvedByOther && 'mt-2')}>
+                    <span className="font-medium">Colaboraram:</span>
+                    {contributors.map(c => (
+                      <Link key={c.user_id} to={`/pessoa/${c.user_id}`} className="inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1)] dark:bg-neutral-800">
+                        <Avatar name={c.full_name} url={c.avatar_url} size={16} />{c.full_name}{c.cd_name ? ` · ${c.cd_name}` : ''}
+                      </Link>
+                    ))}
+                    <button onClick={() => setHistory(true)} className="ml-1 font-medium text-accent-600 dark:text-accent-400">ver o que mudou</button>
+                  </div>
+                )}
+              </div>
+            )}
             {outdated > 0 && (
               <button onClick={() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' })}
                 className="no-print mt-5 flex w-full items-center gap-3 rounded-[12px] bg-brand-orange/10 px-4 py-3 text-left">
@@ -262,7 +290,7 @@ export default function TutorialView() {
             Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
             {t.reviewed_at && <> · {reviewDue ? <span className="font-medium text-brand-orange">revisão pendente</span> : <>revisado {timeAgo(t.reviewed_at)}</>}</>}
           </p>
-          {!offlineCopy && t.kind === 'quick' && canEdit && (
+          {!offlineCopy && t.kind === 'quick' && canImprove && (
             <div className="no-print mx-auto mt-6 flex max-w-[720px] flex-col gap-3 rounded-[14px] bg-brand-orange/[.08] p-4 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1 text-[14px] text-neutral-700 dark:text-neutral-300">
                 <b>Esta é uma dica rápida.</b> Quando tiver um tempinho, transforme em tutorial completo com mais passos, prints e anexos.
@@ -353,7 +381,7 @@ export default function TutorialView() {
         </aside>
       </div>
 
-      {!offlineCopy && <VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canEdit} onRestored={() => setReload(r => r + 1)} />}
+      {!offlineCopy && <VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canImprove} onRestored={() => setReload(r => r + 1)} />}
       <ShareDialog open={share} onClose={() => setShare(false)} url={url} title={t.title} />
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="Excluir tutorial?">
         <p className="text-[15px] text-neutral-600 dark:text-neutral-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Não é possível desfazer.</p>

@@ -1,5 +1,5 @@
 // Cadastro de usuários pelo administrador da central Fields.
-//  POST { action: 'create', email, full_name, role, password }
+//  POST { action: 'create', email, full_name, role, password, cd_id? }
 //  POST { action: 'reset_password', user_id, password }
 // Só administradores da central (kb_profiles.role = 'admin') podem chamar.
 // O usuário criado já entra com e-mail confirmado e precisa trocar a senha no primeiro acesso.
@@ -36,6 +36,7 @@ Deno.serve(async req => {
       const full_name = String(body.full_name ?? '').trim()
       const role = String(body.role ?? 'field')
       const password = String(body.password ?? '')
+      const cd_id = body.cd_id ? String(body.cd_id) : null
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'E-mail inválido' }, 400)
       if (full_name.length < 2) return json({ error: 'Informe o nome' }, 400)
       if (!ROLES.includes(role)) return json({ error: 'Nível de acesso inválido' }, 400)
@@ -62,7 +63,7 @@ Deno.serve(async req => {
       // O administrador principal nunca é rebaixado
       const { data: owners } = await admin.from('kb_settings').select('value').eq('key', 'owner_emails').maybeSingle()
       const isOwner = ((owners?.value as string[] | undefined) ?? []).some(o => o.toLowerCase() === email)
-      const { error: pe } = await admin.from('kb_profiles').upsert({ id: userId, email, full_name, role: isOwner ? 'admin' : role }, { onConflict: 'id' })
+      const { error: pe } = await admin.from('kb_profiles').upsert({ id: userId, email, full_name, role: isOwner ? 'admin' : role, cd_id }, { onConflict: 'id' })
       if (pe) return json({ error: pe.message }, 400)
       return json({ ok: true, user_id: userId, existed })
     }

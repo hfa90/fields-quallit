@@ -12,6 +12,7 @@ import { NewUserModal, ResetPasswordModal, ReviewTab } from './AdminExtra'
 import { CalendarClock, UserPlus, KeyRound, DatabaseBackup } from 'lucide-react'
 import BackupTab from './BackupTab'
 import { versionLabel } from '../lib/version'
+import { useCds } from '../lib/cds'
 
 type Tab = 'users' | 'categories' | 'stats' | 'review' | 'backup'
 const OWNER = 'haydenfernandes.ti@gmail.com'
@@ -54,6 +55,7 @@ function UsersTab() {
   const [saving, setSaving] = useState<string | null>(null)
   const [newOpen, setNewOpen] = useState(false)
   const [resetUser, setResetUser] = useState<UserRow | null>(null)
+  const cds = useCds()
 
   const load = async () => {
     const [p, t, v] = await Promise.all([
@@ -74,6 +76,15 @@ function UsersTab() {
     if (error) return toast.error(errMsg(error))
     toast.success(`${u.full_name || u.email} agora é ${ROLE_LABEL[role]}`)
     setRows(rows!.map(r => r.id === u.id ? { ...r, role } : r))
+  }
+
+  const setCd = async (u: UserRow, cd_id: string | null) => {
+    setSaving(u.id)
+    const { error } = await supabase.from('kb_profiles').update({ cd_id }).eq('id', u.id)
+    setSaving(null)
+    if (error) return toast.error(errMsg(error))
+    toast.success(cd_id ? `${u.full_name || u.email} vinculado a ${cds.find(c => c.id === cd_id)?.nome}` : 'CD removido')
+    setRows(rows!.map(r => r.id === u.id ? { ...r, cd_id } as UserRow : r))
   }
 
   const list = useMemo(() => {
@@ -125,7 +136,7 @@ function UsersTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:bg-neutral-800/50">
-              <tr><th className="px-4 py-3">Usuário</th><th className="px-4 py-3">Nível de acesso</th><th className="px-4 py-3 text-center">Tutoriais</th><th className="px-4 py-3 text-center">Leituras</th><th className="px-4 py-3">Desde</th><th className="px-4 py-3"></th></tr>
+              <tr><th className="px-4 py-3">Usuário</th><th className="px-4 py-3">Nível de acesso</th><th className="px-4 py-3">CD</th><th className="px-4 py-3 text-center">Tutoriais</th><th className="px-4 py-3 text-center">Leituras</th><th className="px-4 py-3">Desde</th><th className="px-4 py-3"></th></tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {list.map(u => {
@@ -156,6 +167,14 @@ function UsersTab() {
                           <option value="blocked">Bloqueado</option>
                         </select>
                       )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select value={(u as UserRow & { cd_id?: string | null }).cd_id ?? ''} disabled={saving === u.id}
+                        onChange={e => setCd(u, e.target.value || null)}
+                        className="max-w-44 rounded-lg bg-neutral-900/[.05] px-2 py-1.5 text-xs font-medium outline-none dark:bg-white/10">
+                        <option value="">—</option>
+                        {cds.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                      </select>
                     </td>
                     <td className="px-4 py-3 text-center font-medium">{u.tutorials}</td>
                     <td className="px-4 py-3 text-center font-medium">{u.views}</td>
