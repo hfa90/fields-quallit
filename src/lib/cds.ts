@@ -9,9 +9,18 @@ export function useCds() {
   const [cds, setCds] = useState<CD[]>(cache ?? [])
   useEffect(() => {
     if (cache) return
-    supabase.rpc('kb_list_cds').then(({ data }) => { cache = (data as CD[]) ?? []; setCds(cache) })
+    supabase.rpc('kb_list_cds').then(({ data, error }) => {
+      if (error || !data) return // não guarda falha: tenta de novo na próxima tela
+      cache = data as CD[]; setCds(cache)
+    })
   }, [])
   return cds
+}
+
+/** Descobre a UF de um CD pelo nome (usa o cadastro de CDs) */
+export function useCdUf() {
+  const cds = useCds()
+  return (name?: string | null) => (name ? cds.find(c => c.nome === name)?.uf ?? null : null)
 }
 
 /** "CD RIO DE JANEIRO" -> "Rio de Janeiro" (nome curto para etiquetas) */

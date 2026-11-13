@@ -1,50 +1,58 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, MapPin } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { UserStats } from '../lib/types'
-import { cdShort } from '../lib/cds'
-import { Avatar } from './ui'
+import { cdShort, useCdUf } from '../lib/cds'
+import StateBadge from './StateBadge'
 
 /**
- * Faixa com os Fields da equipe (foto, nome e CD) acima da busca.
- * Tocar em alguém abre o perfil com as publicações dele.
+ * "Fields pelo Brasil": cada Field aparece com o mapa do estado do seu CD,
+ * pintado com a bandeira do estado. Tocar abre o perfil com as publicações.
  */
 export default function TeamStrip() {
   const [people, setPeople] = useState<UserStats[] | null>(null)
+  const ufOf = useCdUf()
   useEffect(() => {
     supabase.from('kb_user_stats').select('user_id,full_name,avatar_url,email,points,tutorials,cd_name,role,created_at')
       .order('points', { ascending: false }).limit(40)
       .then(({ data }) => setPeople((data as UserStats[]) ?? []))
   }, [])
 
-  if (!people) return <div className="no-scrollbar -mx-4 flex gap-3 overflow-hidden px-4">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-[104px] w-[76px] shrink-0 animate-pulse rounded-2xl bg-neutral-200/60 dark:bg-neutral-800" />)}</div>
+  if (!people) return <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-hidden px-4">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="card h-[160px] w-[128px] shrink-0 animate-pulse" />)}</div>
   if (people.length === 0) return null
+  const cds = new Set(people.map(p => p.cd_name).filter(Boolean)).size
 
   return (
     <section>
-      <div className="mb-2 flex items-end justify-between px-1">
-        <h2 className="text-[13px] font-medium uppercase tracking-wide text-neutral-500">Equipe Fields</h2>
-        <Link to="/comunidade?aba=ranking" className="flex items-center text-[13px] text-accent-600 dark:text-accent-400">Ver todos<ChevronRight className="size-4" /></Link>
+      <div className="mb-2.5 flex items-end justify-between gap-3 px-1">
+        <div>
+          <h2 className="text-[20px] font-bold tracking-tight text-neutral-900 dark:text-white">Fields pelo Brasil</h2>
+          <p className="text-[13px] text-neutral-500">{people.length} {people.length === 1 ? 'Field' : 'Fields'}{cds > 0 && ` em ${cds} ${cds === 1 ? 'CD' : 'CDs'}`} · toque para ver as publicações</p>
+        </div>
+        <Link to="/comunidade?aba=ranking" className="flex shrink-0 items-center text-[15px] text-accent-600 dark:text-accent-400">Ver todos<ChevronRight className="size-4" /></Link>
       </div>
-      <div className="no-scrollbar -mx-4 flex gap-1 overflow-x-auto px-3 pb-1 sm:-mx-1 sm:px-0">
-        {people.map(p => (
-          <Link key={p.user_id} to={`/pessoa/${p.user_id}`} className="press flex w-[78px] shrink-0 flex-col items-center rounded-2xl px-1 py-1.5 text-center hover:bg-neutral-900/[.04] dark:hover:bg-white/[.05]"
-            title={`${p.full_name ?? ''}${p.cd_name ? ` · ${p.cd_name}` : ''}`}>
-            <span className="relative">
-              <span className="block rounded-full p-[2px]" style={{ background: p.tutorials > 0 ? 'linear-gradient(135deg,#1a9ca9,#fe811e)' : 'transparent', boxShadow: p.tutorials > 0 ? undefined : 'inset 0 0 0 1.5px rgb(0 0 0 / .1)' }}>
-                <span className="block rounded-full bg-neutral-50 p-[2px] dark:bg-neutral-950">
-                  <Avatar name={p.full_name} email={p.email} url={p.avatar_url} size={54} />
-                </span>
-              </span>
-              {p.tutorials > 0 && (
-                <span className="absolute -bottom-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand-orange px-1 text-[10px] font-bold text-white ring-2 ring-neutral-50 dark:ring-neutral-950" title={`${p.tutorials} publicações`}>{p.tutorials}</span>
-              )}
-            </span>
-            <span className="mt-1.5 w-full truncate text-[12px] font-semibold text-neutral-900 dark:text-white">{(p.full_name ?? p.email).split(' ')[0]}</span>
-            <span className="w-full truncate text-[10.5px] font-medium text-accent-700 dark:text-accent-400">{p.cd_name ? cdShort(p.cd_name) : '—'}</span>
-          </Link>
-        ))}
+      <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 pt-0.5 sm:-mx-1 sm:px-1">
+        {people.map(p => {
+          const uf = ufOf(p.cd_name)
+          const first = (p.full_name ?? p.email).split(' ')
+          return (
+            <Link key={p.user_id} to={`/pessoa/${p.user_id}`} title={`${p.full_name ?? ''}${p.cd_name ? ` · ${p.cd_name}` : ''}`}
+              className="card press group flex w-[128px] shrink-0 flex-col overflow-hidden transition-shadow hover:shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_8px_20px_-8px_rgb(0_0_0/0.18)]">
+              <div className="relative grid h-[96px] place-items-center pt-2 bg-[radial-gradient(circle_at_50%_40%,rgb(26_156_169/0.10),transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_40%,rgb(26_156_169/0.16),transparent_70%)]">
+                <StateBadge uf={uf} size={90} className="transition-transform duration-300 group-hover:scale-105" />
+                {uf && <span className="absolute left-2 top-2 rounded-md bg-neutral-900/75 px-1.5 py-px text-[10px] font-bold tracking-wide text-white backdrop-blur dark:bg-white/85 dark:text-neutral-900">{uf}</span>}
+                {p.tutorials > 0 && <span className="absolute right-2 top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brand-orange px-1 text-[10px] font-bold text-white" title={`${p.tutorials} publicações`}>{p.tutorials}</span>}
+              </div>
+              <div className="px-2.5 pb-2.5 pt-1.5">
+                <div className="truncate text-[13.5px] font-semibold text-neutral-900 dark:text-white">{first[0]}{first.length > 1 && ` ${first[first.length - 1][0]}.`}</div>
+                <div className="mt-0.5 flex items-center gap-1 text-[11.5px] font-medium text-accent-700 dark:text-accent-400">
+                  <MapPin className="size-3 shrink-0" /><span className="truncate">{p.cd_name ? cdShort(p.cd_name) : 'CD não informado'}</span>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
       </div>
     </section>
   )

@@ -11,12 +11,15 @@ import TutorialCard from '../components/TutorialCard'
 import { LevelBadge } from './Community'
 import { ImpactCard } from '../components/Engagement'
 import NotFound from './NotFound'
+import StateBadge from '../components/StateBadge'
+import { useCdUf } from '../lib/cds'
 
 export default function PersonPage() {
   const { id = '' } = useParams()
   const nav = useNavigate()
   const { profile } = useAuth()
   const follows = useFollows()
+  const ufOf = useCdUf()
   const [u, setU] = useState<UserStats | null | undefined>(undefined)
   const [items, setItems] = useState<TutorialListItem[] | null>(null)
 
@@ -46,7 +49,7 @@ export default function PersonPage() {
               <h1 className="text-[24px] font-bold tracking-tight text-neutral-900 dark:text-white">{u.full_name}</h1>
               <LevelBadge points={u.points} className="text-[12px]" />
             </div>
-            {u.cd_name && <div className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-accent-500/10 px-3 py-1 text-[13px] font-semibold text-accent-700 dark:text-accent-300"><Building2 className="size-3.5" />{u.cd_name}</div>}
+            {u.cd_name && <div className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-accent-500/10 px-3 py-1 text-[13px] font-semibold text-accent-700 dark:text-accent-300">{ufOf(u.cd_name) ? <StateBadge uf={ufOf(u.cd_name)} size={20} /> : <Building2 className="size-3.5" />}{u.cd_name}</div>}
             <div className="mt-1 text-[14px] text-neutral-500">{ROLE_LABEL[u.role]} · na central desde {fmtDate(u.created_at)}</div>
             <div className="mx-auto mt-3 max-w-xs sm:mx-0">
               <div className="flex justify-between text-[12px] text-neutral-500"><span><b className="text-neutral-900 dark:text-white">{u.points}</b> pontos</span>{l.next && <span>{l.next - u.points} para o próximo nível</span>}</div>

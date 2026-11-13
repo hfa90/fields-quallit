@@ -38,7 +38,7 @@ window.fieldsSmokeTest = async function () {
     kb_search_suggestions: { popular: ['vpn'], tags: ['vpn'], missing: [] },
     kb_search: [{ kind: 'tutorial', id: 't1', short_code: 'TESTE1', title: 'Tutorial TESTE1', snippet: 'com [[vpn]]', category_name: 'Redes', category_color: '#1a9ca9', category_icon: 'network', author_name: 'Teste', author_avatar: null, matched_in: 'título', score: 1, created_at: now, verified: true }],
     kb_my_recent: [{ tutorial_id: 't1', last_viewed: now }], kb_tutorial_viewers: [], kb_email_config_status: {},
-    kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 1, name: 'CD RIO DE JANEIRO' }, { id: 2, name: 'CD MANAUS' }],
+    kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 'cd1', codigo: 'CD-RJ', nome: 'CD RIO DE JANEIRO', cidade: 'RIO DE JANEIRO', uf: 'RJ' }, { id: 'cd2', codigo: 'CD-AM', nome: 'CD MANAUS', cidade: 'MANAUS', uf: 'AM' }],
     kb_contributors: [{ user_id: 'u2', full_name: 'Colega Field', avatar_url: null, edits: 2, last_at: now }],
   }
   const orig = window.__origFetch || window.fetch

@@ -14,6 +14,13 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.6.1', date: '2026-11-13', title: 'Fields pelo Brasil',
+    items: [
+      'Cada Field aparece com o mapa do estado do seu CD, pintado com a bandeira do estado',
+      'O mapa do estado também aparece no perfil de cada Field',
+    ],
+  },
+  {
     version: '1.6.0', date: '2026-11-13', title: 'Voz guiada e time conectado',
     items: [
       'Botão “Contar por voz” em destaque: o Fields conduz a conversa — primeiro o problema, depois como resolveu',
