@@ -50,6 +50,7 @@ export default function TutorialView() {
   const [offlineCopy, setOfflineCopy] = useState<OfflineBundle | null>(null)
   const [savingOffline, setSavingOffline] = useState<string | null>(null)
   const [reload, setReload] = useState(0)
+  const [verifying, setVerifying] = useState(false)
   const offlineIds = useOfflineIds()
   const trail = useTrailNav(t?.id)
 
@@ -57,18 +58,18 @@ export default function TutorialView() {
     let alive = true
     setT(undefined); setOfflineCopy(null)
     ;(async () => {
-      const useOffline = async () => {
+      const loadOfflineCopy = async () => {
         const b = await getOfflineByCode(code)
         if (!alive) return true
         if (b) { setOfflineCopy(b); setT(b.tutorial); setLinks(b.links); setFiles(b.files); setViewers([]); document.title = `${b.title} · Fields`; return true }
         return false
       }
-      if (!navigator.onLine && await useOffline()) return
+      if (!navigator.onLine && await loadOfflineCopy()) return
       const { data, error } = await supabase.from('kb_tutorials').select(FULL_SELECT).eq('short_code', code).maybeSingle()
       if (!alive) return
       if (error) {
         console.error(error)
-        if (isNetworkError(error) && await useOffline()) return
+        if (isNetworkError(error) && await loadOfflineCopy()) return
       }
       setT((data as Full) ?? null)
       if (!data) return
@@ -128,7 +129,6 @@ export default function TutorialView() {
       toast.success('Disponível offline', { description: `Você pode abrir este tutorial sem internet (${Math.max(1, Math.round(b.bytes / 1048576))} MB).` })
     } catch (e) { toast.error(errMsg(e)) } finally { setSavingOffline(null) }
   }
-  const [verifying, setVerifying] = useState(false)
   const toggleVerified = async () => {
     setVerifying(true)
     const on = !t.verified_at
