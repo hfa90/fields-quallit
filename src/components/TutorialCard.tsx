@@ -4,7 +4,7 @@ import type { TutorialListItem } from '../lib/types'
 import { DIFFICULTY, cn, timeAgo } from '../lib/utils'
 import { useFavorites } from '../lib/library'
 import { useOfflineIds } from '../lib/offline'
-import { Avatar, CategoryIcon } from './ui'
+import { Avatar, CategoryIcon, VerifiedBadge } from './ui'
 
 export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: number }) {
   const { favs, toggle } = useFavorites()
@@ -23,6 +23,7 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
           <span className="text-neutral-300 dark:text-neutral-700">·</span>
           {t.status === 'draft' ? <span className="text-brand-orange">Rascunho</span> : <span className="text-neutral-500">{d.label}</span>}
         </div>
+        {t.verified && <div className="mt-2"><VerifiedBadge title={t.verified_by_name ? `Verificado por ${t.verified_by_name}` : undefined} /></div>}
         <h3 className="mt-2 text-[17px] font-semibold leading-snug tracking-tight text-neutral-900 line-clamp-2 dark:text-white">{t.title}</h3>
         {t.summary && <p className="mt-1 text-[14px] leading-relaxed text-neutral-500 line-clamp-2">{t.summary}</p>}
         {!!t.outdated_count && (

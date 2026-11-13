@@ -4,7 +4,7 @@ import { Search, X, Clock, TrendingUp, Hash, FileText, HandHelping, UserRound, C
 import { supabase } from '../lib/supabase'
 import type { SearchResult } from '../lib/types'
 import { cn, highlight } from '../lib/utils'
-import { Avatar, CategoryIcon } from './ui'
+import { Avatar, CategoryIcon, VerifiedBadge } from './ui'
 
 // ---------- abrir a busca de qualquer lugar ----------
 const openers = new Set<(q?: string) => void>()
@@ -81,6 +81,7 @@ export function ResultRow({ r, active, onClick, big }: { r: SearchResult; active
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
           <span className={cn('truncate font-medium text-neutral-900 dark:text-white', big ? 'text-[16px]' : 'text-[15px]')}>{r.title}</span>
+          {r.verified && <VerifiedBadge />}
           <span className="shrink-0 rounded-[5px] bg-neutral-900/[.05] px-1.5 py-px text-[11px] font-medium text-neutral-500 dark:bg-white/10">{r.matched_in}</span>
         </span>
         {r.snippet && r.kind !== 'person' && (

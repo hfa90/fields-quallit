@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 export function Portal({ children }: { children: ReactNode }) {
   return createPortal(children, document.body)
 }
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, BadgeCheck } from 'lucide-react'
 import { CATEGORY_ICONS } from './categoryIcons'
 import { avatarColor, cn, initials } from '../lib/utils'
 
@@ -112,3 +112,14 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
 export const inputCls = 'w-full rounded-[10px] bg-white px-3.5 h-11 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none transition shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] focus:shadow-[0_0_0_2px_var(--color-accent-500)] dark:bg-neutral-900 dark:text-white dark:placeholder:text-neutral-500 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.15)]'
 export const textareaCls = inputCls.replace('h-11', 'py-2.5')
 export const labelCls = 'mb-1.5 block text-[13px] font-medium text-neutral-600 dark:text-neutral-400'
+
+/** Selo "Verificado" (tutorial revisado e aprovado por um Field Administrador) */
+export function VerifiedBadge({ size = 'sm', title }: { size?: 'sm' | 'md'; title?: string }) {
+  return (
+    <span title={title ?? 'Verificado por um Field Administrador'}
+      className={cn('inline-flex shrink-0 items-center gap-1 rounded-full bg-accent-500/12 font-semibold text-accent-700 dark:bg-accent-400/15 dark:text-accent-300',
+        size === 'md' ? 'px-2.5 py-1 text-[13px]' : 'px-2 py-0.5 text-[11px]')}>
+      <BadgeCheck className={size === 'md' ? 'size-4' : 'size-3.5'} />Verificado
+    </span>
+  )
+}

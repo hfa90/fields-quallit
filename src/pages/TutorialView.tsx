@@ -10,7 +10,7 @@ import { DIFFICULTY, cn, errMsg, fmtDate, fmtDateTime, readingTime, shortUrl, ti
 import TutorialContent, { type Heading } from '../components/TutorialContent'
 import ShareDialog from '../components/ShareDialog'
 import { AttachmentList, LinkList } from '../components/Attachments'
-import { Avatar, Button, CategoryIcon, Modal, SectionTitle, Spinner } from '../components/ui'
+import { Avatar, Button, CategoryIcon, Modal, SectionTitle, Spinner, VerifiedBadge } from '../components/ui'
 import Comments, { Feedback } from '../components/Comments'
 import { useFavorites, useFollows } from '../lib/library'
 import type { CommentKind } from '../lib/types'
@@ -23,6 +23,7 @@ import { useTrailNav } from './TrailPage'
 type Full = Tutorial & {
   author: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
   editor: Pick<Profile, 'full_name'> | null
+  verifier?: Pick<Profile, 'full_name'> | null
   category: Category | null
 }
 
@@ -127,6 +128,16 @@ export default function TutorialView() {
       toast.success('Disponível offline', { description: `Você pode abrir este tutorial sem internet (${Math.max(1, Math.round(b.bytes / 1048576))} MB).` })
     } catch (e) { toast.error(errMsg(e)) } finally { setSavingOffline(null) }
   }
+  const [verifying, setVerifying] = useState(false)
+  const toggleVerified = async () => {
+    setVerifying(true)
+    const on = !t.verified_at
+    const { error } = await supabase.rpc('kb_set_verified', { p_tutorial: t.id, p_verified: on })
+    setVerifying(false)
+    if (error) return toast.error(errMsg(error))
+    toast.success(on ? 'Tutorial verificado — ele agora aparece primeiro na busca e na biblioteca' : 'Verificação removida')
+    setReload(r => r + 1)
+  }
   const markReviewed = async () => {
     const { error } = await supabase.rpc('kb_mark_reviewed', { p_tutorial: t.id, p_resolve_outdated: true })
     if (error) return toast.error(errMsg(error))
@@ -201,6 +212,12 @@ export default function TutorialView() {
               <span className="text-neutral-500">{d.label}</span>
               {t.status === 'draft' && <><span className="text-neutral-300 dark:text-neutral-700">·</span><span className="text-[#ff9500]">Rascunho — visível só para você e moderadores</span></>}
             </div>
+            {t.verified_at && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <VerifiedBadge size="md" />
+                <span className="text-[13px] text-neutral-500">{t.verifier?.full_name ? `por ${t.verifier.full_name} · ` : ''}{timeAgo(t.verified_at)}</span>
+              </div>
+            )}
             <h1 className="mt-2 text-[28px] font-bold leading-[1.15] tracking-tight text-neutral-900 sm:text-[36px] dark:text-white">{t.title}</h1>
             {t.summary && <p className="mt-3 text-[17px] leading-relaxed text-neutral-500 sm:text-[19px]">{t.summary}</p>}
             <div className="mt-5 flex items-center gap-3">
@@ -243,6 +260,18 @@ export default function TutorialView() {
             Atualizado {timeAgo(t.updated_at)}{t.editor?.full_name ? ` por ${t.editor.full_name}` : ''} · {fmtDateTime(t.updated_at)}
             {t.reviewed_at && <> · {reviewDue ? <span className="font-medium text-brand-orange">revisão pendente</span> : <>revisado {timeAgo(t.reviewed_at)}</>}</>}
           </p>
+          {!offlineCopy && isModerator && (
+            <div className="no-print mx-auto mt-6 flex max-w-[720px] flex-col gap-3 rounded-[14px] bg-accent-500/[.07] p-4 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1 text-[14px] text-neutral-700 dark:text-neutral-300">
+                {t.verified_at
+                  ? <><b>Tutorial verificado.</b> Se o conteúdo for alterado, a verificação é removida automaticamente.</>
+                  : <><b>Revisou este tutorial?</b> Marque como verificado: ele ganha o selo e aparece primeiro na busca e na biblioteca.</>}
+              </div>
+              <Button size="sm" variant={t.verified_at ? 'secondary' : 'primary'} loading={verifying} onClick={toggleVerified}>
+                {t.verified_at ? 'Remover verificação' : 'Marcar como verificado'}
+              </Button>
+            </div>
+          )}
           {trail && <TrailBar trail={trail} />}
           {!offlineCopy && (
             <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">

@@ -6,6 +6,7 @@ import type { Attachment, Category, LinkItem, Profile, Tutorial } from './types'
 export type FullTutorial = Tutorial & {
   author: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
   editor: Pick<Profile, 'full_name'> | null
+  verifier?: Pick<Profile, 'full_name'> | null
   category: Category | null
 }
 export interface OfflineBundle {
@@ -19,7 +20,7 @@ export interface OfflineBundle {
   bytes: number
 }
 
-export const FULL_SELECT = '*, author:kb_profiles!kb_tutorials_author_id_fkey(id,full_name,email,avatar_url), editor:kb_profiles!kb_tutorials_updated_by_fkey(full_name), category:kb_categories(*)'
+export const FULL_SELECT = '*, author:kb_profiles!kb_tutorials_author_id_fkey(id,full_name,email,avatar_url), editor:kb_profiles!kb_tutorials_updated_by_fkey(full_name), verifier:kb_profiles!kb_tutorials_verified_by_fkey(full_name), category:kb_categories(*)'
 const MEDIA_CACHE = 'fq-offline-media'
 const attKey = (id: string) => `${location.origin}${import.meta.env.BASE_URL}__offline__/att/${id}`
 

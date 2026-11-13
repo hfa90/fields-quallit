@@ -9,9 +9,10 @@ import { ROLE_LABEL, ROLE_STYLE, cn, errMsg, fmtDate, timeAgo } from '../lib/uti
 import { Avatar, Button, CategoryIcon, Modal, Spinner, inputCls, labelCls } from '../components/ui'
 import { CATEGORY_ICONS } from '../components/categoryIcons'
 import { NewUserModal, ResetPasswordModal, ReviewTab } from './AdminExtra'
-import { CalendarClock, UserPlus, KeyRound } from 'lucide-react'
+import { CalendarClock, UserPlus, KeyRound, DatabaseBackup } from 'lucide-react'
+import BackupTab from './BackupTab'
 
-type Tab = 'users' | 'categories' | 'stats' | 'review'
+type Tab = 'users' | 'categories' | 'stats' | 'review' | 'backup'
 const OWNER = 'haydenfernandes.ti@gmail.com'
 
 export default function Admin() {
@@ -23,7 +24,7 @@ export default function Admin() {
         <p className="text-[15px] text-neutral-500">Gerencie quem acessa a central, as categorias e acompanhe o uso.</p>
       </div>
       <div className="no-scrollbar flex w-fit max-w-full overflow-x-auto rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
-        {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões']] as const).map(([k, I, l]) => (
+        {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões'], ['backup', DatabaseBackup, 'Backup']] as const).map(([k, I, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={cn('inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] px-3.5 text-[13px] font-medium transition',
               tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
@@ -35,6 +36,7 @@ export default function Admin() {
       {tab === 'categories' && <CategoriesTab />}
       {tab === 'stats' && <StatsTab />}
       {tab === 'review' && <ReviewTab />}
+      {tab === 'backup' && <BackupTab />}
     </div>
   )
 }

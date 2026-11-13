@@ -15,6 +15,9 @@ const ICON: Record<string, { icon: typeof Bell; color: string }> = {
   request_comment: { icon: MessageSquare, color: '#fe811e' },
   request_answered: { icon: CheckCircle2, color: '#34c759' },
   reply: { icon: Reply, color: '#8e8e93' },
+  verified: { icon: CheckCircle2, color: '#1a9ca9' },
+  review_due: { icon: RefreshCw, color: '#fe811e' },
+  new_trail: { icon: FilePlus2, color: '#1a9ca9' },
 }
 
 export default function NotificationList({ onNavigate, compact }: { onNavigate?: () => void; compact?: boolean }) {

@@ -60,6 +60,8 @@ export default function Home() {
     setItems(null)
     let query = supabase.from('kb_tutorials_list').select(LIST_COLS).eq('status', 'published')
     if (cat) query = query.eq('category_id', cat)
+    // tutoriais verificados sempre aparecem primeiro
+    if (sort !== 'az') query = query.order('verified', { ascending: false })
     if (sort === 'views') query = query.order('view_count', { ascending: false })
     else if (sort === 'helpful') query = query.order('helpful_count', { ascending: false }).order('view_count', { ascending: false })
     else if (sort === 'az') query = query.order('title')

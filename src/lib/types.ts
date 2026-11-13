@@ -39,6 +39,8 @@ export interface Tutorial {
   review_interval_months?: number
   reviewed_at?: string
   reviewed_by?: string | null
+  verified_at?: string | null
+  verified_by?: string | null
 }
 
 export interface TutorialListItem {
@@ -67,6 +69,9 @@ export interface TutorialListItem {
   outdated_count?: number
   review_due?: boolean
   reviewed_at?: string
+  verified?: boolean
+  verified_at?: string | null
+  verified_by_name?: string | null
 }
 
 export interface LinkItem {
@@ -171,4 +176,5 @@ export interface SearchResult {
   matched_in: string
   score: number
   created_at: string
+  verified?: boolean
 }
