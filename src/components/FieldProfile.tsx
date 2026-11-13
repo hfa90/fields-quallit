@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
-import { Award, Eye, FileText, HandHelping, MapPin, MessageSquare, MousePointerClick, ThumbsUp, UserCheck, UserPlus, Users, ChevronRight, Mail, CalendarDays } from 'lucide-react'
+import { Award, Eye, FileText, HandHelping, MapPin, MessageSquare, MousePointerClick, ThumbsUp, UserCheck, UserPlus, Users, ChevronRight, Mail, CalendarDays, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { TutorialListItem, UserStats } from '../lib/types'
@@ -12,6 +12,9 @@ import { UF_NAME } from '../lib/brStates'
 import { Avatar, CategoryIcon, Modal, Spinner } from './ui'
 import StateBadge from './StateBadge'
 import { ImpactCard } from './Engagement'
+
+// só administradores usam: carregado sob demanda
+const DeleteUserModal = lazy(() => import('../pages/DeleteUserModal'))
 
 /** "Recife · Pernambuco"; sem repetir quando o CD tem o nome do estado */
 const placeLabel = (cd: string, uf: string | null) => { const c = cdShort(cd); return uf && UF_NAME[uf] !== c ? `${c} · ${UF_NAME[uf]}` : c }
@@ -57,12 +60,13 @@ export function FieldHoverCard({ p, uf, rect, onEnter, onLeave, onOpen }: { p: U
 }
 
 /** Popup com todas as informações do Field dentro do sistema */
-export function FieldProfileModal({ userId, uf, onClose }: { userId: string | null; uf: string | null; onClose: () => void }) {
+export function FieldProfileModal({ userId, uf, onClose, onDeleted }: { userId: string | null; uf: string | null; onClose: () => void; onDeleted?: () => void }) {
   const { profile } = useAuth()
   const follows = useFollows()
   const nav = useNavigate()
   const [u, setU] = useState<UserStats | null | undefined>(undefined)
   const [posts, setPosts] = useState<TutorialListItem[] | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!userId) return
@@ -155,6 +159,18 @@ export function FieldProfileModal({ userId, uf, onClose }: { userId: string | nu
               Página completa<ChevronRight className="size-4" />
             </button>
           </div>
+
+          {profile?.role === 'admin' && !me && (
+            <button onClick={() => setDeleting(true)} className="press mx-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13.5px] font-medium text-[#ff3b30] hover:bg-[#ff3b30]/10">
+              <Trash2 className="size-4" />Excluir este Field
+            </button>
+          )}
+          {deleting && (
+            <Suspense fallback={null}>
+              <DeleteUserModal user={{ id: u.user_id, full_name: u.full_name, email: u.email }} onClose={() => setDeleting(false)}
+                onDeleted={() => { setDeleting(false); onClose(); onDeleted?.() }} />
+            </Suspense>
+          )}
         </div>
       )}
     </Modal>

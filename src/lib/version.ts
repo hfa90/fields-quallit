@@ -14,6 +14,14 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.7.1', date: '2026-11-13', title: 'Excluir Field',
+    items: [
+      'Administrador pode excluir um Field pela lista de usuários ou pelo perfil rápido',
+      'Antes de excluir, escolha se as publicações serão transferidas para outra pessoa ou apagadas',
+      'Quem também usa o Inventário perde só o acesso ao Fields; a conta do Inventário continua',
+    ],
+  },
+  {
     version: '1.7.0', date: '2026-11-13', title: 'Novos estados e perfil rápido',
     items: [
       'Ao cadastrar um Field, o administrador pode criar um novo estado/CD: o desenho do estado aparece ao digitar o nome ou a sigla',

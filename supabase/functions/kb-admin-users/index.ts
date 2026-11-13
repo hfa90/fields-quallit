@@ -1,6 +1,7 @@
 // Cadastro de usuários pelo administrador da central Fields.
 //  POST { action: 'create', email, full_name, role, password, cd_id? }
 //  POST { action: 'reset_password', user_id, password }
+//  POST { action: 'delete_user', user_id, transfer_to?, delete_posts? }
 // Só administradores da central (kb_profiles.role = 'admin') podem chamar.
 // O usuário criado já entra com e-mail confirmado e precisa trocar a senha no primeiro acesso.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
@@ -79,6 +80,25 @@ Deno.serve(async req => {
       })
       if (error) return json({ error: error.message }, 400)
       return json({ ok: true })
+    }
+
+    if (body.action === 'delete_user') {
+      const user_id = String(body.user_id ?? '')
+      // Regras e transferência/exclusão das publicações ficam no banco (transação única)
+      const { data: r, error } = await caller.rpc('kb_admin_remove_user', {
+        p_user: user_id, p_transfer_to: body.transfer_to ? String(body.transfer_to) : null, p_delete_posts: !!body.delete_posts,
+      })
+      if (error) return json({ error: error.message }, 400)
+      const res = r as { inventory: boolean; tutorials: number; deleted_posts: boolean; attachments: string[] }
+      if (res.attachments?.length) await admin.storage.from('kb-attachments').remove(res.attachments)
+      // Conta só do Fields: apaga o login. Quem usa o Inventário mantém a conta (só perde o acesso ao Fields).
+      let account_deleted = false
+      if (!res.inventory) {
+        const { error: de } = await admin.auth.admin.deleteUser(user_id)
+        account_deleted = !de
+        if (de) console.error('deleteUser', de.message)
+      }
+      return json({ ok: true, ...res, attachments: res.attachments?.length ?? 0, account_deleted })
     }
 
     return json({ error: 'Ação inválida' }, 400)

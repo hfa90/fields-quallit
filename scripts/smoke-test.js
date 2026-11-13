@@ -27,7 +27,7 @@ window.fieldsSmokeTest = async function () {
   const tables = {
     kb_tutorials_list: [listItem('t1', 'TESTE1', 'quick', true), listItem('t2', 'TESTE2', 'tutorial', false)],
     kb_tutorials: [tut], kb_categories: [cat], kb_user_stats: [stats, { ...stats, user_id: 'u2', full_name: 'Colega Field', tutorials: 0, points: 5, cd_name: 'CD MANAUS' }],
-    kb_profiles: [{ ...author, role: 'admin', created_at: now, updated_at: now }],
+    kb_profiles: [{ ...author, role: 'admin', created_at: now, updated_at: now }, { id: 'u2', full_name: 'Colega Field', email: 'colega@exemplo.invalid', avatar_url: null, role: 'field', created_at: now, updated_at: now }],
     kb_comments: [{ id: 'm1', tutorial_id: 't1', request_id: null, parent_id: null, user_id: uid, kind: 'tip', body: 'Dica', resolved: false, created_at: now, updated_at: now, author }],
     kb_thanks: [{ user_id: 'u2', message: 'Salvou meu dia!', created_at: now, user: { full_name: 'Colega', email: 'c@exemplo.invalid', avatar_url: null }, tutorial: { title: 'Tutorial TESTE1', short_code: 'TESTE1', author_id: uid } }],
     kb_trails: [{ id: 'tr1', title: 'Onboarding', description: 'Primeiros passos', color: '#1a9ca9', icon: 'book-open', status: 'published', created_at: now, items: [{ count: 2 }] }],
@@ -38,6 +38,7 @@ window.fieldsSmokeTest = async function () {
     kb_search_suggestions: { popular: ['vpn'], tags: ['vpn'], missing: [] },
     kb_search: [{ kind: 'tutorial', id: 't1', short_code: 'TESTE1', title: 'Tutorial TESTE1', snippet: 'com [[vpn]]', category_name: 'Redes', category_color: '#1a9ca9', category_icon: 'network', author_name: 'Teste', author_avatar: null, matched_in: 'título', score: 1, created_at: now, verified: true }],
     kb_my_recent: [{ tutorial_id: 't1', last_viewed: now }], kb_tutorial_viewers: [], kb_email_config_status: {},
+    kb_admin_user_info: { published: 2, drafts: 1, inventory: false, owner: false, me: false },
     kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 'cd1', codigo: 'CD-RJ', nome: 'CD RIO DE JANEIRO', cidade: 'RIO DE JANEIRO', uf: 'RJ', origem: 'inventario' }, { id: 'cd2', codigo: 'CD-AM', nome: 'CD MANAUS', cidade: 'MANAUS', uf: 'AM', origem: 'inventario' }, { id: 'cd3', codigo: null, nome: 'CD RECIFE', cidade: 'Recife', uf: 'PE', origem: 'fields' }],
     kb_contributors: [{ user_id: 'u2', full_name: 'Colega Field', avatar_url: null, edits: 2, last_at: now }],
   }

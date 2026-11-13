@@ -33,11 +33,12 @@ export default function TeamStrip() {
     return () => { window.removeEventListener('scroll', close, true); window.removeEventListener('resize', close) }
   }, [hover])
   useEffect(() => () => window.clearTimeout(timer.current), [])
-  useEffect(() => {
+  const loadPeople = () => {
     supabase.from('kb_user_stats').select('user_id,full_name,avatar_url,email,points,tutorials,cd_name,role,created_at')
       .order('points', { ascending: false }).limit(40)
       .then(({ data }) => setPeople((data as UserStats[]) ?? []))
-  }, [])
+  }
+  useEffect(loadPeople, [])
 
   if (!people) return <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-hidden px-4">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="card h-[160px] w-[128px] shrink-0 animate-pulse" />)}</div>
   if (people.length === 0) return null
@@ -77,7 +78,7 @@ export default function TeamStrip() {
         })}
       </div>
       {hover && <FieldHoverCard p={hover.p} uf={ufOf(hover.p.cd_name)} rect={hover.rect} onEnter={keep} onLeave={hide} onOpen={() => { const p = hover.p; setHover(null); setOpen(p) }} />}
-      <FieldProfileModal userId={open?.user_id ?? null} uf={open ? ufOf(open.cd_name) : null} onClose={() => setOpen(null)} />
+      <FieldProfileModal userId={open?.user_id ?? null} uf={open ? ufOf(open.cd_name) : null} onClose={() => setOpen(null)} onDeleted={loadPeople} />
     </section>
   )
 }

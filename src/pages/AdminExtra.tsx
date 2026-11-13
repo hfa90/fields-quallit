@@ -61,7 +61,7 @@ export function tempPassword() {
   return `${s.slice(0, 5)}-${s.slice(5)}`
 }
 
-async function callAdmin(body: Record<string, unknown>) {
+export async function callAdmin(body: Record<string, unknown>) {
   const { data, error } = await supabase.functions.invoke('kb-admin-users', { body })
   if (error) {
     let msg = error.message

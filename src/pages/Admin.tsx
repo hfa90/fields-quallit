@@ -9,6 +9,7 @@ import { ROLE_LABEL, ROLE_STYLE, cn, errMsg, fmtDate, timeAgo } from '../lib/uti
 import { Avatar, Button, CategoryIcon, Modal, Spinner, inputCls, labelCls } from '../components/ui'
 import { CATEGORY_ICONS } from '../components/categoryIcons'
 import { NewUserModal, ResetPasswordModal, ReviewTab } from './AdminExtra'
+import DeleteUserModal from './DeleteUserModal'
 import { CalendarClock, UserPlus, KeyRound, DatabaseBackup } from 'lucide-react'
 import BackupTab from './BackupTab'
 import { versionLabel } from '../lib/version'
@@ -55,6 +56,7 @@ function UsersTab() {
   const [saving, setSaving] = useState<string | null>(null)
   const [newOpen, setNewOpen] = useState(false)
   const [resetUser, setResetUser] = useState<UserRow | null>(null)
+  const [delUser, setDelUser] = useState<UserRow | null>(null)
   const cds = useCds()
 
   const load = async () => {
@@ -185,6 +187,11 @@ function UsersTab() {
                           <KeyRound className="size-3.5" /><span className="hidden lg:inline">Redefinir senha</span>
                         </button>
                       )}
+                      {u.id !== me?.id && (
+                        <button onClick={() => setDelUser(u)} title="Excluir" className="ml-1 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[13px] font-medium text-[#ff3b30] hover:bg-[#ff3b30]/10">
+                          <Trash2 className="size-3.5" /><span className="hidden lg:inline">Excluir</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 )
@@ -196,6 +203,7 @@ function UsersTab() {
 
       <NewUserModal open={newOpen} onClose={() => setNewOpen(false)} onCreated={load} />
       <ResetPasswordModal user={resetUser} onClose={() => setResetUser(null)} />
+      {delUser && <DeleteUserModal user={delUser} onClose={() => setDelUser(null)} onDeleted={load} />}
 
       <div className="grid gap-3 text-sm sm:grid-cols-3">
         {[
