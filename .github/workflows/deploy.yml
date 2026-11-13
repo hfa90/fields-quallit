@@ -25,6 +25,10 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # Bloqueia a publicação se alguma tela quebrar a ordem dos hooks do React (causa de tela de erro)
+      - name: Verificação das telas
+        run: npx oxlint --react-plugin -A all -D react-hooks/rules-of-hooks src
+
       - name: Build do site
         run: npm run build
         env:
