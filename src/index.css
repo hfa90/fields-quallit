@@ -336,6 +336,20 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .droid-out { animation: droid-out .8s cubic-bezier(.5,0,.75,0) both }
 .droid-peek { animation: droid-head-in .6s ease-out both, droid-peek 9s ease-in-out .6s infinite }
 .bubble-in { animation: bubble-in .25s cubic-bezier(.2,.8,.2,1) backwards }
+@keyframes droid-leg { 0%, 100% { transform: rotate(16deg) } 50% { transform: rotate(-16deg) } }
+@keyframes droid-swing { 0%, 100% { transform: rotate(-14deg) } 50% { transform: rotate(14deg) } }
+@keyframes droid-step { 0%, 50%, 100% { transform: translateY(0) } 25%, 75% { transform: translateY(-3px) } }
+.droid-leg { animation: droid-leg .8s ease-in-out infinite }
+.droid-leg-alt { animation-delay: -.4s }
+.droid-leg-run { animation-duration: .3s }
+.droid-leg-run.droid-leg-alt { animation-delay: -.15s }
+.droid-swing { animation: droid-swing .8s ease-in-out infinite }
+.droid-swing-alt { animation-delay: -.4s }
+.droid-swing-run { animation-duration: .3s }
+.droid-swing-run.droid-swing-alt { animation-delay: -.15s }
+.droid-step { animation: droid-step .8s ease-in-out infinite }
+.droid-step-run { animation-duration: .3s }
+.droid-tear-2 { animation-delay: .5s }
 /* quem pediu menos movimento no sistema: o robô continua vivo, mas sem tremer */
 @media (prefers-reduced-motion: reduce) {
   .droid-shake { animation: droid-bob .9s ease-in-out infinite }

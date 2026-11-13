@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase'
 import { cn } from '../lib/utils'
 import StateBadge from './StateBadge'
 import { QuallitMark } from './QuallitLogo'
+import { rememberUser } from '../lib/droidTalk'
 
 const NEW_DAYS = 30
 const listeners = new Set<() => void>()
@@ -154,4 +155,20 @@ export function Onboarding() {
     </div>,
     document.body,
   )
+}
+
+/** Guarda neste aparelho o primeiro nome e o estado do CD de quem entrou (para o robô do login cumprimentar) */
+export function RememberMe() {
+  const { profile } = useAuth()
+  const ufOf = useCdUf()
+  const [cd, setCd] = useState<string | null | undefined>(undefined)
+  useEffect(() => {
+    if (!profile) return
+    supabase.rpc('kb_cd_of', { p_user: profile.id }).then(({ data, error }) => setCd(error ? undefined : ((data as string) ?? null)))
+  }, [profile?.id])
+  const uf = ufOf(cd)
+  useEffect(() => {
+    if (profile && cd !== undefined) rememberUser(profile.email, profile.full_name, uf)
+  }, [profile?.id, profile?.full_name, cd, uf])
+  return null
 }

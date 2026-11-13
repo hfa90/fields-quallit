@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { KeyRound, Download } from 'lucide-react'
@@ -9,17 +9,20 @@ import { cn, errMsg } from '../lib/utils'
 import { isNative } from '../lib/native'
 import { VersionTag } from '../components/VersionInfo'
 import Droid, { type DroidMood } from '../components/Droid'
+import { greeting, recallUser } from '../lib/droidTalk'
 
-type Stage = 'idle' | 'email' | 'password' | 'accept' | 'bye' | 'error'
-
-const SCRIPT: Record<Stage, { mood: DroidMood; text: string; wave?: boolean; shake?: boolean }> = {
-  idle: { mood: 'happy', wave: true, text: 'Psiu! 👋 Me baixa? No celular eu abro mais rápido e funciono até sem sinal.' },
-  email: { mood: 'sad', text: 'Você vai entrar no modo web em vez de me baixar? 🥺' },
-  password: { mood: 'desperate', shake: true, text: 'Nãããão! Espera… me baixa, vai! 😱' },
-  accept: { mood: 'calm', text: 'Tá bom… eu entendo. Prometo não olhar sua senha 🙈' },
-  bye: { mood: 'wink', wave: true, text: 'Está tudo bem, o modo web é tão bom quanto eu também! 😄' },
-  error: { mood: 'sad', text: 'Ops… e-mail ou senha não conferem. Tenta de novo? 🤔' },
-}
+/*
+ * Roteiro do robozinho (só no navegador):
+ *  arriving → entra andando devagar pela lateral
+ *  idle     → chama atenção para o app
+ *  running  → mouse/toque no e-mail: corre para perto do campo
+ *  watching → olha o que está sendo digitado
+ *  greet    → reconhece quem já entrou neste aparelho e fala uma gíria do estado
+ *  leaving  → digitando a senha: tristonho, vai andando de volta; para quando a digitação para e olha para trás
+ *  flee     → Entrar: sai correndo chorando
+ *  back     → senha errada: volta, meio sem graça
+ */
+type Scene = 'arriving' | 'idle' | 'running' | 'watching' | 'greet' | 'leaving' | 'paused' | 'flee' | 'back'
 
 function useWide() {
   const q = '(min-width: 1024px)'
@@ -33,60 +36,132 @@ function useWide() {
   return wide
 }
 
-/**
- * Login da central. Não há cadastro nem recuperação de senha por e-mail:
- * o administrador cria os usuários e redefine senhas em Administração → Usuários.
- * No navegador, o robozinho do app Android acompanha (e comenta) o login.
- */
+const EMAIL_OK = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/
+
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
-  const [stage, setStage] = useState<Stage>('idle')
-  const timer = useRef<number | undefined>(undefined)
-  const wide = useWide()
   const droid = !isNative
+  const wide = useWide()
 
-  useEffect(() => () => window.clearTimeout(timer.current), [])
+  // ---------- palco do robô
+  const formRef = useRef<HTMLFormElement>(null)
+  const [stageW, setStageW] = useState(0)     // espaço disponível (px) para o robô andar
+  const [scene, setScene] = useState<Scene>('arriving')
+  const [x, setX] = useState<number | null>(null)
+  const [dur, setDur] = useState(0)
+  const [ease, setEase] = useState('linear')
+  const [line, setLine] = useState('')
+  const typing = useRef<number | undefined>(undefined)
+  const timers = useRef<number[]>([])
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)) }
+  const clearAll = () => { timers.current.forEach(clearTimeout); timers.current = []; window.clearTimeout(typing.current) }
+  useEffect(() => clearAll, [])
 
-  const onEmailFocus = () => { if (stage !== 'bye') { window.clearTimeout(timer.current); setStage('email') } }
-  const onPasswordFocus = () => {
-    if (stage === 'bye' || stage === 'accept') return
-    window.clearTimeout(timer.current)
-    setStage('password')
-    timer.current = window.setTimeout(() => setStage('accept'), 2600) // o desespero passa…
+  const ROBOT = wide ? 104 : 70
+  // posições (px a partir do ponto de apoio do robô)
+  const pos = {
+    near: wide ? 12 : 0,                                   // colado no campo de e-mail
+    rest: wide ? Math.min(210, stageW - ROBOT - 20) : Math.max(0, stageW - ROBOT - 4),
+    home: wide ? Math.max(260, stageW - ROBOT - 10) : Math.max(0, stageW - ROBOT),  // de onde ele veio (até onde volta)
+    off: stageW + 60,                                      // fora da tela
   }
-  const onBlur = () => window.setTimeout(() => {
-    const a = document.activeElement
-    if (a?.tagName !== 'INPUT' && !email && !password) setStage(s => (s === 'bye' ? s : 'idle'))
-  }, 50)
+
+  useLayoutEffect(() => {
+    if (!droid) return
+    const measure = () => {
+      const f = formRef.current?.getBoundingClientRect()
+      if (!f) return
+      setStageW(wide ? Math.max(0, window.innerWidth - f.right - 12) : f.width)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [droid, wide])
+
+  const xRef = useRef<number | null>(null)
+  const move = useCallback((to: number, ms: number, e = 'linear') => { xRef.current = to; setDur(ms); setEase(e); setX(to) }, [])
+
+  // entrada: aparece na lateral e vem andando devagar
+  useEffect(() => {
+    if (!droid || !stageW || x !== null) return
+    setDur(0); setX(pos.off); xRef.current = pos.off
+    later(() => move(pos.rest, wide ? 4200 : 3200), 60)
+    later(() => { setScene(s => (s === 'arriving' ? 'idle' : s)) ; setLine(l => l || 'Psiu! 👋 Me baixa? No celular eu abro mais rápido e funciono até sem sinal.') }, (wide ? 4200 : 3200) + 80)
+  }, [droid, stageW])
+
+  const goNear = () => {
+    if (!droid || scene === 'flee' || scene === 'running' || scene === 'watching' || scene === 'greet') return
+    clearAll()
+    setScene('running'); setLine('Opa! Quem vem lá? 👀')
+    move(pos.near, 650, 'cubic-bezier(.3,.7,.3,1)')
+    later(() => { setScene('watching') }, 660)
+    if (email && EMAIL_OK.test(email)) later(identify, 700)
+  }
+
+  const identify = () => {
+    const known = recallUser(email)
+    setScene('greet')
+    setLine(known
+      ? `${greeting(known.name, known.uf)} É um prazer ter você de volta aqui, mas que tal me ter no seu celular baixado? 😉`
+      : 'Prazer! Ainda não te conheço por aqui… mas que tal me ter no seu celular baixado? 😉')
+  }
+
+  // reconhece a pessoa quando o e-mail fica completo (pausa na digitação)
+  useEffect(() => {
+    if (!droid || !EMAIL_OK.test(email) || !['watching', 'greet', 'running'].includes(scene)) return
+    const t = window.setTimeout(identify, 600)
+    return () => clearTimeout(t)
+  }, [email])
+
+  // digitando a senha: vai andando de volta, tristonho; parou de digitar → para e olha para trás
+  const onPasswordKey = () => {
+    if (!droid || scene === 'flee') return
+    window.clearTimeout(typing.current)
+    setScene('leaving')
+    setLine('')
+    move(Math.min(pos.home, (xRef.current ?? pos.near) + (wide ? 18 : 12)), 420)
+    typing.current = window.setTimeout(() => { setScene('paused'); setLine('🥺') }, 650)
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true)
     try {
-      if (droid) { // a despedida antes de entrar
-        window.clearTimeout(timer.current)
-        setStage('bye')
-        await new Promise(r => setTimeout(r, 1700))
+      if (droid) { // sai correndo chorando
+        clearAll()
+        setScene('flee'); setLine('Buáááá! 😭')
+        move(pos.off, 1100, 'cubic-bezier(.5,0,.8,.4)')
+        await new Promise(r => setTimeout(r, 1150))
       }
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) throw error.message.includes('Invalid login') ? new Error('E-mail ou senha incorretos') : error
     } catch (err) {
       toast.error(errMsg(err))
-      setStage('error')
+      if (droid) {
+        setScene('back'); setLine('')
+        move(pos.rest, 1600)
+        later(() => { setScene('paused'); setLine('Ops… e-mail ou senha não conferem. Tenta de novo? 🤔') }, 1620)
+      }
     } finally {
       setBusy(false)
     }
   }
 
+  // ---------- aparência por cena
+  const walking = scene === 'arriving' || scene === 'leaving' || scene === 'back'
+  const gait: 'walk' | 'run' | undefined = scene === 'running' || scene === 'flee' ? 'run' : walking && dur > 0 ? 'walk' : undefined
+  const toRight = scene === 'leaving' || scene === 'flee'
+  const mood: DroidMood = scene === 'flee' ? 'cry' : scene === 'leaving' || scene === 'paused' || scene === 'back' ? 'sad' : scene === 'greet' ? 'wink' : 'happy'
+  const look = toRight ? 1 : -1
+  const lookY = scene === 'watching' || scene === 'greet' ? (wide ? 0.3 : 1) : 0
+  const lean = gait === 'run' ? (toRight ? 10 : -10) : gait === 'walk' ? (toRight ? 3 : -3) : 0
+  const tilt = scene === 'watching' ? (email.length % 2 ? -7 : -11) : scene === 'paused' ? -6 : 0
+  const wave = scene === 'idle' || scene === 'greet'
+  const bubbleLeft = !wide && x !== null && x < stageW / 2  // no celular o balão fica do lado com mais espaço
+
   const field = 'rounded-none shadow-none focus:shadow-none bg-transparent dark:bg-transparent dark:shadow-none h-12'
-  const s = SCRIPT[stage]
-  const near = stage !== 'idle'
-  // para onde o robô olha: no computador ele está à direita do formulário; no celular, acima
-  const look = wide ? -1 : -0.5
-  const lookY = near ? (wide ? 0.4 : 1) : 0
-  const tilt = stage === 'email' ? (email.length % 2 ? -7 : -11) : stage === 'password' ? 0 : near ? -4 : 0
 
   return (
     <div className="pt-safe pb-safe flex min-h-dvh flex-col items-center justify-center overflow-x-hidden px-5 py-10">
@@ -97,26 +172,32 @@ export default function Login() {
           <p className="mt-1 text-[15px] text-neutral-500">Central de tutoriais · Quallit Soluções em TI</p>
         </div>
 
-        <form onSubmit={submit} className={cn('relative space-y-4', droid ? 'mt-[124px] lg:mt-8' : 'mt-8')}>
-          {droid && (
-            <div aria-live="polite" className={cn('pointer-events-none absolute z-10 w-max transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)]',
-              wide ? 'left-[calc(100%+44px)] top-[-30px]' : 'right-1 top-[-112px]')}
-              style={{ transform: near ? (wide ? 'translateX(-30px) rotate(-3deg)' : 'translate(-6px, 14px)') : undefined }}>
-              <div key={stage} className={cn('bubble-in pointer-events-auto absolute rounded-[16px] bg-white px-3.5 py-2.5 text-[13.5px] leading-snug text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100',
-                wide ? 'bottom-[calc(100%+6px)] left-[-24px] w-[232px] rounded-bl-[6px]' : 'right-[82px] top-0 w-[min(220px,calc(100vw-130px))] rounded-tr-[6px]')}>
-                {s.text}
-                {stage === 'idle' && (
-                  <Link to="/android" className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-[#3ddc84] px-3 py-1 text-[12.5px] font-semibold text-neutral-900"><Download className="size-3.5" />Baixar o app</Link>
-                )}
-              </div>
-              <Droid size={wide ? 104 : 72} mood={s.mood} wave={s.wave} shake={s.shake} look={look} lookY={lookY} tilt={tilt} />
+        <form ref={formRef} onSubmit={submit} className={cn('relative space-y-4', droid ? 'mt-[116px] lg:mt-8' : 'mt-8')}>
+          {droid && x !== null && (
+            <div aria-live="polite" className={cn('pointer-events-none absolute z-10 w-max', wide ? 'left-full top-[-34px]' : 'left-0 top-[-104px]')}
+              style={{ transform: `translateX(${x}px)`, transition: `transform ${dur}ms ${ease}` }}>
+              {line && (
+                <div key={line} className={cn('bubble-in pointer-events-auto absolute rounded-[16px] bg-white px-3.5 py-2.5 text-[13.5px] leading-snug text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100',
+                  wide ? 'bottom-[calc(100%+4px)] left-[-18px] w-[250px] rounded-bl-[6px]'
+                    : bubbleLeft ? 'left-[78px] top-0 w-[min(240px,calc(100vw-130px))] rounded-tl-[6px]'
+                      : 'right-[78px] top-0 w-[min(240px,calc(100vw-130px))] rounded-tr-[6px]',
+                  line.length < 4 && 'w-auto px-3 text-[18px]')}>
+                  {line}
+                  {scene === 'idle' && (
+                    <Link to="/android" className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-[#3ddc84] px-3 py-1 text-[12.5px] font-semibold text-neutral-900"><Download className="size-3.5" />Baixar o app</Link>
+                  )}
+                </div>
+              )}
+              <Droid size={ROBOT} mood={mood} gait={gait} lean={lean} look={look} lookY={lookY} tilt={tilt} wave={wave && !gait} />
             </div>
           )}
 
           <div className="card divide-y divide-neutral-200 overflow-hidden dark:divide-neutral-800">
-            <input required type="email" className={cn(inputCls, field)} value={email} onChange={e => setEmail(e.target.value)} onFocus={onEmailFocus} onBlur={onBlur}
+            <input required type="email" className={cn(inputCls, field)} value={email} onChange={e => setEmail(e.target.value)}
+              onMouseEnter={goNear} onFocus={goNear}
               placeholder="E-mail" autoComplete="email" inputMode="email" autoCapitalize="none" />
-            <input required type="password" className={cn(inputCls, field)} value={password} onChange={e => setPassword(e.target.value)} onFocus={onPasswordFocus} onBlur={onBlur}
+            <input required type="password" className={cn(inputCls, field)} value={password}
+              onChange={e => { setPassword(e.target.value); onPasswordKey() }}
               placeholder="Senha" autoComplete="current-password" />
           </div>
           <Button type="submit" loading={busy} className="h-12 w-full text-[17px] font-semibold">Entrar</Button>

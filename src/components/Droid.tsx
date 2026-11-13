@@ -1,6 +1,6 @@
 import { cn } from '../lib/utils'
 
-export type DroidMood = 'happy' | 'sad' | 'desperate' | 'calm' | 'wink'
+export type DroidMood = 'happy' | 'sad' | 'desperate' | 'calm' | 'wink' | 'cry'
 
 const G = '#3ddc84'      // verde do Android
 const GD = '#2fbf6f'     // sombra
@@ -12,9 +12,11 @@ const TEAR = '#7dd3fc'
  * - mood: expressão do rosto
  * - look: para onde os olhos olham (-1 esquerda … 1 direita) e lookY (-1 cima … 1 baixo)
  * - wave: acena com o braço direito · shake: treme (desespero) · headOnly: só a cabeça
+ * - gait: 'walk' (andando devagar) ou 'run' (correndo); lean: inclinação do corpo (graus)
  */
-export default function Droid({ mood = 'happy', look = 0, lookY = 0, wave, shake, headOnly, size = 120, tilt = 0, className }: {
-  mood?: DroidMood; look?: number; lookY?: number; wave?: boolean; shake?: boolean; headOnly?: boolean; size?: number; tilt?: number; className?: string
+export default function Droid({ mood = 'happy', look = 0, lookY = 0, wave, shake, headOnly, size = 120, tilt = 0, gait, lean = 0, className }: {
+  mood?: DroidMood; look?: number; lookY?: number; wave?: boolean; shake?: boolean; headOnly?: boolean; size?: number; tilt?: number
+  gait?: 'walk' | 'run'; lean?: number; className?: string
 }) {
   const fx = Math.max(-1, Math.min(1, look)) * 5
   const fy = Math.max(-1, Math.min(1, lookY)) * 3
@@ -46,6 +48,13 @@ export default function Droid({ mood = 'happy', look = 0, lookY = 0, wave, shake
         <circle className="droid-jitter" cx="45" cy="41" r="2.6" fill={INK} /><circle className="droid-jitter" cx="75" cy="41" r="2.6" fill={INK} />
         <ellipse cx="60" cy="53" rx="6" ry="4.6" fill={INK} />
       </>}
+      {mood === 'cry' && <>
+        <path d="M39 38 L50 42 L39 45" stroke="#fff" strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M81 38 L70 42 L81 45" stroke="#fff" strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M52 55 Q60 46 68 55 Z" fill={INK} />
+        <path className="droid-tear" d="M43 46 q-2.4 3.6 0 5.4 q2.4 -1.8 0 -5.4z" fill={TEAR} style={{ ...box, transformOrigin: 'top' }} />
+        <path className="droid-tear droid-tear-2" d="M77 46 q-2.4 3.6 0 5.4 q2.4 -1.8 0 -5.4z" fill={TEAR} style={{ ...box, transformOrigin: 'top' }} />
+      </>}
       {mood === 'calm' && <>
         <path d="M40 40 Q45 44 50 40" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
         <path d="M70 40 Q75 44 80 40" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
@@ -56,16 +65,23 @@ export default function Droid({ mood = 'happy', look = 0, lookY = 0, wave, shake
 
   return (
     <svg viewBox={vb} width={w} height={h} aria-hidden className={cn('overflow-visible', className)}>
-      <g className={cn(shake ? 'droid-shake' : 'droid-bob')} style={{ ...box, transformOrigin: 'bottom' }}>
+      <g style={{ ...box, transformOrigin: '50% 100%', transform: `rotate(${lean}deg)`, transition: 'transform .3s ease-out' }}>
+      <g className={cn(shake ? 'droid-shake' : gait === 'run' ? 'droid-step droid-step-run' : gait === 'walk' ? 'droid-step' : 'droid-bob')} style={{ ...box, transformOrigin: 'bottom' }}>
         {!headOnly && <>
-          {/* braços */}
-          <rect x="4" y="66" width="12" height="40" rx="6" fill={G} />
-          <g className={wave ? 'droid-wave' : undefined} style={{ ...box, transformOrigin: '50% 10%' }}>
+          {/* braços (balançam ao andar) */}
+          <g className={gait ? cn('droid-swing', gait === 'run' && 'droid-swing-run') : undefined} style={{ ...box, transformOrigin: '50% 10%' }}>
+            <rect x="4" y="66" width="12" height="40" rx="6" fill={G} />
+          </g>
+          <g className={gait ? cn('droid-swing droid-swing-alt', gait === 'run' && 'droid-swing-run') : wave ? 'droid-wave' : undefined} style={{ ...box, transformOrigin: '50% 10%' }}>
             <rect x="104" y="66" width="12" height="40" rx="6" fill={G} />
           </g>
-          {/* corpo e pernas */}
-          <rect x="38" y="112" width="14" height="30" rx="7" fill={GD} />
-          <rect x="68" y="112" width="14" height="30" rx="7" fill={GD} />
+          {/* corpo e pernas (alternam ao andar) */}
+          <g className={gait ? cn('droid-leg', gait === 'run' && 'droid-leg-run') : undefined} style={{ ...box, transformOrigin: '50% 0%' }}>
+            <rect x="38" y="112" width="14" height="30" rx="7" fill={GD} />
+          </g>
+          <g className={gait ? cn('droid-leg droid-leg-alt', gait === 'run' && 'droid-leg-run') : undefined} style={{ ...box, transformOrigin: '50% 0%' }}>
+            <rect x="68" y="112" width="14" height="30" rx="7" fill={GD} />
+          </g>
           <path d="M20 64 H100 V110 a14 14 0 0 1 -14 14 H34 a14 14 0 0 1 -14 -14 Z" fill={G} />
         </>}
         {/* cabeça */}
@@ -79,6 +95,7 @@ export default function Droid({ mood = 'happy', look = 0, lookY = 0, wave, shake
             <path className="droid-sweat droid-sweat-2" d="M18 30 q-2.5 4 0 6 q2.5 -2 0 -6z" fill={TEAR} />
           </>}
         </g>
+      </g>
       </g>
     </svg>
   )

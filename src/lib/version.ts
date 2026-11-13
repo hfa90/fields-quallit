@@ -14,6 +14,15 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.11.0', date: '2026-11-13', title: 'O robozinho ganhou pernas',
+    items: [
+      'No login, o robozinho chega andando devagar pela lateral',
+      'Ao passar o mouse (ou tocar) no e-mail, ele corre para perto para ver quem está entrando',
+      'Reconhece quem já entrou neste aparelho e cumprimenta com uma gíria do estado do seu CD',
+      'Digitando a senha ele vai embora tristonho, para e olha para trás… e ao clicar em Entrar sai correndo chorando',
+    ],
+  },
+  {
     version: '1.10.0', date: '2026-11-13', title: 'O robozinho do app',
     items: [
       'O cartão grande do app Android saiu da página inicial',
