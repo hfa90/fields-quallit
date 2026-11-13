@@ -92,6 +92,10 @@ h1, h2, h3 { letter-spacing: -0.021em; }
 .pop-in { animation: rise .2s cubic-bezier(.2,.8,.2,1) backwards }
 .animate-in { animation: fade .2s ease-out backwards }
 .fade-up { animation: rise .3s cubic-bezier(.2,.8,.2,1) backwards }
+@keyframes state-pop { 0% { opacity: 0; transform: scale(.6) rotate(-6deg) } 60% { opacity: 1; transform: scale(1.06) rotate(1deg) } 100% { transform: none } }
+.state-pop { animation: state-pop .45s cubic-bezier(.2,.8,.2,1) backwards }
+@keyframes hover-card { from { opacity: 0; transform: translateY(6px) scale(.97) } to { opacity: 1; transform: none } }
+.hover-card-in { animation: hover-card .16s ease-out backwards }
 @media (max-width: 639px) { .sheet-in { animation: sheet .32s cubic-bezier(.2,.8,.2,1) backwards } }
 @media (min-width: 640px) { .sheet-in { animation: rise .2s cubic-bezier(.2,.8,.2,1) backwards } }
 .no-scrollbar::-webkit-scrollbar { display: none; }

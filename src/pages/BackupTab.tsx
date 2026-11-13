@@ -12,7 +12,7 @@ const BACKUPS = 'kb-backups'
 const TABLES = [
   'kb_profiles', 'kb_settings', 'kb_categories', 'kb_tutorials', 'kb_tutorial_versions', 'kb_links', 'kb_attachments',
   'kb_comments', 'kb_feedback', 'kb_favorites', 'kb_follows', 'kb_requests', 'kb_request_votes',
-  'kb_trails', 'kb_trail_items', 'kb_trail_progress', 'kb_views', 'kb_search_log', 'kb_thanks',
+  'kb_trails', 'kb_trail_items', 'kb_trail_progress', 'kb_views', 'kb_search_log', 'kb_thanks', 'kb_locations',
 ]
 
 const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'tutorial'

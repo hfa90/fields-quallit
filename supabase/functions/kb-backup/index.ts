@@ -34,6 +34,7 @@ const TABLES: Record<string, string> = {
   kb_notification_prefs: '*',
   kb_search_log: '*',
   kb_thanks: '*',
+  kb_locations: '*',
 }
 
 const cors = {

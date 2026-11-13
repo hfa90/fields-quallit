@@ -38,7 +38,7 @@ window.fieldsSmokeTest = async function () {
     kb_search_suggestions: { popular: ['vpn'], tags: ['vpn'], missing: [] },
     kb_search: [{ kind: 'tutorial', id: 't1', short_code: 'TESTE1', title: 'Tutorial TESTE1', snippet: 'com [[vpn]]', category_name: 'Redes', category_color: '#1a9ca9', category_icon: 'network', author_name: 'Teste', author_avatar: null, matched_in: 'título', score: 1, created_at: now, verified: true }],
     kb_my_recent: [{ tutorial_id: 't1', last_viewed: now }], kb_tutorial_viewers: [], kb_email_config_status: {},
-    kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 'cd1', codigo: 'CD-RJ', nome: 'CD RIO DE JANEIRO', cidade: 'RIO DE JANEIRO', uf: 'RJ' }, { id: 'cd2', codigo: 'CD-AM', nome: 'CD MANAUS', cidade: 'MANAUS', uf: 'AM' }],
+    kb_cd_of: 'CD RIO DE JANEIRO', kb_list_cds: [{ id: 'cd1', codigo: 'CD-RJ', nome: 'CD RIO DE JANEIRO', cidade: 'RIO DE JANEIRO', uf: 'RJ', origem: 'inventario' }, { id: 'cd2', codigo: 'CD-AM', nome: 'CD MANAUS', cidade: 'MANAUS', uf: 'AM', origem: 'inventario' }, { id: 'cd3', codigo: null, nome: 'CD RECIFE', cidade: 'Recife', uf: 'PE', origem: 'fields' }],
     kb_contributors: [{ user_id: 'u2', full_name: 'Colega Field', avatar_url: null, edits: 2, last_at: now }],
   }
   const orig = window.__origFetch || window.fetch
@@ -53,7 +53,9 @@ window.fieldsSmokeTest = async function () {
     if (url.includes('/functions/v1/')) return json({ ok: true })
     const m = url.match(/\/rest\/v1\/(rpc\/)?([a-z_]+)/)
     if (m?.[1]) return json(rpc[m[2]] ?? null)
-    const rows = tables[m?.[2]] ?? []
+    let rows = tables[m?.[2]] ?? []
+    // filtros simples ?coluna=eq.valor
+    for (const [k, v] of new URL(url).searchParams) if (v.startsWith('eq.') && rows.some(r => k in r)) rows = rows.filter(r => String(r[k]) === v.slice(3))
     if ((init.method || 'GET') === 'HEAD') return new Response(null, { status: 200, headers: { 'Content-Range': `0-${rows.length}/${rows.length}` } })
     return json(single ? (rows[0] ?? {}) : rows)
   }

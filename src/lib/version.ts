@@ -14,6 +14,14 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.7.0', date: '2026-11-13', title: 'Novos estados e perfil rápido',
+    items: [
+      'Ao cadastrar um Field, o administrador pode criar um novo estado/CD: o desenho do estado aparece ao digitar o nome ou a sigla',
+      'Passe o mouse sobre um Field para ver um resumo (CD, nível, publicações e pontos)',
+      'Clique no Field para abrir o perfil completo: estatísticas, impacto e publicações recentes',
+    ],
+  },
+  {
     version: '1.6.1', date: '2026-11-13', title: 'Fields pelo Brasil',
     items: [
       'Cada Field aparece com o mapa do estado do seu CD, pintado com a bandeira do estado',

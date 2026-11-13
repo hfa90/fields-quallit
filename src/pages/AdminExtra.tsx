@@ -5,7 +5,8 @@ import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { ROLE_LABEL, cn, errMsg, timeAgo } from '../lib/utils'
 import { PUBLIC_URL } from '../lib/native'
-import { useCds } from '../lib/cds'
+import { refreshCds } from '../lib/cds'
+import LocationPicker, { emptyLocation, locationReady, type NewLocation } from '../components/LocationPicker'
 import type { Role } from '../lib/types'
 import { LIST_COLS } from '../lib/library'
 import type { TutorialListItem } from '../lib/types'
@@ -90,21 +91,43 @@ function Credentials({ name, email, password }: { name: string; email: string; p
   )
 }
 
+/** Usa o CD com esse nome se já existir; senão cria o local na central */
+async function ensureLocation(loc: NewLocation) {
+  const nome = loc.nome.trim().toUpperCase()
+  const found = async () => {
+    const { data } = await supabase.rpc('kb_list_cds')
+    return ((data ?? []) as { id: string; nome: string }[]).find(c => c.nome.trim().toUpperCase() === nome)?.id ?? null
+  }
+  const existing = await found()
+  if (existing) return existing
+  const { data, error } = await supabase.from('kb_locations').insert({ nome, uf: loc.uf, cidade: loc.cidade.trim() || null }).select('id').single()
+  if (error) {
+    const again = error.code === '23505' ? await found() : null
+    if (again) return again
+    throw error
+  }
+  await refreshCds()
+  return data.id as string
+}
+
 export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<Role>('field')
   const [cdId, setCdId] = useState('')
-  const cds = useCds()
+  const [locMode, setLocMode] = useState<'existing' | 'new'>('existing')
+  const [loc, setLoc] = useState<NewLocation>(emptyLocation)
   const [password, setPassword] = useState(tempPassword)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<{ existed: boolean } | null>(null)
-  useEffect(() => { if (open) { setName(''); setEmail(''); setRole('field'); setCdId(''); setPassword(tempPassword()); setDone(null) } }, [open])
+  useEffect(() => { if (open) { setName(''); setEmail(''); setRole('field'); setCdId(''); setLocMode('existing'); setLoc(emptyLocation()); setPassword(tempPassword()); setDone(null) } }, [open])
 
   const create = async () => {
     setBusy(true)
     try {
-      const r = await callAdmin({ action: 'create', email, full_name: name, role, password, cd_id: cdId || null })
+      let cd_id: string | null = locMode === 'existing' ? cdId || null : null
+      if (locMode === 'new' && locationReady(loc)) cd_id = await ensureLocation(loc)
+      const r = await callAdmin({ action: 'create', email, full_name: name, role, password, cd_id })
       setDone({ existed: !!r.existed }); onCreated()
       toast.success(r.existed ? 'Acesso liberado para usuário existente' : 'Usuário criado')
     } catch (e) { toast.error(errMsg(e)) } finally { setBusy(false) }
@@ -129,13 +152,7 @@ export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onCl
         <div className="space-y-4">
           <div><label className={labelCls}>Nome completo</label><input autoFocus className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder="Nome do field" /></div>
           <div><label className={labelCls}>E-mail</label><input type="email" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@empresa.com.br" autoCapitalize="none" /></div>
-          <div>
-            <label className={labelCls}>CD onde atua</label>
-            <select className={inputCls} value={cdId} onChange={e => setCdId(e.target.value)}>
-              <option value="">Não definido</option>
-              {cds.map(c => <option key={c.id} value={c.id}>{c.nome}{c.uf ? ` · ${c.uf}` : ''}</option>)}
-            </select>
-          </div>
+          <LocationPicker mode={locMode} setMode={setLocMode} cdId={cdId} setCdId={setCdId} loc={loc} setLoc={setLoc} />
           <div>
             <label className={labelCls}>Nível de acesso</label>
             <div className="grid grid-cols-3 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
@@ -155,7 +172,7 @@ export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onCl
             </div>
             <p className="mt-1 text-[12px] text-neutral-500">A pessoa troca no primeiro acesso.</p>
           </div>
-          <Button className="h-11 w-full" loading={busy} onClick={create} disabled={!name.trim() || !email.trim()}><UserPlus className="size-4" />Criar usuário</Button>
+          <Button className="h-11 w-full" loading={busy} onClick={create} disabled={!name.trim() || !email.trim() || (locMode === 'new' && !!loc.estado.trim() && !locationReady(loc))}><UserPlus className="size-4" />Criar usuário</Button>
         </div>
       )}
     </Modal>
