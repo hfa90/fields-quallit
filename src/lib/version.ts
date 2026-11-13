@@ -14,6 +14,15 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.10.0', date: '2026-11-13', title: 'O robozinho do app',
+    items: [
+      'O cartão grande do app Android saiu da página inicial',
+      'No lugar, o robozinho Android entra pela lateral uma única vez, pede para ser instalado e sai do mesmo jeito',
+      'Depois fica só a cabecinha espiando na lateral das telas — toque nela para instalar ou “Não mostrar mais”',
+      'Na tela de login, o robozinho acompanha você: fica triste no e-mail, se desespera na senha, aceita… e se despede antes de entrar',
+    ],
+  },
+  {
     version: '1.9.0', date: '2026-11-13', title: 'Página inicial mais leve',
     items: [
       'Boas-vindas para quem acabou de chegar: um tour rápido de como buscar, compartilhar por voz e ganhar pontos (dá para rever no Perfil)',

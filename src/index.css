@@ -306,3 +306,38 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   html, body { overscroll-behavior: none; }
   body { -webkit-user-select: none; user-select: none; }
 }
+
+/* ---------- Robozinho Android ---------- */
+@keyframes droid-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
+@keyframes droid-wave { 0%, 100% { transform: rotate(-150deg) } 50% { transform: rotate(-112deg) } }
+@keyframes droid-antenna { 0%, 100% { transform: rotate(0) } 50% { transform: rotate(-9deg) } }
+@keyframes droid-antenna-r { 0%, 100% { transform: rotate(0) } 50% { transform: rotate(9deg) } }
+@keyframes droid-blink { 0%, 93%, 100% { transform: scaleY(1) } 96% { transform: scaleY(.1) } }
+@keyframes droid-shake { 0%, 100% { transform: translateX(0) rotate(0) } 25% { transform: translateX(-2.5px) rotate(-2.5deg) } 75% { transform: translateX(2.5px) rotate(2.5deg) } }
+@keyframes droid-jitter { 0%, 100% { transform: translate(0, 0) } 33% { transform: translate(1.2px, -.8px) } 66% { transform: translate(-1.2px, .6px) } }
+@keyframes droid-tear { 0% { transform: translateY(0); opacity: 0 } 15% { opacity: 1 } 100% { transform: translateY(16px); opacity: 0 } }
+@keyframes droid-sweat { 0% { transform: translateY(-2px); opacity: 0 } 25% { opacity: 1 } 100% { transform: translateY(10px); opacity: 0 } }
+@keyframes droid-in { 0% { transform: translateX(140%) rotate(12deg) } 60% { transform: translateX(-8%) rotate(-4deg) } 80% { transform: translateX(3%) rotate(1deg) } 100% { transform: none } }
+@keyframes droid-out { 0% { transform: none } 25% { transform: translateX(-8%) rotate(-4deg) } 100% { transform: translateX(140%) rotate(12deg) } }
+@keyframes droid-peek { 0%, 78%, 100% { transform: translateX(46%) rotate(-24deg) } 84%, 92% { transform: translateX(14%) rotate(-12deg) } }
+@keyframes droid-head-in { from { transform: translateX(120%) rotate(-24deg) } to { transform: translateX(46%) rotate(-24deg) } }
+@keyframes bubble-in { from { opacity: 0; transform: translateY(6px) scale(.92) } to { opacity: 1; transform: none } }
+.droid-bob { animation: droid-bob 1.8s ease-in-out infinite }
+.droid-wave { animation: droid-wave .55s ease-in-out infinite }
+.droid-antenna { animation: droid-antenna 2.4s ease-in-out infinite }
+.droid-antenna-r { animation-name: droid-antenna-r; animation-delay: .3s }
+.droid-blink { animation: droid-blink 4s infinite }
+.droid-shake { animation: droid-shake .18s linear infinite }
+.droid-jitter { animation: droid-jitter .2s linear infinite }
+.droid-tear { animation: droid-tear 1.6s ease-in infinite }
+.droid-sweat { animation: droid-sweat 1s ease-in infinite }
+.droid-sweat-2 { animation-delay: .5s }
+.droid-in { animation: droid-in .9s cubic-bezier(.2,.8,.2,1) both }
+.droid-out { animation: droid-out .8s cubic-bezier(.5,0,.75,0) both }
+.droid-peek { animation: droid-head-in .6s ease-out both, droid-peek 9s ease-in-out .6s infinite }
+.bubble-in { animation: bubble-in .25s cubic-bezier(.2,.8,.2,1) backwards }
+/* quem pediu menos movimento no sistema: o robô continua vivo, mas sem tremer */
+@media (prefers-reduced-motion: reduce) {
+  .droid-shake { animation: droid-bob .9s ease-in-out infinite }
+  .droid-jitter { animation: none }
+}

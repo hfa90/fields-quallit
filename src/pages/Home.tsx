@@ -12,7 +12,6 @@ import { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { TutorialCollection, VIEW_MODES, ViewSwitcher } from '../components/TutorialViews'
 import { usePref } from '../lib/prefs'
 import { HeroSearch } from '../components/Search'
-import AndroidAppCard from '../components/AndroidAppCard'
 import TeamStrip from '../components/TeamStrip'
 import { GapCard, ShareCallout, useGaps } from '../components/Engagement'
 import { TrailCard, type Trail } from './TrailPage'
@@ -123,8 +122,6 @@ export default function Home() {
           {gaps.slice(0, 8).map(g => <GapCard key={g.query} g={g} compact />)}
         </Shelf>
       )}
-
-      <AndroidAppCard />
 
       {(recent.length > 0 || favorites.length > 0) && (() => {
         const tabs = ([['recent', 'Continuar lendo', recent.length], ['favorites', 'Favoritos', favorites.length]] as const).filter(t => t[2] > 0)

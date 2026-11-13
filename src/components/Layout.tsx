@@ -12,6 +12,7 @@ import NotificationList from './NotificationList'
 import { NewChooser, openNewChooser } from './Engagement'
 import { WhatsNewOnce } from './VersionInfo'
 import { MarkAndroidApp, Onboarding, useOnboardingPending } from './Onboarding'
+import AndroidBuddy from './AndroidBuddy'
 import { refreshOffline, useOnline } from '../lib/offline'
 import { APK_URL, checkAppUpdate, openExternal, setNativeTheme } from '../lib/native'
 import { Download } from 'lucide-react'
@@ -199,6 +200,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <WhatsNewOnce suppress={onboarding} />
       <Onboarding />
       <MarkAndroidApp />
+      <AndroidBuddy hold={onboarding} />
     </div>
   )
 }
