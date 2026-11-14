@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Search, SearchX, HandHelping, X } from 'lucide-react'
+import { Search, SearchX, HandHelping, X, Mic } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { SearchResult } from '../lib/types'
 import { cn } from '../lib/utils'
-import { ResultRow, pushRecent, resultHref } from '../components/Search'
-import { Spinner } from '../components/ui'
+import { DidYouMean, ResultRow, pushRecent, resultHref, useDidYouMean } from '../components/Search'
+import { ListSkeleton } from '../components/ui'
 
 type Filter = 'all' | 'tutorial' | 'request' | 'person'
 const FILTERS: [Filter, string][] = [['all', 'Tudo'], ['tutorial', 'Tutoriais'], ['request', 'Pedidos'], ['person', 'Pessoas']]
@@ -31,6 +31,8 @@ export default function SearchPage() {
     results?.forEach(r => { c[r.kind] = (c[r.kind] ?? 0) + 1 })
     return c
   }, [results])
+  const fix = useDidYouMean(q, results)
+  const pick = (v: string) => setParams({ q: v })
   const shown = results?.filter(r => filter === 'all' || r.kind === filter) ?? []
 
   return (
@@ -57,18 +59,25 @@ export default function SearchPage() {
       )}
 
       {!q ? <p className="px-1 text-[15px] text-neutral-500">Digite pelo menos 2 letras. A busca ignora acentos e tolera erros de digitação.</p>
-        : results === null ? <Spinner />
+        : results === null ? <ListSkeleton rows={6} />
         : shown.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
             <SearchX className="size-12 text-neutral-300 dark:text-neutral-600" strokeWidth={1.4} />
             <p className="mt-3 text-[17px] font-semibold text-neutral-900 dark:text-white">Nenhum resultado para “{q}”</p>
-            <p className="mt-1 text-[15px] text-neutral-500">Ainda não há conteúdo sobre isso. Que tal pedir à comunidade?</p>
-            <button onClick={() => nav(`/comunidade?pedir=${encodeURIComponent(q)}`)} className="mt-5 inline-flex h-11 items-center gap-2 rounded-[10px] bg-brand-orange px-5 text-[15px] font-medium text-white">
-              <HandHelping className="size-4" />Pedir um tutorial
-            </button>
+            {fix && <DidYouMean fix={fix} onPick={pick} className="mt-2 text-[15px]" />}
+            <p className="mt-1 text-[15px] text-neutral-500">Ainda não há conteúdo sobre isso. Já resolveu? Conte para o time. Precisa? Peça à comunidade.</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <button onClick={() => nav(`/dica?problema=${encodeURIComponent(q)}`)} className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-accent-600 px-5 text-[15px] font-medium text-white">
+                <Mic className="size-4" />Contar como resolvi
+              </button>
+              <button onClick={() => nav(`/comunidade?pedir=${encodeURIComponent(q)}`)} className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-brand-orange px-5 text-[15px] font-medium text-white">
+                <HandHelping className="size-4" />Pedir um tutorial
+              </button>
+            </div>
           </div>
         ) : (
           <>
+            {fix && <DidYouMean fix={fix} onPick={pick} className="px-1" />}
             <p className="px-1 text-[13px] text-neutral-500">{shown.length} resultado{shown.length === 1 ? '' : 's'} · ordenados por relevância</p>
             <div className="card divide-y divide-neutral-200/70 overflow-hidden dark:divide-neutral-800">
               {shown.map(r => <ResultRow key={r.kind + r.id} r={r} big onClick={() => nav(resultHref(r), { state: { inApp: true } })} />)}

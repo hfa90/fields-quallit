@@ -11,6 +11,7 @@ import { cn } from '../lib/utils'
 import StateBadge from './StateBadge'
 import { QuallitMark } from './QuallitLogo'
 import { rememberUser } from '../lib/droidTalk'
+import { useAttention } from '../lib/attention'
 
 const NEW_DAYS = 30
 const listeners = new Set<() => void>()
@@ -59,7 +60,8 @@ export function Onboarding() {
   const ufOf = useCdUf()
   const nav = useNavigate()
 
-  useEffect(() => { if (pending) setOpen(true) }, [pending])
+  const turn = useAttention('onboarding', pending)
+  useEffect(() => { if (turn) setOpen(true) }, [turn])
   useEffect(() => {
     const l = () => { setStep(0); setOpen(true) }
     listeners.add(l)

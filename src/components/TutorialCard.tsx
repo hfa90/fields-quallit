@@ -73,13 +73,18 @@ export default function TutorialCard({ t, i = 0 }: { t: TutorialListItem; i?: nu
 }
 
 /** Cartão compacto para faixas horizontais (Continuar lendo / Favoritos) */
-export function MiniCard({ t, sub }: { t: TutorialListItem; sub?: string }) {
+export function MiniCard({ t, sub, to, progress }: { t: TutorialListItem; sub?: string; to?: string; progress?: number }) {
   const color = t.category_color ?? '#8e8e93'
   return (
-    <Link to={`/t/${t.short_code}`} state={{ inApp: true }} className="card press flex w-[230px] shrink-0 flex-col p-3.5 sm:w-[250px]">
+    <Link to={to ?? `/t/${t.short_code}`} state={{ inApp: true }} className="card press flex w-[230px] shrink-0 flex-col p-3.5 sm:w-[250px]">
       <span className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color }}><CategoryIcon name={t.category_icon} className="size-3.5" />{t.category_name ?? 'Geral'}</span>
       <span className="mt-1.5 text-[15px] font-semibold leading-snug text-neutral-900 line-clamp-2 dark:text-white">{t.title}</span>
       {sub && <span className="mt-auto pt-2 text-[12px] text-neutral-500">{sub}</span>}
+      {progress != null && (
+        <span className="mt-2 block h-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+          <span className="block h-full rounded-full bg-accent-600" style={{ width: `${Math.max(6, Math.min(100, progress * 100))}%` }} />
+        </span>
+      )}
     </Link>
   )
 }

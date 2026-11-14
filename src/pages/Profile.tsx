@@ -13,6 +13,7 @@ import { Smartphone, Sparkles } from 'lucide-react'
 import { VersionCard } from '../components/VersionInfo'
 import { openOnboarding } from '../components/Onboarding'
 import { ImpactCard } from '../components/Engagement'
+import { AchievementsCard } from '../components/Achievements'
 
 const row = 'flex items-center gap-3 px-4 min-h-12'
 const fieldCls = 'min-w-0 flex-1 bg-transparent py-3 text-right text-[16px] text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-white'
@@ -66,6 +67,7 @@ export default function ProfilePage() {
       </div>
 
       <ImpactCard userId={profile.id} me />
+      <AchievementsCard userId={profile.id} me />
 
       <section>
         <SectionTitle>Conta</SectionTitle>

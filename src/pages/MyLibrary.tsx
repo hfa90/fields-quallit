@@ -9,7 +9,7 @@ import { listOffline, removeOffline, useOfflineIds, type OfflineBundle } from '.
 import { CloudOff, Trash2 } from 'lucide-react'
 import { fileSize, timeAgo } from '../lib/utils'
 import TutorialCard from '../components/TutorialCard'
-import { Empty, Spinner } from '../components/ui'
+import { Empty, CardsSkeleton } from '../components/ui'
 import { cn } from '../lib/utils'
 
 type Tab = 'meus' | 'favoritos' | 'recentes' | 'offline'
@@ -50,7 +50,7 @@ export default function MyLibrary() {
         ))}
       </div>
       {tab === 'offline' ? (
-        !bundles ? <Spinner /> : bundles.length === 0 ? (
+        !bundles ? <CardsSkeleton count={3} /> : bundles.length === 0 ? (
           <Empty icon={<CloudOff className="size-12" strokeWidth={1.4} />} title="Nenhum tutorial salvo offline">
             Abra um tutorial e toque no ícone de nuvem para usá-lo sem internet — ideal para subsolo, sala de servidor ou cliente sem Wi‑Fi.
           </Empty>
@@ -67,7 +67,7 @@ export default function MyLibrary() {
             ))}
           </div>
         )
-      ) : !shown ? <Spinner /> : shown.length === 0 ? (
+      ) : !shown ? <CardsSkeleton /> : shown.length === 0 ? (
         tab === 'meus' ? (
           <Empty icon={<FileText className="size-12" strokeWidth={1.4} />} title="Você ainda não publicou">
             Compartilhe o que você sabe — um procedimento simples já ajuda muita gente.

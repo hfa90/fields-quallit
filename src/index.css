@@ -370,3 +370,36 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
   .qr-pop { animation: fade .2s both; transform: rotate(-2deg) }
   .qr-scan { animation: none }
 }
+
+/* ---------- Conquistas ---------- */
+@keyframes confetti-fall { 0% { transform: translate(0, 0) rotate(0); opacity: 1 } 100% { transform: translate(var(--drift, 0), 170px) rotate(540deg); opacity: 0 } }
+.confetti { animation: confetti-fall 1.6s cubic-bezier(.2,.6,.4,1) both }
+@keyframes badge-pop { 0% { transform: scale(.3) rotate(-20deg); opacity: 0 } 60% { transform: scale(1.12) rotate(6deg); opacity: 1 } 100% { transform: none } }
+.badge-pop { animation: badge-pop .6s cubic-bezier(.2,.9,.25,1.2) .1s both }
+
+/* ---------- Esqueleto de carregamento ---------- */
+@keyframes shimmer { from { background-position: 100% 0 } to { background-position: -100% 0 } }
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgb(0 0 0 / .06) 25%, rgb(0 0 0 / .11) 37%, rgb(0 0 0 / .06) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.dark .skeleton { background-image: linear-gradient(90deg, rgb(255 255 255 / .06) 25%, rgb(255 255 255 / .11) 37%, rgb(255 255 255 / .06) 63%) }
+
+/* ---------- Modo passo a passo ---------- */
+@keyframes step-next { from { opacity: 0; transform: translateX(28px) } to { opacity: 1; transform: none } }
+@keyframes step-prev { from { opacity: 0; transform: translateX(-28px) } to { opacity: 1; transform: none } }
+.step-next { animation: step-next .25s cubic-bezier(.2,.8,.2,1) both }
+.step-prev { animation: step-prev .25s cubic-bezier(.2,.8,.2,1) both }
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti { animation: none; display: none }
+  .badge-pop { animation: fade .2s both }
+  .skeleton { animation: none }
+  .step-next, .step-prev { animation: fade .15s both }
+}
+
+/* passo a passo: letra maior para ler de longe, com uma mão ocupada */
+.step-content .tutorial-content { font-size: 1.1875rem; line-height: 1.6; }
+.step-content .tutorial-content img { border-radius: 12px; }

@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Category, RequestItem, UserStats } from '../lib/types'
 import { cn, errMsg, level, timeAgo } from '../lib/utils'
-import { Avatar, Button, CategoryIcon, Empty, Modal, Spinner, inputCls, labelCls, textareaCls } from '../components/ui'
+import { Avatar, Button, CategoryIcon, Empty, Modal, inputCls, labelCls, textareaCls, ListSkeleton } from '../components/ui'
 import { GapsWall } from '../components/Engagement'
 
 type Tab = 'pedidos' | 'ranking' | 'atividade'
@@ -144,7 +144,7 @@ function Requests() {
           </button>
         ))}
       </div>
-      {!items ? <Spinner /> : items.length === 0 ? (
+      {!items ? <ListSkeleton /> : items.length === 0 ? (
         <Empty icon={<HandHelping className="size-12" strokeWidth={1.4} />} title={filter === 'open' ? 'Nenhum pedido em aberto' : 'Nenhum pedido atendido ainda'}>
           {filter === 'open' && 'Precisa de um tutorial que ainda não existe? Faça um pedido.'}
         </Empty>
@@ -186,7 +186,7 @@ function Ranking() {
   useEffect(() => {
     supabase.from('kb_user_stats').select('*').order('points', { ascending: false }).limit(50).then(({ data }) => setRows((data as UserStats[]) ?? []))
   }, [])
-  if (!rows) return <Spinner />
+  if (!rows) return <ListSkeleton />
   const medal = ['#f5b301', '#a1a1aa', '#c2793b']
   return (
     <div className="space-y-4">
@@ -241,7 +241,7 @@ function Feed() {
       setItems(out.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 40))
     })
   }, [])
-  if (!items) return <Spinner />
+  if (!items) return <ListSkeleton />
   if (!items.length) return <Empty icon={<Activity className="size-12" strokeWidth={1.4} />} title="Sem atividade ainda" />
   const ICON = { tutorial: FileText, comment: MessageSquare, request: HandHelping }
   return (

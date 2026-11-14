@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck, History, CloudDownload, CloudCheck, Loader2, WifiOff, CalendarCheck, Route, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck, History, CloudDownload, CloudCheck, Loader2, WifiOff, CalendarCheck, Route, ChevronRight, CheckCircle2, ListChecks, Play, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -10,7 +10,7 @@ import { DIFFICULTY, cn, errMsg, fmtDate, fmtDateTime, readingTime, shortUrl, ti
 import TutorialContent, { type Heading } from '../components/TutorialContent'
 import ShareDialog from '../components/ShareDialog'
 import { AttachmentList, LinkList } from '../components/Attachments'
-import { Avatar, Button, CategoryIcon, Modal, SectionTitle, Spinner, VerifiedBadge } from '../components/ui'
+import { Avatar, Button, CategoryIcon, Modal, SectionTitle, VerifiedBadge, ArticleSkeleton } from '../components/ui'
 import Comments, { Feedback } from '../components/Comments'
 import { useFavorites, useFollows } from '../lib/library'
 import type { CommentKind } from '../lib/types'
@@ -19,6 +19,12 @@ import { isNative, nativeShare } from '../lib/native'
 import { ThanksBox } from '../components/Engagement'
 import { FULL_SELECT, getOfflineByCode, isNetworkError, removeOffline, saveOffline, useOfflineIds, type OfflineBundle } from '../lib/offline'
 import { useTrailNav } from './TrailPage'
+import { setPageTitle } from '../lib/title'
+import StepMode from '../components/StepMode'
+import Related from '../components/Related'
+import { isPlainKey } from '../components/Shortcuts'
+import { extractSteps, worthStepMode } from '../lib/steps'
+import { clearStepProgress, getProgress, hasResume, progressLabel, saveProgress, type Progress } from '../lib/progress'
 // histórico de versões (com o comparador de textos) só é baixado quando alguém abre
 const VersionHistory = lazy(() => import('../components/VersionHistory'))
 
@@ -57,6 +63,13 @@ export default function TutorialView() {
   const [contributors, setContributors] = useState<{ user_id: string; full_name: string | null; avatar_url: string | null; cd_name: string | null; edits: number; last_at: string }[]>([])
   const offlineIds = useOfflineIds()
   const trail = useTrailNav(t?.id)
+  const [params, setParams] = useSearchParams()
+  const [stepOpen, setStepOpen] = useState<number | null>(null)
+  const [progress, setProgress] = useState<Progress | null>(null)
+  const [resumeHidden, setResumeHidden] = useState(false)
+  const [feedbackKey, setFeedbackKey] = useState(0)
+  const steps = useMemo(() => (t ? extractSteps(t.content_html) : []), [t?.content_html]) // eslint-disable-line react-hooks/exhaustive-deps
+  const stepMode = worthStepMode(steps)
 
   useEffect(() => {
     let alive = true
@@ -65,7 +78,7 @@ export default function TutorialView() {
       const loadOfflineCopy = async () => {
         const b = await getOfflineByCode(code)
         if (!alive) return true
-        if (b) { setOfflineCopy(b); setT(b.tutorial); setLinks(b.links); setFiles(b.files); setViewers([]); document.title = `${b.title} · Fields`; return true }
+        if (b) { setOfflineCopy(b); setT(b.tutorial); setLinks(b.links); setFiles(b.files); setViewers([]); setPageTitle(b.title); return true }
         return false
       }
       if (!navigator.onLine && await loadOfflineCopy()) return
@@ -77,7 +90,7 @@ export default function TutorialView() {
       }
       setT((data as Full) ?? null)
       if (!data) return
-      document.title = `${data.title} · Fields Quallit`
+      setPageTitle(data.title)
       const [l, a] = await Promise.all([
         supabase.from('kb_links').select('*').eq('tutorial_id', data.id).order('sort_order'),
         supabase.from('kb_attachments').select('*').eq('tutorial_id', data.id).order('created_at'),
@@ -92,7 +105,7 @@ export default function TutorialView() {
       const v = await supabase.rpc('kb_tutorial_viewers', { p_tutorial: data.id })
       if (alive) setViewers((v.data as Viewer[]) ?? [])
     })()
-    return () => { alive = false; document.title = 'Fields Quallit' }
+    return () => { alive = false; setPageTitle() }
   }, [code, reload])
 
   // Abre direto nos comentários quando vem de uma notificação
@@ -101,7 +114,58 @@ export default function TutorialView() {
     if (t && wantsComments) setTimeout(() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' }), 400)
   }, [t, wantsComments])
 
-  if (t === undefined) return <Spinner />
+  // onde a pessoa parou; ?passo=N ou ?continuar=1 abrem direto no ponto certo
+  useEffect(() => {
+    if (!t) return
+    const p = getProgress(profile?.id, t.short_code)
+    setProgress(p); setResumeHidden(false)
+    const passo = Number(params.get('passo'))
+    const wantsResume = params.get('continuar') === '1'
+    if (passo || wantsResume) {
+      const next = new URLSearchParams(params); next.delete('passo'); next.delete('continuar'); setParams(next, { replace: true })
+    }
+    if (!stepMode) {
+      if (wantsResume && p?.anchor) setTimeout(() => document.getElementById(p.anchor!)?.scrollIntoView({ behavior: 'smooth' }), 350)
+      return
+    }
+    if (passo >= 1) setStepOpen(Math.min(passo, steps.length) - 1)
+    else if (wantsResume && p?.step != null) setStepOpen(Math.min(p.step, steps.length - 1))
+    else if (wantsResume && p?.anchor) setTimeout(() => document.getElementById(p.anchor!)?.scrollIntoView({ behavior: 'smooth' }), 350)
+  }, [t?.id, stepMode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // leitura normal: guarda a última seção alcançada (e esquece ao chegar no fim)
+  useEffect(() => {
+    if (!t || headings.length < 2 || stepOpen !== null) return
+    let timer: number | undefined
+    const onScroll = () => {
+      if (timer) return
+      timer = window.setTimeout(() => {
+        timer = undefined
+        const nearEnd = window.scrollY + window.innerHeight > document.documentElement.scrollHeight - 500
+        let cur: typeof headings[number] | undefined
+        for (const h of headings) { const el = document.getElementById(h.id); if (el && el.getBoundingClientRect().top < 140) cur = h }
+        if (nearEnd) saveProgress(profile?.id, t.short_code, { anchor: undefined, anchorLabel: undefined })
+        else if (cur && cur.id !== headings[0].id) saveProgress(profile?.id, t.short_code, { anchor: cur.id, anchorLabel: cur.text })
+      }, 800)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(timer) }
+  }, [t?.id, headings, stepOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // atalhos: P = passo a passo, F = favoritar
+  useEffect(() => {
+    if (!t) return
+    const h = (e: KeyboardEvent) => {
+      if (!isPlainKey(e) || stepOpen !== null) return
+      const k = e.key.toLowerCase()
+      if (k === 'p' && stepMode) { e.preventDefault(); setStepOpen(progress?.step ?? 0) }
+      else if (k === 'f') { e.preventDefault(); toggleFav(t.id) }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }) // sempre com o estado atual
+
+  if (t === undefined) return <ArticleSkeleton />
   if (t === null) return <NotFound message="Tutorial não encontrado ou sem permissão de acesso" />
 
   const canEdit = isModerator || t.author_id === profile?.id
@@ -153,6 +217,26 @@ export default function TutorialView() {
     toast.success('Tutorial marcado como revisado')
     setReload(r => r + 1)
   }
+  const openSteps = (from?: number) => setStepOpen(from ?? (progress?.step != null && progress.step < steps.length ? progress.step : 0))
+  const onStepChange = (step: number, done: number[]) => {
+    saveProgress(profile?.id, t.short_code, { step, total: steps.length, done })
+    setProgress(getProgress(profile?.id, t.short_code))
+  }
+  const finishSteps = async (helpful: boolean | null) => {
+    setStepOpen(null)
+    clearStepProgress(profile?.id, t.short_code)
+    setProgress(getProgress(profile?.id, t.short_code))
+    if (helpful === null || offlineCopy || !profile) return
+    const { error } = await supabase.from('kb_feedback').upsert({ tutorial_id: t.id, user_id: profile.id, helpful })
+    if (error) return toast.error(errMsg(error))
+    setFeedbackKey(k => k + 1)
+    if (helpful) toast.success(`Que bom! ${t.author?.full_name?.split(' ')[0] ?? 'O autor'} vai saber que ajudou 💚`)
+    else {
+      setPrompt({ kind: 'outdated', n: Date.now() })
+      setTimeout(() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' }), 300)
+    }
+  }
+  const resume = !resumeHidden && hasResume(progress) && !(progress?.step != null && !stepMode) ? progress : null
   const reviewDue = !!t.reviewed_at && new Date(t.reviewed_at).getTime() + (t.review_interval_months ?? 6) * 30.44 * 864e5 < Date.now()
 
   const remove = async () => {
@@ -280,6 +364,29 @@ export default function TutorialView() {
                 {t.tags.map(tag => <Link key={tag} to={`/?q=${encodeURIComponent(tag)}`} className="rounded-md bg-neutral-900/[.05] px-2 py-0.5 text-[13px] text-neutral-600 hover:text-neutral-900 dark:bg-white/10 dark:text-neutral-400">{tag}</Link>)}
               </div>
             )}
+            {(stepMode || resume) && (
+              <div className="no-print mt-5 space-y-2">
+                {resume && (
+                  <div className="flex items-center gap-3 rounded-[12px] bg-accent-500/[.08] px-4 py-2.5">
+                    <Play className="size-4 shrink-0 text-accent-600" fill="currentColor" />
+                    <span className="min-w-0 flex-1 truncate text-[14px] text-neutral-800 dark:text-neutral-200">{progressLabel(resume)}</span>
+                    <button onClick={() => (resume.step != null ? openSteps(resume.step) : document.getElementById(resume.anchor!)?.scrollIntoView({ behavior: 'smooth' }))}
+                      className="shrink-0 text-[14px] font-semibold text-accent-600 dark:text-accent-400">Continuar</button>
+                    <button onClick={() => setResumeHidden(true)} aria-label="Dispensar" className="shrink-0 rounded-full p-1 text-neutral-400 hover:bg-neutral-900/5 dark:hover:bg-white/10"><X className="size-4" /></button>
+                  </div>
+                )}
+                {stepMode && (
+                  <button onClick={() => openSteps(resume?.step ?? 0)}
+                    className="press flex w-full items-center gap-3 rounded-[14px] bg-accent-600 px-4 py-3 text-left text-white shadow-[0_8px_20px_-10px_rgb(0_0_0/0.5)] sm:w-auto sm:pr-6">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/15"><ListChecks className="size-5" /></span>
+                    <span className="min-w-0">
+                      <span className="block text-[16px] font-semibold">{resume?.step != null ? `Continuar do passo ${resume.step + 1}` : 'Seguir passo a passo'}</span>
+                      <span className="block text-[13px] text-white/80">{steps.length} passos em tela cheia, um por vez<span className="hidden lg:inline"> · tecla P</span></span>
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
           </header>
 
           <div className="mx-auto mt-6 max-w-[720px] border-t border-neutral-200 pt-7 dark:border-neutral-800">
@@ -314,8 +421,9 @@ export default function TutorialView() {
           {trail && <TrailBar trail={trail} />}
           {!offlineCopy && (
             <div className="no-print mx-auto mt-6 max-w-[720px] space-y-8">
-              <Feedback tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
+              <Feedback key={feedbackKey} tutorialId={t.id} onNotHelpful={() => setPrompt({ kind: 'outdated', n: Date.now() })} />
               <ThanksBox tutorialId={t.id} authorId={t.author_id} authorName={t.author?.full_name} />
+              <Related tutorialId={t.id} categoryId={t.category_id} />
               <Comments tutorialId={t.id} ownerId={t.author_id} prompt={prompt} />
             </div>
           )}
@@ -383,6 +491,10 @@ export default function TutorialView() {
       </div>
 
       {!offlineCopy && history && <Suspense fallback={null}><VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canImprove} onRestored={() => setReload(r => r + 1)} /></Suspense>}
+      {stepOpen !== null && (
+        <StepMode title={t.title} steps={steps} start={stepOpen} initialDone={progress?.done ?? []}
+          onClose={() => setStepOpen(null)} onChange={onStepChange} onFinish={finishSteps} />
+      )}
       <ShareDialog open={share} onClose={() => setShare(false)} url={url} title={t.title} />
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="Excluir tutorial?">
         <p className="text-[15px] text-neutral-600 dark:text-neutral-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Não é possível desfazer.</p>

@@ -123,3 +123,67 @@ export function VerifiedBadge({ size = 'sm', title }: { size?: 'sm' | 'md'; titl
     </span>
   )
 }
+
+/** Bloco cinza animado enquanto o conteúdo carrega */
+export function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <div className={cn('skeleton', className)} style={style} aria-hidden />
+}
+
+/** Lista carregando (linhas com avatar/ícone e texto) */
+export function ListSkeleton({ rows = 5, className }: { rows?: number; className?: string }) {
+  return (
+    <div className={cn('card divide-y divide-neutral-200/70 overflow-hidden dark:divide-neutral-800', className)} role="status" aria-label="Carregando">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-start gap-3 px-4 py-3.5">
+          <Skeleton className="size-9 shrink-0 rounded-[9px]" />
+          <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+            <Skeleton className="h-3.5" style={{ width: `${55 + ((i * 17) % 35)}%` }} />
+            <Skeleton className="h-3" style={{ width: `${70 + ((i * 11) % 25)}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Grade de cartões carregando */
+export function CardsSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Carregando">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="card space-y-3 p-4">
+          <div className="flex items-center gap-2"><Skeleton className="size-6 rounded-full" /><Skeleton className="h-3 w-24" /></div>
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-2/3" />
+          <div className="flex gap-2 pt-2"><Skeleton className="h-3 w-12" /><Skeleton className="h-3 w-12" /></div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Tela genérica carregando (título + conteúdo) */
+export function PageSkeleton() {
+  return (
+    <div className="space-y-6 pt-1" role="status" aria-label="Carregando">
+      <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-72 max-w-full" /></div>
+      <ListSkeleton rows={4} />
+    </div>
+  )
+}
+
+/** Tutorial carregando (cabeçalho, autor e parágrafos) */
+export function ArticleSkeleton() {
+  return (
+    <div className="mx-auto max-w-[720px] space-y-4 pt-10 lg:mx-0" role="status" aria-label="Carregando tutorial">
+      <Skeleton className="h-3.5 w-32" />
+      <Skeleton className="h-9 w-11/12" />
+      <Skeleton className="h-5 w-3/4" />
+      <div className="flex items-center gap-3 pt-2"><Skeleton className="size-9 rounded-full" /><div className="flex-1 space-y-1.5"><Skeleton className="h-3.5 w-40" /><Skeleton className="h-3 w-56" /></div></div>
+      <div className="space-y-2.5 border-t border-neutral-200 pt-7 dark:border-neutral-800">
+        {[96, 88, 92, 70, 0, 94, 85, 60].map((w, i) => w ? <Skeleton key={i} className="h-3.5" style={{ width: `${w}%` }} /> : <div key={i} className="h-3" />)}
+      </div>
+    </div>
+  )
+}

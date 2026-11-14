@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { cn, errMsg, timeAgo } from '../lib/utils'
-import { Avatar, Button, CategoryIcon, Modal, Spinner, inputCls, labelCls, textareaCls } from '../components/ui'
+import { Avatar, Button, CategoryIcon, Modal, inputCls, labelCls, textareaCls, CardsSkeleton, PageSkeleton } from '../components/ui'
 import NotFound from './NotFound'
 
 export interface Trail { id: string; title: string; description: string | null; color: string; icon: string; status: 'draft' | 'published'; created_at: string }
@@ -84,7 +84,7 @@ export default function TrailPage() {
     return [...m.entries()].sort((a, b) => b[1].n - a[1].n)
   }, [progress])
 
-  if (trail === undefined) return <Spinner />
+  if (trail === undefined) return <PageSkeleton />
   if (trail === null) return <NotFound message="Trilha não encontrada" />
 
   const pct = items.length ? Math.round((mine.size / items.length) * 100) : 0
@@ -293,7 +293,7 @@ export function TrailsList() {
         </div>
         {isModerator && <Button onClick={() => setCreating(true)}><Plus className="size-4" />Nova trilha</Button>}
       </div>
-      {!rows ? <Spinner /> : rows.length === 0 ? (
+      {!rows ? <CardsSkeleton count={3} /> : rows.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center">
           <Route className="size-12 text-neutral-300 dark:text-neutral-600" strokeWidth={1.4} />
           <p className="mt-3 text-[17px] font-semibold text-neutral-900 dark:text-white">Nenhuma trilha ainda</p>

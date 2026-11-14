@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { RequestItem } from '../lib/types'
 import { errMsg } from '../lib/utils'
-import { Button, Modal, Spinner, inputCls } from '../components/ui'
+import { Button, Modal, inputCls, PageSkeleton } from '../components/ui'
 import Comments from '../components/Comments'
 import { REQ_SELECT, RequestCard } from './Community'
 import NotFound from './NotFound'
@@ -23,7 +23,7 @@ export default function RequestPage() {
   const load = () => supabase.from('kb_requests').select(REQ_SELECT).eq('id', id).maybeSingle().then(({ data }) => setR((data as RequestItem) ?? null))
   useEffect(() => { load() }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (r === undefined) return <Spinner />
+  if (r === undefined) return <PageSkeleton />
   if (r === null) return <NotFound message="Pedido não encontrado" />
   const owner = r.user_id === profile?.id || isModerator
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, X, Clock, TrendingUp, Hash, FileText, HandHelping, UserRound, CornerDownLeft, ArrowRight, Loader2, SearchX } from 'lucide-react'
+import { Search, X, Clock, TrendingUp, Hash, FileText, HandHelping, UserRound, CornerDownLeft, ArrowRight, Loader2, SearchX, Mic, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { SearchResult } from '../lib/types'
 import { cn, highlight } from '../lib/utils'
@@ -50,6 +50,43 @@ export function useLiveSearch(q: string, limit = 12, delay = 160) {
     return () => clearTimeout(t)
   }, [q, limit, delay])
   return { results, loading }
+}
+
+/** "Você quis dizer…?": correção do termo com as palavras que existem na biblioteca (só quando há poucos resultados) */
+export function useDidYouMean(q: string, results: SearchResult[] | null) {
+  const [fix, setFix] = useState<string | null>(null)
+  const few = results !== null && results.filter(r => r.kind === 'tutorial').length < 3
+  useEffect(() => {
+    setFix(null)
+    const term = q.trim()
+    if (!few || term.length < 3) return
+    let alive = true
+    const t = setTimeout(() => {
+      supabase.rpc('kb_search_didyoumean', { p_query: term }).then(({ data, error }) => {
+        if (alive && !error && typeof data === 'string' && data && data !== term.toLowerCase()) setFix(data)
+      })
+    }, 250)
+    return () => { alive = false; clearTimeout(t) }
+  }, [q, few])
+  return fix
+}
+
+/** Completa o que está sendo digitado com buscas populares e tags */
+export function completions(q: string, sug: Suggestions | null, max = 4) {
+  const n = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const term = n(q.trim())
+  if (term.length < 2 || !sug) return []
+  return [...sug.popular, ...sug.tags]
+    .filter((v, i, a) => a.indexOf(v) === i && n(v) !== term && (n(v).startsWith(term) || n(v).includes(' ' + term)))
+    .slice(0, max)
+}
+
+export function DidYouMean({ fix, onPick, className }: { fix: string; onPick: (q: string) => void; className?: string }) {
+  return (
+    <button onClick={() => onPick(fix)} className={cn('inline-flex items-center gap-1.5 text-[14px] text-neutral-600 dark:text-neutral-300', className)}>
+      <Sparkles className="size-4 text-brand-orange" />Você quis dizer <b className="font-semibold text-accent-600 underline decoration-accent-600/30 underline-offset-2 dark:text-accent-400">{fix}</b>?
+    </button>
+  )
 }
 
 export function logSearch(q: string) {
@@ -108,6 +145,8 @@ export function SearchPalette() {
   const listRef = useRef<HTMLDivElement>(null)
   const { results, loading } = useLiveSearch(open ? q : '')
   const sug = useSuggestions()
+  const fix = useDidYouMean(open ? q : '', results)
+  const done = completions(q, sug)
 
   useEffect(() => {
     const o = (initial?: string) => { setQ(initial ?? ''); setActive(0); setRecent(recentSearches()); setOpen(true) }
@@ -197,14 +236,31 @@ export function SearchPalette() {
             <div className="flex flex-col items-center px-6 py-14 text-center">
               <SearchX className="size-10 text-neutral-300 dark:text-neutral-600" strokeWidth={1.4} />
               <p className="mt-3 text-[15px] font-medium text-neutral-800 dark:text-neutral-200">Nada encontrado para “{q}”</p>
-              <p className="mt-1 text-[13px] text-neutral-500">Ninguém documentou isso ainda. Peça à comunidade!</p>
-              <button onClick={() => { logSearch(q); close(); nav(`/comunidade?pedir=${encodeURIComponent(q.trim())}`) }}
-                className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-brand-orange px-4 text-[15px] font-medium text-white">
-                <HandHelping className="size-4" />Pedir um tutorial sobre isso
-              </button>
+              {fix && <DidYouMean fix={fix} onPick={setQ} className="mt-2" />}
+              <p className="mt-1 text-[13px] text-neutral-500">Ninguém documentou isso ainda. Já resolveu? Conte para o time. Precisa de ajuda? Peça à comunidade.</p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <button onClick={() => { logSearch(q); close(); nav(`/dica?problema=${encodeURIComponent(q.trim())}`) }}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-accent-600 px-4 text-[15px] font-medium text-white">
+                  <Mic className="size-4" />Contar como resolvi
+                </button>
+                <button onClick={() => { logSearch(q); close(); nav(`/comunidade?pedir=${encodeURIComponent(q.trim())}`) }}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-brand-orange px-4 text-[15px] font-medium text-white">
+                  <HandHelping className="size-4" />Pedir um tutorial
+                </button>
+              </div>
             </div>
           ) : (
             <div className="py-1">
+              {(done.length > 0 || fix) && (
+                <div className="flex flex-wrap items-center gap-1.5 px-4 pb-1 pt-2">
+                  {fix && <DidYouMean fix={fix} onPick={setQ} className="mr-2 text-[13px]" />}
+                  {done.map(c => (
+                    <button key={c} onClick={() => setQ(c)} className="inline-flex items-center gap-1 rounded-full bg-neutral-900/[.05] px-2.5 py-1 text-[13px] text-neutral-700 hover:bg-neutral-900/[.09] dark:bg-white/10 dark:text-neutral-300">
+                      <Search className="size-3 text-neutral-400" />{c}
+                    </button>
+                  ))}
+                </div>
+              )}
               {groups.map(g => {
                 const K = KIND[g.kind]
                 return (
@@ -227,7 +283,7 @@ export function SearchPalette() {
         <div className="hidden items-center gap-4 border-t border-neutral-200/80 px-4 py-2 text-[12px] text-neutral-400 sm:flex dark:border-neutral-800">
           <span className="flex items-center gap-1"><kbd className="font-sans">↑↓</kbd> navegar</span>
           <span className="flex items-center gap-1"><CornerDownLeft className="size-3" /> abrir</span>
-          <span className="ml-auto">Atalho: Ctrl K ou /</span>
+          <span className="ml-auto">Atalhos: Ctrl K ou / · <kbd className="font-sans">?</kbd> todos os atalhos</span>
         </div>
       </div>
     </div>

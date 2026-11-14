@@ -16,7 +16,11 @@ import AndroidBuddy from './AndroidBuddy'
 import { refreshOffline, useOnline } from '../lib/offline'
 import { APK_URL, checkAppUpdate, openExternal, setNativeTheme } from '../lib/native'
 import { Download } from 'lucide-react'
-import { WifiOff } from 'lucide-react'
+import { WifiOff, Keyboard } from 'lucide-react'
+import Shortcuts, { openShortcuts } from './Shortcuts'
+import UpdateBanner from './UpdateBanner'
+import { AchievementWatcher } from './Achievements'
+import { setPageTitle, titleForPath } from '../lib/title'
 
 export function Logo({ size = 30 }: { size?: number }) {
   return <QuallitMark size={size} />
@@ -66,6 +70,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [isAdmin, loc.pathname])
 
   useEffect(() => { setMenu(null) }, [loc.pathname])
+  useEffect(() => { const t = titleForPath(loc.pathname); if (t !== undefined) setPageTitle(t) }, [loc.pathname])
   const online = useOnline()
   const [appUpdate, setAppUpdate] = useState<{ name: string } | null>(null)
   useEffect(() => { checkAppUpdate().then(setAppUpdate) }, [])
@@ -157,6 +162,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                     <div className="hairline-t">
                       <MenuItem onClick={() => nav(`/pessoa/${profile?.id}`)} icon={<Users className="size-4" />}>Meu perfil público</MenuItem>
                       <MenuItem onClick={() => nav('/perfil')} icon={<UserRound className="size-4" />}>Conta e preferências</MenuItem>
+                      <MenuItem onClick={() => { setMenu(null); openShortcuts() }} icon={<Keyboard className="size-4" />}>Atalhos de teclado <kbd className="ml-auto rounded border border-neutral-300 px-1 text-[11px] text-neutral-400 dark:border-neutral-700">?</kbd></MenuItem>
                       <MenuItem onClick={() => { setMenu(null); signOut() }} icon={<LogOut className="size-4" />} danger>Sair</MenuItem>
                     </div>
                   </div>
@@ -202,6 +208,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       <MarkAndroidApp />
       <RememberMe />
       <AndroidBuddy hold={onboarding} />
+      <Shortcuts />
+      <UpdateBanner />
+      <AchievementWatcher />
     </div>
   )
 }

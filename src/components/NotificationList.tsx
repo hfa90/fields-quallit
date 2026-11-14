@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Bell, MessageSquare, AlertTriangle, ThumbsDown, FilePlus2, RefreshCw, HandHelping, CheckCircle2, Reply, X, Heart, Sparkles, Zap } from 'lucide-react'
+import { Bell, MessageSquare, AlertTriangle, ThumbsDown, ThumbsUp, FilePlus2, RefreshCw, HandHelping, CheckCircle2, Reply, X, Heart, Sparkles, Zap } from 'lucide-react'
 import { useNotifications } from '../lib/notifications'
 import { cn, timeAgo } from '../lib/utils'
 
@@ -11,6 +11,7 @@ const ICON: Record<string, { icon: typeof Bell; color: string }> = {
   comment_tip: { icon: MessageSquare, color: '#34c759' },
   comment_outdated: { icon: AlertTriangle, color: '#fe811e' },
   not_helpful: { icon: ThumbsDown, color: '#ff3b30' },
+  helpful: { icon: ThumbsUp, color: '#34c759' },
   new_request: { icon: HandHelping, color: '#fe811e' },
   request_comment: { icon: MessageSquare, color: '#fe811e' },
   request_answered: { icon: CheckCircle2, color: '#34c759' },

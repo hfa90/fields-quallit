@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 import { useAuth } from './lib/auth'
 import { NotificationsProvider } from './lib/notifications'
 import Layout from './components/Layout'
-import { Spinner } from './components/ui'
+import { Spinner, PageSkeleton } from './components/ui'
 import { InstallPrompt } from './components/InstallApp'
 import ErrorBoundary from './components/ErrorBoundary'
 import Login from './pages/Login'
@@ -59,7 +59,7 @@ function Gate() {
     <NotificationsProvider onOpen={openLink}>
       <Layout>
         <ErrorBoundary resetKey={loc.pathname}>
-        <Suspense fallback={<Spinner />}>
+        <Suspense fallback={<PageSkeleton />}>
           <Routes>
             <Route path="/login" element={<Navigate to={from && from !== '/login' ? from : '/'} replace />} />
             <Route path="/" element={<Home />} />

@@ -5,12 +5,13 @@ import HScroll from '../components/HScroll'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import type { Category, TutorialListItem } from '../lib/types'
-import { CategoryIcon, Empty } from '../components/ui'
+import { CategoryIcon, Empty, CardsSkeleton } from '../components/ui'
 import { cn, timeAgo } from '../lib/utils'
 import { LIST_COLS, fetchFavorites, fetchRecent, useFollows } from '../lib/library'
 import { MiniCard, MoreLink, Shelf } from '../components/TutorialCard'
 import { TutorialCollection, VIEW_MODES, ViewSwitcher } from '../components/TutorialViews'
 import { usePref } from '../lib/prefs'
+import { getProgress, hasResume, progressLabel } from '../lib/progress'
 import { HeroSearch } from '../components/Search'
 import TeamStrip from '../components/TeamStrip'
 import { GapCard, ShareCallout, useGaps } from '../components/Engagement'
@@ -143,7 +144,13 @@ export default function Home() {
             </div>
             <HScroll key={active} label={active === 'recent' ? 'Continuar lendo' : 'Favoritos'} className="-mx-4 flex gap-3 px-4 pb-1 sm:-mx-1 sm:px-1">
               {active === 'recent'
-                ? recent.map(t => <MiniCard key={t.id} t={t} sub={`Visto ${timeAgo(t.last_viewed)}`} />)
+                ? recent.map(t => {
+                    const p = getProgress(profile?.id, t.short_code)
+                    const resume = hasResume(p)
+                    return <MiniCard key={t.id} t={t} sub={(resume && progressLabel(p)) || `Visto ${timeAgo(t.last_viewed)}`}
+                      to={resume ? `/t/${t.short_code}?continuar=1` : undefined}
+                      progress={resume && p?.step != null && p.total ? (p.step + 1) / p.total : undefined} />
+                  })
                 : favorites.slice(0, 12).map(t => <MiniCard key={t.id} t={t} sub={t.author_name ?? undefined} />)}
             </HScroll>
           </section>
@@ -189,9 +196,7 @@ export default function Home() {
         </div>
 
         {!items ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="card h-44 animate-pulse" />)}
-          </div>
+          <CardsSkeleton />
         ) : items.length === 0 ? (
           <Empty icon={<BookOpenText className="size-12" strokeWidth={1.4} />} title={cat ? 'Nada nesta categoria ainda' : 'Nenhum tutorial ainda'}>
             <span className="mt-1 block max-w-sm text-[14px] text-neutral-500">Toda solução que você já aplicou em campo pode poupar horas de um colega. Comece com algo simples.</span>

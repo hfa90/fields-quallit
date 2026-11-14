@@ -14,6 +14,20 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.14.0', date: '2026-11-14', title: 'Siga o tutorial passo a passo',
+    items: [
+      'Novo modo "Seguir passo a passo": tela cheia, um passo por vez, botões grandes, marcar cada passo como feito e a tela não apaga',
+      'O Fields lembra onde você parou: o "Continuar lendo" abre direto no passo ou na seção certa',
+      'No fim de cada tutorial: "Quem viu este também viu", para não precisar voltar à busca',
+      'Busca com "Você quis dizer…?" e sugestões enquanto digita; sem resultado, dá para contar como resolveu',
+      'Conquistas no Perfil, com celebração ao ganhar uma nova',
+      'O autor é avisado quando alguém marca que o tutorial funcionou',
+      'No máximo um aviso automático por acesso (boas-vindas, novidades, conquista ou robozinho)',
+      'Aviso discreto de "Nova versão disponível" e telas que carregam com esqueleto, sem tela vazia',
+      'Atalhos de teclado no computador: /, N, D, B, C, P, F e ? para ver todos',
+    ],
+  },
+  {
     version: '1.13.2', date: '2026-11-14', title: 'Novidades sem insistência',
     items: [
       'O quadro de Novidades abre sozinho uma única vez por conta, no site e no app',

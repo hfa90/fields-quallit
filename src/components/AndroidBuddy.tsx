@@ -6,6 +6,7 @@ import { isNative } from '../lib/native'
 import { ANDROID_PREF, usePref } from '../lib/prefs'
 import { useAuth } from '../lib/auth'
 import { cn } from '../lib/utils'
+import { useAttention } from '../lib/attention'
 import Droid from './Droid'
 import { PocketCard, usePocket } from './PocketQR'
 
@@ -33,10 +34,14 @@ export default function AndroidBuddy({ hold }: { hold?: boolean }) {
   const hiddenRoute = /^\/(novo|dica|android)|\/editar$/.test(loc.pathname)
   const active = !isNative && !!profile && app === 'no'
 
+  // a entrada só acontece num acesso em que nenhum outro aviso automático foi mostrado
+  const introTurn = useAttention('droid', active && !hold && intro === 'pending')
+
   // roteiro da entrada (uma vez por aparelho)
   useEffect(() => {
     if (!active || hold) return
     if (intro === 'done') { setPhase('peek'); return }
+    if (!introTurn) return
     // só entra quando nenhuma janela (novidades, boas-vindas…) estiver aberta há ~2 s
     let free = 0, t2: number | undefined
     const iv = window.setInterval(() => {
@@ -48,7 +53,7 @@ export default function AndroidBuddy({ hold }: { hold?: boolean }) {
       }
     }, 500)
     return () => { window.clearInterval(iv); window.clearTimeout(t2) }
-  }, [active, hold, intro])
+  }, [active, hold, intro, introTurn])
 
   // sai sozinho depois de um tempo (com o QR na mão, espera mais para dar tempo de pegar o celular)
   useEffect(() => {

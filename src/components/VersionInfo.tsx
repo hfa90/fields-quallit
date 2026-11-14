@@ -6,6 +6,7 @@ import { Modal } from './ui'
 import { cn } from '../lib/utils'
 import { useAuth } from '../lib/auth'
 import { usePref } from '../lib/prefs'
+import { useAttention } from '../lib/attention'
 
 /** Versão do app Android instalado (só dentro do app) */
 function useNativeVersion() {
@@ -79,12 +80,11 @@ export function WhatsNewOnce({ suppress }: { suppress?: boolean }) {
   const { profile } = useAuth()
   const [seen, setSeen] = usePref('whatsnew', WHATSNEW_PREF, 'no')
   const [open, setOpen] = useState(false)
-  useEffect(() => {
-    if (!profile || seen === 'yes') return
-    let sawBefore = false
-    try { sawBefore = !!localStorage.getItem('fq-seen-version') } catch { /* ignore */ }
-    if (!sawBefore && !suppress) setOpen(true)
-    setSeen('yes')
-  }, [profile?.id])
+  const sawBefore = (() => { try { return !!localStorage.getItem('fq-seen-version') } catch { return false } })()
+  // quem acabou de chegar (boas-vindas) ou já viu neste aparelho: marca como visto sem abrir
+  const skip = !!profile && seen === 'no' && (sawBefore || !!suppress)
+  useEffect(() => { if (skip) setSeen('yes') }, [skip])
+  const turn = useAttention('whatsnew', !!profile && seen === 'no' && !skip)
+  useEffect(() => { if (turn) { setOpen(true); setSeen('yes') } }, [turn])
   return <ChangelogModal open={open} onClose={() => setOpen(false)} />
 }
