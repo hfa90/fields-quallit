@@ -14,6 +14,15 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.12.0', date: '2026-11-13', title: 'O robozinho tira o QR do bolso',
+    items: [
+      'O robozinho agora tem um bolso: depois de chegar (ou de cumprimentar), ele procura lá dentro e tira o QR code do app',
+      'No computador, é só apontar a câmera do celular para o QR na mão dele; no celular Android, ele entrega o botão de baixar',
+      'Tocar no robô mostra o QR de novo; ao ir para o e-mail ou fechar o cartão, ele guarda de volta no bolso',
+      'Nas outras telas do computador, o robozinho que entra pela lateral também mostra o QR',
+    ],
+  },
+  {
     version: '1.11.0', date: '2026-11-13', title: 'O robozinho ganhou pernas',
     items: [
       'No login, o robozinho chega andando devagar pela lateral',

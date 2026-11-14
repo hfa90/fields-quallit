@@ -350,8 +350,20 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 .droid-step { animation: droid-step .8s ease-in-out infinite }
 .droid-step-run { animation-duration: .3s }
 .droid-tear-2 { animation-delay: .5s }
+/* bolso: a mão remexe lá dentro, o cartão sai da mão e vira o QR */
+@keyframes droid-rummage { 0%, 100% { transform: rotate(60deg) } 30% { transform: rotate(53deg) translateY(1px) } 65% { transform: rotate(66deg) } }
+@keyframes qr-pop { 0% { opacity: 0; transform: translate(10px, 18px) scale(.1) rotate(14deg) } 55% { opacity: 1; transform: translate(0, -4px) scale(1.04) rotate(-4deg) } 100% { opacity: 1; transform: rotate(-2deg) } }
+@keyframes qr-stash { from { opacity: 1; transform: rotate(-2deg) } to { opacity: 0; transform: translate(10px, 18px) scale(.1) rotate(14deg) } }
+@keyframes qr-scan { 0% { transform: translateY(-100%); opacity: 0 } 15% { opacity: 1 } 85% { opacity: 1 } 100% { transform: translateY(360%); opacity: 0 } }
+.droid-rummage { animation: droid-rummage .38s ease-in-out infinite }
+.qr-pop { transform-origin: var(--qr-origin, 85% 100%); animation: qr-pop .55s cubic-bezier(.2,.9,.25,1) both }
+.qr-stash { transform-origin: var(--qr-origin, 85% 100%); animation: qr-stash .22s cubic-bezier(.5,0,.8,.4) both }
+.qr-scan { opacity: 0; animation: qr-scan 1.3s ease-in-out .55s 2 }
 /* quem pediu menos movimento no sistema: o robô continua vivo, mas sem tremer */
 @media (prefers-reduced-motion: reduce) {
   .droid-shake { animation: droid-bob .9s ease-in-out infinite }
   .droid-jitter { animation: none }
+  .droid-rummage { animation: none }
+  .qr-pop { animation: fade .2s both; transform: rotate(-2deg) }
+  .qr-scan { animation: none }
 }

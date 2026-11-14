@@ -10,11 +10,13 @@ import { isNative } from '../lib/native'
 import { VersionTag } from '../components/VersionInfo'
 import Droid, { type DroidMood } from '../components/Droid'
 import { greeting, recallUser } from '../lib/droidTalk'
+import { PocketCard, onAndroidPhone, usePocket } from '../components/PocketQR'
 
 /*
  * Roteiro do robozinho (só no navegador):
  *  arriving → entra andando devagar pela lateral
- *  idle     → chama atenção para o app
+ *  idle     → chama atenção para o app; depois de uns segundos tira do bolso o QR code do app
+ *             (no celular Android, um cartão com o botão de baixar). Tocar no robô mostra de novo.
  *  running  → mouse/toque no e-mail: corre para perto do campo
  *  watching → olha o que está sendo digitado
  *  greet    → reconhece quem já entrou neste aparelho e fala uma gíria do estado
@@ -58,6 +60,23 @@ export default function Login() {
   const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)) }
   const clearAll = () => { timers.current.forEach(clearTimeout); timers.current = []; window.clearTimeout(typing.current) }
   useEffect(() => clearAll, [])
+  const sceneRef = useRef(scene)
+  sceneRef.current = scene
+
+  // ---------- bolso com o QR code (computador) ou com o botão de baixar (celular Android); iPhone não tem app
+  const pocket = usePocket()
+  const android = onAndroidPhone()
+  const pocketOn = droid && (android || (wide && !/iPhone|iPad|iPod/i.test(navigator.userAgent)))
+  const pulled = useRef(false)
+  const pullOut = () => {
+    if (!pocketOn) return
+    pulled.current = true
+    setLine('Pera… guardei uma coisa aqui pra você.')
+    pocket.pull()
+  }
+  // uma vez por visita: quando ele ficar parado um pouco (chegada ou cumprimento), tira o QR do bolso
+  const pullSoon = (ms: number, scenes: Scene[]) => later(() => { if (!pulled.current && scenes.includes(sceneRef.current)) pullOut() }, ms)
+  useEffect(() => { if (pocket.open) setLine('') }, [pocket.open])
 
   const ROBOT = wide ? 104 : 70
   // posições (px a partir do ponto de apoio do robô)
@@ -89,11 +108,13 @@ export default function Login() {
     setDur(0); setX(pos.off); xRef.current = pos.off
     later(() => move(pos.rest, wide ? 4200 : 3200), 60)
     later(() => { setScene(s => (s === 'arriving' ? 'idle' : s)) ; setLine(l => l || 'Psiu! 👋 Me baixa? No celular eu abro mais rápido e funciono até sem sinal.') }, (wide ? 4200 : 3200) + 80)
+    pullSoon((wide ? 4200 : 3200) + 2800, ['idle'])
   }, [droid, stageW])
 
   const goNear = () => {
     if (!droid || scene === 'flee' || scene === 'running' || scene === 'watching' || scene === 'greet') return
     clearAll()
+    pocket.stash()
     setScene('running'); setLine('Opa! Quem vem lá? 👀')
     move(pos.near, 650, 'cubic-bezier(.3,.7,.3,1)')
     later(() => { setScene('watching') }, 660)
@@ -101,11 +122,13 @@ export default function Login() {
   }
 
   const identify = () => {
+    if (pocket.now() !== 'idle' && pocket.now() !== 'stash') return
     const known = recallUser(email)
     setScene('greet')
     setLine(known
       ? `${greeting(known.name, known.uf)} É um prazer ter você de volta aqui, mas que tal me ter no seu celular baixado? 😉`
       : 'Prazer! Ainda não te conheço por aqui… mas que tal me ter no seu celular baixado? 😉')
+    pullSoon(3200, ['greet'])
   }
 
   // reconhece a pessoa quando o e-mail fica completo (pausa na digitação)
@@ -119,6 +142,8 @@ export default function Login() {
   const onPasswordKey = () => {
     if (!droid || scene === 'flee') return
     window.clearTimeout(typing.current)
+    timers.current.forEach(clearTimeout); timers.current = []
+    pocket.stash()
     setScene('leaving')
     setLine('')
     move(Math.min(pos.home, (xRef.current ?? pos.near) + (wide ? 18 : 12)), 420)
@@ -131,6 +156,7 @@ export default function Login() {
     try {
       if (droid) { // sai correndo chorando
         clearAll()
+        pocket.stash()
         setScene('flee'); setLine('Buáááá! 😭')
         move(pos.off, 1100, 'cubic-bezier(.5,0,.8,.4)')
         await new Promise(r => setTimeout(r, 1150))
@@ -161,6 +187,19 @@ export default function Login() {
   const wave = scene === 'idle' || scene === 'greet'
   const bubbleLeft = !wide && x !== null && x < stageW / 2  // no celular o balão fica do lado com mais espaço
 
+  // bolso: enquanto não está andando, a mão e o olhar seguem o roteiro do bolso
+  const pd = pocketOn && !gait ? pocket.droid : null
+  const canTap = pocketOn && ['idle', 'paused', 'greet'].includes(scene) && !pocket.busy
+  const tapDroid = () => { if (pocket.open) closeCard(); else { clearAll(); pullOut() } }
+  const closeCard = () => { pocket.stash(); later(() => setLine('Se mudar de ideia, é só tocar em mim. 😉'), 260) }
+  // no computador o cartão fica erguido acima do robô, com o canto preso na mão (sem sair da tela)
+  const hand = ROBOT * 1.02
+  const CARD_W = 336
+  const cardLeft = Math.max(-(x ?? 0), Math.min(-8, stageW - (x ?? 0) - CARD_W - 4))
+  const cardStyle: Record<string, string | number> = wide
+    ? { left: cardLeft, bottom: 'calc(100% - 10px)', '--qr-origin': `${((hand - cardLeft) / CARD_W) * 100}% 100%` }
+    : { top: -6, '--qr-origin': bubbleLeft ? '0% 40%' : '100% 40%' }
+
   const field = 'rounded-none shadow-none focus:shadow-none bg-transparent dark:bg-transparent dark:shadow-none h-12'
 
   return (
@@ -183,12 +222,21 @@ export default function Login() {
                       : 'right-[78px] top-0 w-[min(240px,calc(100vw-130px))] rounded-tr-[6px]',
                   line.length < 4 && 'w-auto px-3 text-[18px]')}>
                   {line}
-                  {scene === 'idle' && (
+                  {scene === 'idle' && pocket.stage === 'idle' && (
                     <Link to="/android" className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-[#3ddc84] px-3 py-1 text-[12.5px] font-semibold text-neutral-900"><Download className="size-3.5" />Baixar o app</Link>
                   )}
                 </div>
               )}
-              <Droid size={ROBOT} mood={mood} gait={gait} lean={lean} look={look} lookY={lookY} tilt={tilt} wave={wave && !gait} />
+              {pocket.open && (
+                <PocketCard mode={android ? 'download' : 'qr'} leaving={pocket.stage === 'stash'} onClose={closeCard} style={cardStyle}
+                  className={cn('z-10', !wide && (bubbleLeft ? 'left-[78px]' : 'right-[78px]'))} />
+              )}
+              <button type="button" tabIndex={canTap ? 0 : -1} onClick={canTap ? tapDroid : undefined}
+                aria-label={pocket.open ? 'Guardar o QR code' : 'Mostrar o QR code do app'}
+                className={cn('block outline-none', canTap ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none')}>
+                <Droid size={ROBOT} mood={pd?.mood ?? mood} gait={gait} lean={lean} look={pd?.look ?? look} lookY={pd?.lookY ?? lookY} tilt={pd?.tilt ?? tilt}
+                  wave={wave && !gait && !pd?.arm} pocket={pocketOn} arm={pd?.arm} card={pd?.card} />
+              </button>
             </div>
           )}
 
