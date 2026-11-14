@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Share, PlusSquare, Smartphone, MoreVertical, Download, Check, Zap, BellRing, WifiOff } from 'lucide-react'
 import { Button } from './ui'
 import { isIOS, isStandalone } from '../lib/push'
@@ -50,10 +51,19 @@ export function InstallPrompt() {
     const l = () => force(n => n + 1)
     const o = () => setOpen(true)
     listeners.add(l); openers.add(o)
-    let t: number | undefined
-    if (!isNative && isMobile() && !isStandalone() && shouldAutoShow()) t = window.setTimeout(() => setOpen(true), 1200)
-    return () => { listeners.delete(l); openers.delete(o); if (t) clearTimeout(t) }
+    return () => { listeners.delete(l); openers.delete(o) }
   }, [])
+
+  // abre sozinho uma vez — mas não na tela de login, onde o robozinho já faz o convite (tira o app do bolso);
+  // ao trocar de tela antes de 1,2 s (ex.: "/" → "/login") o timer é cancelado
+  const { pathname } = useLocation()
+  const tried = useRef(false)
+  useEffect(() => {
+    if (tried.current || pathname === '/login' || pathname === '/android') return
+    if (isNative || !isMobile() || isStandalone() || !shouldAutoShow()) return
+    const t = window.setTimeout(() => { tried.current = true; setOpen(true) }, 1200)
+    return () => clearTimeout(t)
+  }, [pathname])
 
   useEffect(() => {
     if (!open) return
