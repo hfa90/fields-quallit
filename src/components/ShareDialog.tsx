@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
+import { qrDataUrl } from '../lib/qr'
 import { Copy, Check, Mail, MessageCircle, Users, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { Modal } from './ui'
@@ -10,7 +10,7 @@ export default function ShareDialog({ open, onClose, url, title }: { open: boole
 
   useEffect(() => {
     if (!open) return
-    QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr).catch(() => setQr(''))
+    qrDataUrl(url, 360).then(setQr).catch(() => setQr(''))
   }, [open, url])
 
   const copy = async () => {

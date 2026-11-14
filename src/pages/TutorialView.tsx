@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Share, Pencil, Trash2, Printer, ChevronLeft, Copy, Check, Bookmark, AlertTriangle, UserPlus, UserCheck, History, CloudDownload, CloudCheck, Loader2, WifiOff, CalendarCheck, Route, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,11 +15,12 @@ import Comments, { Feedback } from '../components/Comments'
 import { useFavorites, useFollows } from '../lib/library'
 import type { CommentKind } from '../lib/types'
 import NotFound from './NotFound'
-import VersionHistory from '../components/VersionHistory'
 import { isNative, nativeShare } from '../lib/native'
 import { ThanksBox } from '../components/Engagement'
 import { FULL_SELECT, getOfflineByCode, isNetworkError, removeOffline, saveOffline, useOfflineIds, type OfflineBundle } from '../lib/offline'
 import { useTrailNav } from './TrailPage'
+// histórico de versões (com o comparador de textos) só é baixado quando alguém abre
+const VersionHistory = lazy(() => import('../components/VersionHistory'))
 
 type Full = Tutorial & {
   author: Pick<Profile, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
@@ -381,7 +382,7 @@ export default function TutorialView() {
         </aside>
       </div>
 
-      {!offlineCopy && <VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canImprove} onRestored={() => setReload(r => r + 1)} />}
+      {!offlineCopy && history && <Suspense fallback={null}><VersionHistory open={history} onClose={() => setHistory(false)} tutorialId={t.id} canRestore={canImprove} onRestored={() => setReload(r => r + 1)} /></Suspense>}
       <ShareDialog open={share} onClose={() => setShare(false)} url={url} title={t.title} />
       <Modal open={confirmDel} onClose={() => setConfirmDel(false)} title="Excluir tutorial?">
         <p className="text-[15px] text-neutral-600 dark:text-neutral-400">“{t.title}” será excluído permanentemente, junto com anexos, links e histórico de visualizações. Não é possível desfazer.</p>

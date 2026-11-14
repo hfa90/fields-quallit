@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
+import { qrDataUrl } from '../lib/qr'
 import { Download, ShieldCheck, Smartphone, Settings, CheckCircle2, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ANDROID_PAGE, APK_URL, isNative } from '../lib/native'
@@ -15,7 +15,7 @@ export default function AndroidApp() {
   const onAndroid = /Android/i.test(navigator.userAgent)
 
   useEffect(() => {
-    QRCode.toDataURL(ANDROID_PAGE, { margin: 1, width: 440, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr)
+    qrDataUrl(ANDROID_PAGE, 440).then(setQr)
     fetch(`${import.meta.env.BASE_URL}downloads/version.json?t=${Date.now()}`).then(r => r.ok ? r.json() : null).then(setInfo).catch(() => {})
   }, [])
 

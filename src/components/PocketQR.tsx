@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import QRCode from 'qrcode'
+import { qrDataUrl } from '../lib/qr'
 import { Download, X } from 'lucide-react'
 import { ANDROID_PAGE, APK_URL } from '../lib/native'
 import { cn } from '../lib/utils'
@@ -70,7 +70,7 @@ export function PocketCard({ mode, leaving, onClose, className, style, children 
   const [qr, setQr] = useState('')
   useEffect(() => {
     if (mode !== 'qr') return
-    QRCode.toDataURL(ANDROID_PAGE, { margin: 1, width: 320, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr).catch(() => setQr(''))
+    qrDataUrl(ANDROID_PAGE, 320).then(setQr).catch(() => setQr(''))
   }, [mode])
 
   const shell = 'pointer-events-auto absolute rounded-[18px] bg-surface text-left shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_18px_40px_-10px_rgb(0_0_0/0.4)] dark:bg-neutral-800'

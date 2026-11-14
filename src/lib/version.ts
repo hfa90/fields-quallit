@@ -14,6 +14,14 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.13.1', date: '2026-11-14', title: 'Abre mais rápido e busca completa de volta',
+    items: [
+      'A página de busca completa voltou a mostrar resultados (e o painel "Buscas sem resultado" passa a registrar o que o time procura)',
+      'O site abre mais rápido no celular: o carregamento inicial ficou cerca de 30% menor',
+      'O realce dos blocos de código, o QR code e o histórico de versões agora só são baixados quando você usa',
+    ],
+  },
+  {
     version: '1.13.0', date: '2026-11-14', title: 'Tema claro mais suave',
     items: [
       'O tema claro não usa mais branco puro: fundo em cinza-gelo levemente quente e cartões em off-white',

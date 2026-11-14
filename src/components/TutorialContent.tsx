@@ -2,7 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import DOMPurify from 'dompurify'
 import { X } from 'lucide-react'
 import { Portal } from './ui'
-import { lowlight, CALLOUTS, type CalloutType } from './editor/shared'
+import { CALLOUTS, type CalloutType } from './editor/callouts'
+
+// o realce de sintaxe só é baixado quando o tutorial tem bloco de código com linguagem
+let lowlightP: Promise<typeof import('./editor/shared')['lowlight']> | null = null
+const loadLowlight = () => (lowlightP ??= import('./editor/shared').then(m => m.lowlight))
 
 export interface Heading { id: string; text: string; level: number }
 
@@ -79,13 +83,16 @@ export default function TutorialContent({ html, onHeadings }: { html: string; on
       const code = pre.querySelector('code')
       const text = code?.textContent ?? pre.textContent ?? ''
       const lang = (code?.className.match(/language-([\w-]+)/)?.[1]) || 'plaintext'
-      if (code && lang !== 'plaintext' && lowlight.registered(lang)) {
-        try {
-          const tree = lowlight.highlight(lang, text) as unknown as HastNode
-          code.textContent = ''
-          hastToDom(tree, code)
-          code.classList.add('hljs')
-        } catch { /* mantém texto puro */ }
+      if (code && lang !== 'plaintext') {
+        loadLowlight().then(lowlight => {
+          if (!code.isConnected || code.classList.contains('hljs') || !lowlight.registered(lang)) return
+          try {
+            const tree = lowlight.highlight(lang, text) as unknown as HastNode
+            code.textContent = ''
+            hastToDom(tree, code)
+            code.classList.add('hljs')
+          } catch { /* mantém texto puro */ }
+        }).catch(() => { /* sem rede: fica o texto puro */ })
       }
       const wrap = document.createElement('div'); wrap.className = 'code-wrap'
       const bar = document.createElement('div'); bar.className = 'code-bar'
