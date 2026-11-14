@@ -14,6 +14,13 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.13.2', date: '2026-11-14', title: 'Novidades sem insistência',
+    items: [
+      'O quadro de Novidades abre sozinho uma única vez por conta, no site e no app',
+      'Para ver as novidades de novo, use o botão "Novidades" no Perfil',
+    ],
+  },
+  {
     version: '1.13.1', date: '2026-11-14', title: 'Abre mais rápido e busca completa de volta',
     items: [
       'A página de busca completa voltou a mostrar resultados (e o painel "Buscas sem resultado" passa a registrar o que o time procura)',

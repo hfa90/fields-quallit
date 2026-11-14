@@ -4,6 +4,8 @@ import { APP_VERSION, CHANGELOG, versionLabel } from '../lib/version'
 import { isNative } from '../lib/native'
 import { Modal } from './ui'
 import { cn } from '../lib/utils'
+import { useAuth } from '../lib/auth'
+import { usePref } from '../lib/prefs'
 
 /** Versão do app Android instalado (só dentro do app) */
 function useNativeVersion() {
@@ -65,16 +67,24 @@ export function VersionTag({ className }: { className?: string }) {
   return <p className={cn('text-center font-mono text-[11px] text-neutral-400', className)}>Fields v{APP_VERSION}</p>
 }
 
-/** Mostra "O que há de novo" uma vez quando a versão muda */
-/** Novidades da versão (não aparece junto com as boas-vindas de quem acabou de chegar) */
+const WHATSNEW_PREF = ['no', 'yes'] as const
+
+/**
+ * Novidades abrem sozinhas uma única vez por conta (vale no site e no app).
+ * Depois disso, só pelo botão "Novidades" no Perfil.
+ * Não aparece junto com as boas-vindas de quem acabou de chegar,
+ * nem para quem já tinha visto as novidades neste aparelho antes.
+ */
 export function WhatsNewOnce({ suppress }: { suppress?: boolean }) {
+  const { profile } = useAuth()
+  const [seen, setSeen] = usePref('whatsnew', WHATSNEW_PREF, 'no')
   const [open, setOpen] = useState(false)
   useEffect(() => {
-    try {
-      const seen = localStorage.getItem('fq-seen-version')
-      if (seen !== APP_VERSION && !suppress) setOpen(true)
-      localStorage.setItem('fq-seen-version', APP_VERSION)
-    } catch { /* ignore */ }
-  }, [])
+    if (!profile || seen === 'yes') return
+    let sawBefore = false
+    try { sawBefore = !!localStorage.getItem('fq-seen-version') } catch { /* ignore */ }
+    if (!sawBefore && !suppress) setOpen(true)
+    setSeen('yes')
+  }, [profile?.id])
   return <ChangelogModal open={open} onClose={() => setOpen(false)} />
 }
