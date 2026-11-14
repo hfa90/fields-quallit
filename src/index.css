@@ -403,3 +403,62 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; }
 /* passo a passo: letra maior para ler de longe, com uma mão ocupada */
 .step-content .tutorial-content { font-size: 1.1875rem; line-height: 1.6; }
 .step-content .tutorial-content img { border-radius: 12px; }
+
+/* ---------- Mascote do login (Android moderno) ---------- */
+.m-ease { transition: transform .45s cubic-bezier(.2,.8,.2,1), cy .3s ease, ry .3s ease }
+.m-sink { transition: transform .7s cubic-bezier(.34,1.56,.64,1) }
+.m-spring { transition: transform .6s cubic-bezier(.34,1.56,.64,1) }
+@supports (transition-timing-function: linear(0, 1)) {
+  .m-spring, .m-sink {
+    transition-timing-function: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
+    transition-duration: .8s;
+  }
+}
+@keyframes m-breathe { 0%, 100% { transform: scale(1, 1) } 50% { transform: scale(1.025, 1.045) } }
+@keyframes m-blink { 0%, 46%, 50%, 92%, 100% { transform: scaleY(1) } 48%, 94% { transform: scaleY(.08) } }
+@keyframes m-rise {
+  0% { transform: translateY(78px) scale(.9, 1.12) }
+  45% { transform: translateY(-9px) scale(.94, 1.08) }
+  62% { transform: translateY(2px) scale(1.08, .92) }
+  78% { transform: translateY(-2px) scale(.98, 1.02) }
+  100% { transform: none }
+}
+@keyframes m-hands-in { 0%, 55% { opacity: 0; transform: translateY(-14px) } 75% { opacity: 1; transform: translateY(3px) } 100% { opacity: 1; transform: none } }
+@keyframes m-jump {
+  0% { transform: none }
+  18% { transform: translateY(3px) scale(1.1, .9) }
+  45% { transform: translateY(-16px) scale(.94, 1.07) }
+  70% { transform: translateY(1px) scale(1.07, .93) }
+  85% { transform: translateY(-2px) scale(.99, 1.01) }
+  100% { transform: none }
+}
+@keyframes m-giggle { 0%, 100% { transform: none } 20% { transform: rotate(-5deg) scale(1.03, .97) } 40% { transform: rotate(4deg) } 60% { transform: rotate(-3deg) scale(.98, 1.02) } 80% { transform: rotate(2deg) } }
+@keyframes m-shake { 0%, 100% { transform: none } 15% { transform: translateX(-5px) rotate(-4deg) } 35% { transform: translateX(4px) rotate(3deg) } 55% { transform: translateX(-3px) rotate(-2deg) } 75% { transform: translateX(2px) rotate(1deg) } }
+@keyframes m-wave { 0%, 100% { transform: rotate(-12deg) } 50% { transform: rotate(18deg) } }
+@keyframes m-wiggle { 0%, 100% { transform: rotate(0) translateY(0) } 25% { transform: rotate(-6deg) translateY(-1px) } 75% { transform: rotate(5deg) translateY(-2px) } }
+@keyframes m-pop { 0% { transform: scale(0) rotate(-30deg); opacity: 0 } 60% { transform: scale(1.12) rotate(6deg); opacity: 1 } 100% { transform: none } }
+@keyframes m-throb { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.18) } }
+@keyframes m-float { 0% { transform: translateY(6px) scale(.4); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(-30px) scale(1.1); opacity: 0 } }
+@keyframes m-tear { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(12px); opacity: 0 } }
+@keyframes m-arrow { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(10px) } }
+.m-breathe { animation: m-breathe 3.4s ease-in-out infinite }
+.m-blink { animation: m-blink 5.2s ease-in-out infinite }
+.m-rise { animation: m-rise 1s cubic-bezier(.2,.8,.3,1) both }
+.m-hands-in { animation: m-hands-in 1.15s cubic-bezier(.2,.8,.3,1) both }
+.m-jump { animation: m-jump .75s cubic-bezier(.3,.7,.4,1) both }
+.m-giggle { animation: m-giggle .6s ease-in-out both }
+.m-shake { animation: m-shake .6s ease-in-out both }
+.m-wave { animation: m-wave .7s ease-in-out infinite }
+.m-wiggle { animation: m-wiggle 1.6s ease-in-out infinite }
+.m-pop { animation: m-pop .55s cubic-bezier(.2,.9,.25,1.2) both }
+.m-throb { animation: m-throb .7s ease-in-out infinite }
+.m-float { animation: m-float 1.8s ease-out infinite }
+.m-tear { animation: m-tear 1.5s ease-in infinite }
+.m-arrow { animation: m-arrow 1.1s ease-in-out infinite }
+.m-hands-in.m-jump { animation: m-jump .75s cubic-bezier(.3,.7,.4,1) both }
+.m-hands-in.m-giggle { animation: m-giggle .6s ease-in-out both }
+@media (prefers-reduced-motion: reduce) {
+  .m-breathe, .m-wave, .m-wiggle, .m-throb, .m-float, .m-arrow, .m-tear { animation: none }
+  .m-rise, .m-hands-in, .m-jump, .m-giggle, .m-shake, .m-pop { animation: fade .3s both }
+  .m-float { display: none }
+}

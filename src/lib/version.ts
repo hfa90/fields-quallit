@@ -14,6 +14,16 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.15.0', date: '2026-11-14', title: 'Um novo amigo no login',
+    items: [
+      'Mascote Android novo, mais moderno e arredondado, com movimentos suaves: segue o mouse com os olhos e as antenas balançam',
+      'Ele sobe de trás do cartão, acena e faz o convite certo para o seu aparelho',
+      'No Android: baixar o app com um toque; no computador (Chrome/Edge): instalar como app em um clique',
+      'No iPhone: guia que aponta exatamente onde tocar para adicionar à Tela de Início',
+      'Ele tapa os olhos quando você digita a senha (às vezes dá uma espiadinha)',
+    ],
+  },
+  {
     version: '1.14.0', date: '2026-11-14', title: 'Siga o tutorial passo a passo',
     items: [
       'Novo modo "Seguir passo a passo": tela cheia, um passo por vez, botões grandes, marcar cada passo como feito e a tela não apaga',

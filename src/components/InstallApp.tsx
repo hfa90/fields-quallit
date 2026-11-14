@@ -18,6 +18,31 @@ if (typeof window !== 'undefined') {
   window.addEventListener('appinstalled', () => { deferred = null; listeners.forEach(l => l()) })
 }
 
+/**
+ * Instalação em um clique (Chrome/Edge no computador e no Android): o navegador guarda o convite
+ * e ele é disparado quando a pessoa toca no botão. canPrompt fica falso no Safari/Firefox.
+ */
+export function useInstallPrompt() {
+  const [, force] = useState(0)
+  useEffect(() => {
+    const l = () => force(n => n + 1)
+    listeners.add(l)
+    return () => { listeners.delete(l) }
+  }, [])
+  return {
+    canPrompt: !!deferred,
+    prompt: async (): Promise<'accepted' | 'dismissed' | 'unavailable'> => {
+      const d = deferred
+      if (!d) return 'unavailable'
+      await d.prompt()
+      const r = await d.userChoice
+      deferred = null
+      listeners.forEach(l => l())
+      return r.outcome === 'accepted' ? 'accepted' : 'dismissed'
+    },
+  }
+}
+
 /** Abre o popup de instalação de qualquer lugar do app */
 export function openInstallPrompt() { openers.forEach(o => o()) }
 
