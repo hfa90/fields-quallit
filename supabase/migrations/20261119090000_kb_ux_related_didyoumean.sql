@@ -42,7 +42,7 @@ language sql stable security definer set search_path = public as $$
   ),
   cand as (
     select t.id, coalesce(co.n, 0) as co_n,
-      (select count(*) from unnest(t.tags) x where x = any((select me.tags from me))) as tag_n,
+      (select count(*) from unnest(t.tags) x where x = any(coalesce((select me.tags from me), '{}'::text[]))) as tag_n,
       (t.category_id is not null and t.category_id = (select me.category_id from me)) as same_cat,
       t.verified_at is not null as verified
     from public.kb_tutorials t left join co on co.tutorial_id = t.id
