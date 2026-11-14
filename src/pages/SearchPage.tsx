@@ -40,7 +40,7 @@ export default function SearchPage() {
         <Search className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-accent-600" />
         <input value={input} onChange={e => setInput(e.target.value)} autoFocus={!q} type="search" enterKeyHint="search"
           placeholder="O que você precisa resolver?"
-          className="h-12 w-full rounded-[12px] bg-white pl-11 pr-10 text-[17px] text-neutral-900 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] outline-none focus:shadow-[0_0_0_2px_var(--color-accent-500)] dark:bg-neutral-900 dark:text-white [&::-webkit-search-cancel-button]:hidden" />
+          className="h-12 w-full rounded-[12px] bg-surface pl-11 pr-10 text-[17px] text-neutral-900 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] outline-none focus:shadow-[0_0_0_2px_var(--color-accent-500)] dark:bg-neutral-900 dark:text-white [&::-webkit-search-cancel-button]:hidden" />
         {input && <button type="button" onClick={() => { setInput(''); setParams({}) }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400"><X className="size-4" /></button>}
       </form>
 
@@ -49,7 +49,7 @@ export default function SearchPage() {
           {FILTERS.map(([k, l]) => (
             <button key={k} onClick={() => setFilter(k)}
               className={cn('press inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium',
-                filter === k ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-white text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] dark:bg-neutral-900 dark:text-neutral-300')}>
+                filter === k ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-surface text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] dark:bg-neutral-900 dark:text-neutral-300')}>
               {l}<span className="opacity-50">{counts[k] ?? 0}</span>
             </button>
           ))}

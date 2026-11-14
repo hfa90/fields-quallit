@@ -73,7 +73,7 @@ export function PocketCard({ mode, leaving, onClose, className, style, children 
     QRCode.toDataURL(ANDROID_PAGE, { margin: 1, width: 320, color: { dark: '#1c1c1e', light: '#ffffff' } }).then(setQr).catch(() => setQr(''))
   }, [mode])
 
-  const shell = 'pointer-events-auto absolute rounded-[18px] bg-white text-left shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_18px_40px_-10px_rgb(0_0_0/0.4)] dark:bg-neutral-800'
+  const shell = 'pointer-events-auto absolute rounded-[18px] bg-surface text-left shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_18px_40px_-10px_rgb(0_0_0/0.4)] dark:bg-neutral-800'
   const close = (
     <button onClick={onClose} aria-label="Guardar" className="absolute right-2 top-2 rounded-full p-1 text-neutral-400 hover:bg-neutral-900/5 dark:hover:bg-white/10"><X className="size-3.5" /></button>
   )

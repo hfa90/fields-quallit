@@ -318,7 +318,7 @@ export default function TutorialEdit() {
               {(Object.keys(DIFFICULTY) as Difficulty[]).map(k => (
                 <button key={k} type="button" onClick={() => { setDifficulty(k); touch() }}
                   className={cn('h-8 rounded-[7px] text-[13px] font-medium transition',
-                    difficulty === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+                    difficulty === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
                   {DIFFICULTY[k].label}
                 </button>
               ))}

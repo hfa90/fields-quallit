@@ -132,7 +132,7 @@ export default function VoiceGuide({ name, problem, solution, setProblem, setSol
         <div className="flex items-start gap-3 fade-up">
           <QuallitMark size={34} />
           <div className="min-w-0 flex-1">
-            <div className="rounded-[18px] rounded-tl-[6px] bg-white px-4 py-3 text-[15px] leading-relaxed text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.08)] dark:bg-neutral-800 dark:text-neutral-100">
+            <div className="rounded-[18px] rounded-tl-[6px] bg-surface px-4 py-3 text-[15px] leading-relaxed text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.08)] dark:bg-neutral-800 dark:text-neutral-100">
               {msg}
             </div>
             {listening && (

@@ -16,7 +16,7 @@ const VARIANTS: Record<Variant, string> = {
   secondary: 'bg-neutral-200/70 text-neutral-900 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700',
   ghost: 'text-neutral-600 hover:bg-neutral-200/60 dark:text-neutral-300 dark:hover:bg-neutral-800',
   danger: 'bg-[#ff3b30] text-white hover:bg-[#e0352b]',
-  outline: 'bg-white text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15),0_1px_2px_rgb(0_0_0/0.05)] hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.15)] dark:hover:bg-neutral-800',
+  outline: 'bg-surface text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15),0_1px_2px_rgb(0_0_0/0.05)] hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-100 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.15)] dark:hover:bg-neutral-800',
 }
 
 export function Button({
@@ -64,7 +64,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <div className="absolute inset-0 bg-black/40 animate-in" onClick={onClose} />
-      <div className={cn('sheet-in relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[14px] bg-white shadow-2xl dark:bg-neutral-900 sm:rounded-[14px]', wide ? 'sm:max-w-4xl' : 'sm:max-w-md')}>
+      <div className={cn('sheet-in relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[14px] bg-surface shadow-2xl dark:bg-neutral-900 sm:rounded-[14px]', wide ? 'sm:max-w-4xl' : 'sm:max-w-md')}>
         <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-neutral-300 sm:hidden dark:bg-neutral-700" />
         <div className="flex items-center justify-between gap-4 px-5 pb-3 pt-3 sm:pt-4">
           <h3 className="truncate text-[17px] font-semibold text-neutral-900 dark:text-white">{title}</h3>
@@ -109,7 +109,7 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
   )
 }
 
-export const inputCls = 'w-full rounded-[10px] bg-white px-3.5 h-11 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none transition shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] focus:shadow-[0_0_0_2px_var(--color-accent-500)] dark:bg-neutral-900 dark:text-white dark:placeholder:text-neutral-500 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.15)]'
+export const inputCls = 'w-full rounded-[10px] bg-surface px-3.5 h-11 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none transition shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] focus:shadow-[0_0_0_2px_var(--color-accent-500)] dark:bg-neutral-900 dark:text-white dark:placeholder:text-neutral-500 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.15)]'
 export const textareaCls = inputCls.replace('h-11', 'py-2.5')
 export const labelCls = 'mb-1.5 block text-[13px] font-medium text-neutral-600 dark:text-neutral-400'
 

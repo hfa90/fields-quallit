@@ -45,7 +45,7 @@ function Illus({ children, color }: { children: ReactNode; color: string }) {
 }
 
 function Bubble({ icon: I, color, className }: { icon: typeof Search; color: string; className?: string }) {
-  return <span className={cn('absolute grid size-10 place-items-center rounded-full bg-white shadow-lg dark:bg-neutral-800', className)} style={{ color }}><I className="size-5" /></span>
+  return <span className={cn('absolute grid size-10 place-items-center rounded-full bg-surface shadow-lg dark:bg-neutral-800', className)} style={{ color }}><I className="size-5" /></span>
 }
 
 /** Boas-vindas para o primeiro acesso de um Field */
@@ -95,7 +95,7 @@ export function Onboarding() {
       text: <>Escreva do jeito que você falaria: <i>“impressora zebra não imprime”</i>, <i>“coletor sem wi-fi”</i>. A busca entende sinônimos e erros de digitação. Não achou? Peça ajuda em <b>Comunidade</b> — os colegas são avisados.</>,
       art: (
         <Illus color="#0b5fb0">
-          <span className="grid size-24 place-items-center rounded-[28px] bg-white text-[#0b5fb0] shadow-xl dark:bg-neutral-800"><Search className="size-11" strokeWidth={2.2} /></span>
+          <span className="grid size-24 place-items-center rounded-[28px] bg-surface text-[#0b5fb0] shadow-xl dark:bg-neutral-800"><Search className="size-11" strokeWidth={2.2} /></span>
           <Bubble icon={HandHelping} color="#fe811e" className="-bottom-3 -right-7" />
         </Illus>
       ),
@@ -115,7 +115,7 @@ export function Onboarding() {
       text: <>Cada publicação, “Funcionou!” e “Obrigado” recebido soma pontos e sobe seu nível. Os melhores tutoriais ganham o selo <b>Verificado</b>, e você vê quantos colegas e CDs ajudou.</>,
       art: (
         <Illus color="#34c759">
-          <span className="grid size-24 place-items-center rounded-[28px] bg-white text-[#248a3d] shadow-xl dark:bg-neutral-800"><Award className="size-11" strokeWidth={2.2} /></span>
+          <span className="grid size-24 place-items-center rounded-[28px] bg-surface text-[#248a3d] shadow-xl dark:bg-neutral-800"><Award className="size-11" strokeWidth={2.2} /></span>
           <Bubble icon={Heart} color="#ff2d55" className="-right-7 -top-2" />
           <Bubble icon={BadgeCheck} color="#1a9ca9" className="-bottom-3 -left-6" />
         </Illus>
@@ -128,7 +128,7 @@ export function Onboarding() {
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Boas-vindas">
       <div className="absolute inset-0 bg-black/50 animate-in" />
-      <div className="sheet-in relative w-full overflow-hidden rounded-t-[22px] bg-white shadow-2xl sm:max-w-md sm:rounded-[22px] dark:bg-neutral-900">
+      <div className="sheet-in relative w-full overflow-hidden rounded-t-[22px] bg-surface shadow-2xl sm:max-w-md sm:rounded-[22px] dark:bg-neutral-900">
         <button onClick={() => finish()} className="absolute right-4 top-4 z-10 rounded-full px-3 py-1 text-[14px] font-medium text-neutral-500 hover:bg-neutral-900/5 dark:hover:bg-white/10">Pular</button>
         <div key={step} className="fade-up px-6 pb-2 pt-10 text-center">
           {s.art}

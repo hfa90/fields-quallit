@@ -179,7 +179,7 @@ export default function Home() {
             {SORTS.map(([k, l]) => (
               <button key={k} onClick={() => setParam('o', k === 'recent' ? '' : k)}
                 className={cn('h-7 shrink-0 rounded-[7px] px-3 text-[13px] font-medium transition',
-                  sort === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+                  sort === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
                 {l}
               </button>
             ))}
@@ -206,7 +206,7 @@ export default function Home() {
             {total != null && total > items.length && (
               <div className="flex flex-col items-center gap-2 pt-2">
                 <button onClick={loadMore} disabled={moreBusy}
-                  className="press inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-accent-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_2px_8px_-2px_rgb(0_0_0/0.12)] disabled:opacity-60 dark:bg-neutral-900 dark:text-accent-300">
+                  className="press inline-flex h-11 items-center gap-2 rounded-full bg-surface px-6 text-[15px] font-semibold text-accent-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_2px_8px_-2px_rgb(0_0_0/0.12)] disabled:opacity-60 dark:bg-neutral-900 dark:text-accent-300">
                   {moreBusy ? <Loader2 className="size-4 animate-spin" /> : <ChevronDown className="size-4" />}Carregar mais
                 </button>
                 <span className="text-[12.5px] text-neutral-500">Mostrando {items.length} de {total}</span>
@@ -223,7 +223,7 @@ function Chip({ active, onClick, label, count, icon }: { active: boolean; onClic
   return (
     <button onClick={onClick}
       className={cn('press inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors',
-        active ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-white text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] hover:bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-300 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12)]')}>
+        active ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-surface text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] hover:bg-neutral-100 dark:bg-neutral-900 dark:text-neutral-300 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12)]')}>
       {icon}{label}
       {count != null && <span className={cn('tabular-nums', active ? 'opacity-60' : 'text-neutral-400')}>{count}</span>}
     </button>

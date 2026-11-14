@@ -31,7 +31,7 @@ export default function Admin() {
         {([['users', Users, 'Usuários e acessos'], ['categories', FolderTree, 'Categorias'], ['stats', BarChart3, 'Estatísticas'], ['review', CalendarClock, 'Revisões'], ['backup', DatabaseBackup, 'Backup']] as const).map(([k, I, l]) => (
           <button key={k} onClick={() => setTab(k)}
             className={cn('inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] px-3.5 text-[13px] font-medium transition',
-              tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+              tab === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
             <I className="size-4" />{l}
           </button>
         ))}

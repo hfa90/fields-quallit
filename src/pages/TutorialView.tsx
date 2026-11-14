@@ -256,7 +256,7 @@ export default function TutorialView() {
                   <div className={cn('flex flex-wrap items-center gap-1.5 text-[12px] text-neutral-600 dark:text-neutral-400', improvedByOther && 'mt-2')}>
                     <span className="font-medium">Colaboraram:</span>
                     {contributors.map(c => (
-                      <Link key={c.user_id} to={`/pessoa/${c.user_id}`} className="inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1)] dark:bg-neutral-800">
+                      <Link key={c.user_id} to={`/pessoa/${c.user_id}`} className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2 py-0.5 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1)] dark:bg-neutral-800">
                         <Avatar name={c.full_name} url={c.avatar_url} size={16} />{c.full_name}{c.cd_name ? ` · ${c.cd_name}` : ''}
                       </Link>
                     ))}

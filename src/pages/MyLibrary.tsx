@@ -46,7 +46,7 @@ export default function MyLibrary() {
         {TABS.map(([k, l]) => (
           <button key={k} onClick={() => setParams(k === 'meus' ? {} : { aba: k }, { replace: true })}
             className={cn('h-8 shrink-0 rounded-[7px] px-3.5 text-[13px] font-medium transition',
-              tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>{l}</button>
+              tab === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>{l}</button>
         ))}
       </div>
       {tab === 'offline' ? (

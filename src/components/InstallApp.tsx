@@ -86,7 +86,7 @@ export function InstallPrompt() {
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
       <div className="absolute inset-0 bg-black/45 animate-in" onClick={() => close(3)} />
-      <div className="sheet-in relative w-full overflow-hidden rounded-t-[16px] bg-white pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl dark:bg-neutral-900 sm:max-w-sm sm:rounded-[16px]">
+      <div className="sheet-in relative w-full overflow-hidden rounded-t-[16px] bg-surface pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl dark:bg-neutral-900 sm:max-w-sm sm:rounded-[16px]">
         <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-neutral-300 dark:bg-neutral-700 sm:hidden" />
         <div className="px-6 pt-5 text-center">
           <img src={`${import.meta.env.BASE_URL}icons/icon-192.png`} alt="" className="mx-auto size-[72px] rounded-[18px] shadow-lg" />
@@ -144,7 +144,7 @@ export function InstallPrompt() {
 function Step({ n, icon, children }: { n: number; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <li className="flex items-center gap-3">
-      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white text-[12px] font-semibold text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">{n}</span>
+      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-surface text-[12px] font-semibold text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">{n}</span>
       <span className="flex-1">{children}</span>
       <span className="text-neutral-500">{icon}</span>
     </li>

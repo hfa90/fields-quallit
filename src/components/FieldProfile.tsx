@@ -32,7 +32,7 @@ export function FieldHoverCard({ p, uf, rect, onEnter, onLeave, onOpen }: { p: U
   const style = below ? { left, top: rect.bottom + 8, width: W } : { left, bottom: window.innerHeight - rect.top + 8, width: W }
   return createPortal(
     <div role="tooltip" onMouseEnter={onEnter} onMouseLeave={onLeave} onClick={onOpen} style={style}
-      className="hover-card-in fixed z-40 cursor-pointer overflow-hidden rounded-[16px] bg-white shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_18px_40px_-12px_rgb(0_0_0/0.35)] dark:bg-neutral-900 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12),0_18px_40px_-12px_rgb(0_0_0/0.7)]">
+      className="hover-card-in fixed z-40 cursor-pointer overflow-hidden rounded-[16px] bg-surface shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_18px_40px_-12px_rgb(0_0_0/0.35)] dark:bg-neutral-900 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12),0_18px_40px_-12px_rgb(0_0_0/0.7)]">
       <div className="flex items-center gap-3 p-3.5">
         <StateBadge uf={uf} size={58} />
         <div className="min-w-0 flex-1">

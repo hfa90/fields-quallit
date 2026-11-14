@@ -109,7 +109,7 @@ export default function NotificationsPage() {
       <div className="grid grid-cols-2 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
         {([['list', `Recebidas${unread ? ` (${unread})` : ''}`], ['settings', 'Configurações']] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`h-8 rounded-[7px] text-[13px] font-medium transition ${tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300'}`}>{l}</button>
+            className={`h-8 rounded-[7px] text-[13px] font-medium transition ${tab === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300'}`}>{l}</button>
         ))}
       </div>
       {tab === 'list' ? <div className="card overflow-hidden"><NotificationList /></div> : <PushSettings />}

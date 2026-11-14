@@ -216,7 +216,7 @@ export default function Login() {
             <div aria-live="polite" className={cn('pointer-events-none absolute z-10 w-max', wide ? 'left-full top-[-34px]' : 'left-0 top-[-104px]')}
               style={{ transform: `translateX(${x}px)`, transition: `transform ${dur}ms ${ease}` }}>
               {line && (
-                <div key={line} className={cn('bubble-in pointer-events-auto absolute rounded-[16px] bg-white px-3.5 py-2.5 text-[13.5px] leading-snug text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100',
+                <div key={line} className={cn('bubble-in pointer-events-auto absolute rounded-[16px] bg-surface px-3.5 py-2.5 text-[13.5px] leading-snug text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100',
                   wide ? 'bottom-[calc(100%+4px)] left-[-18px] w-[250px] rounded-bl-[6px]'
                     : bubbleLeft ? 'left-[78px] top-0 w-[min(240px,calc(100vw-130px))] rounded-tl-[6px]'
                       : 'right-[78px] top-0 w-[min(240px,calc(100vw-130px))] rounded-tr-[6px]',

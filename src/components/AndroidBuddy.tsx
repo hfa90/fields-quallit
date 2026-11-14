@@ -83,7 +83,7 @@ export default function AndroidBuddy({ hold }: { hold?: boolean }) {
       {(phase === 'in' || phase === 'talk' || phase === 'out') ? (
         <div className={cn('pointer-events-auto relative mr-3 md:mr-6', phase === 'out' ? 'droid-out' : 'droid-in')}>
           {phase === 'talk' && desk && pocket.busy && (
-            <div className="bubble-in absolute bottom-[calc(100%-2px)] right-[64px] w-max rounded-[16px] rounded-br-[6px] bg-white px-3.5 py-2.5 text-[13.5px] text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100">
+            <div className="bubble-in absolute bottom-[calc(100%-2px)] right-[64px] w-max rounded-[16px] rounded-br-[6px] bg-surface px-3.5 py-2.5 text-[13.5px] text-neutral-800 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_10px_28px_-8px_rgb(0_0_0/0.3)] dark:bg-neutral-800 dark:text-neutral-100">
               Oi! Pera… guardei uma coisa aqui pra você.
             </div>
           )}
@@ -94,7 +94,7 @@ export default function AndroidBuddy({ hold }: { hold?: boolean }) {
             </PocketCard>
           )}
           {phase === 'talk' && !desk && (
-            <div className="bubble-in absolute bottom-[calc(100%-6px)] right-[70px] w-[248px] rounded-[18px] rounded-br-[6px] bg-white p-3.5 text-left shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_12px_32px_-8px_rgb(0_0_0/0.35)] dark:bg-neutral-800">
+            <div className="bubble-in absolute bottom-[calc(100%-6px)] right-[70px] w-[248px] rounded-[18px] rounded-br-[6px] bg-surface p-3.5 text-left shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_12px_32px_-8px_rgb(0_0_0/0.35)] dark:bg-neutral-800">
               <button onClick={leave} aria-label="Fechar" className="absolute right-2 top-2 rounded-full p-1 text-neutral-400 hover:bg-neutral-900/5 dark:hover:bg-white/10"><X className="size-3.5" /></button>
               <p className="pr-5 text-[14.5px] font-semibold text-neutral-900 dark:text-white">Oi! Eu sou o Fields para Android 👋</p>
               <p className="mt-1 text-[13px] leading-snug text-neutral-600 dark:text-neutral-300">Me instala no seu celular? Eu abro rapidinho, uso a câmera e funciono até sem sinal no CD.</p>
@@ -111,7 +111,7 @@ export default function AndroidBuddy({ hold }: { hold?: boolean }) {
       ) : (
         <div className="pointer-events-auto relative">
           {bubble && (
-            <div className="bubble-in absolute bottom-[calc(100%+4px)] right-3 w-[230px] rounded-[16px] rounded-br-[6px] bg-white p-3 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_12px_32px_-8px_rgb(0_0_0/0.35)] dark:bg-neutral-800">
+            <div className="bubble-in absolute bottom-[calc(100%+4px)] right-3 w-[230px] rounded-[16px] rounded-br-[6px] bg-surface p-3 shadow-[0_0_0_0.5px_rgb(0_0_0/0.1),0_12px_32px_-8px_rgb(0_0_0/0.35)] dark:bg-neutral-800">
               <p className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">Psiu! Me instala no celular? 📲</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <button onClick={install} className="press inline-flex h-8 items-center gap-1.5 rounded-full bg-[#3ddc84] px-3 text-[12.5px] font-semibold text-neutral-900"><Download className="size-3.5" />Instalar</button>

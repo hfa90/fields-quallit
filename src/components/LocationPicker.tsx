@@ -41,7 +41,7 @@ export default function LocationPicker({ mode, setMode, cdId, setCdId, loc, setL
       <div className="mb-2.5 grid grid-cols-2 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
         {([['existing', 'CD cadastrado', Building2], ['new', 'Novo estado', Plus]] as const).map(([m, label, I]) => (
           <button key={m} type="button" onClick={() => setMode(m)}
-            className={cn('inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] text-[13px] font-medium', mode === m ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+            className={cn('inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] text-[13px] font-medium', mode === m ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
             <I className="size-3.5" />{label}
           </button>
         ))}
@@ -78,7 +78,7 @@ export default function LocationPicker({ mode, setMode, cdId, setCdId, loc, setL
                 <div className="flex flex-wrap gap-1.5">
                   {matches.map(m => (
                     <button key={m.uf} type="button" onMouseDown={e => e.preventDefault()} onClick={() => pick(m.uf)}
-                      className="press inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[12px] font-medium text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] dark:bg-neutral-800 dark:text-neutral-200">
+                      className="press inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1 text-[12px] font-medium text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.15)] dark:bg-neutral-800 dark:text-neutral-200">
                       <StateBadge uf={m.uf} size={18} />{m.nome}
                     </button>
                   ))}

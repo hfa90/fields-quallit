@@ -62,7 +62,7 @@ export default function Community() {
           {TABS.map(([k, l, I]) => (
             <button key={k} onClick={() => setParams(k === 'pedidos' ? {} : { aba: k }, { replace: true })}
               className={cn('inline-flex h-8 items-center gap-1.5 rounded-[7px] px-3.5 text-[13px] font-medium transition',
-                tab === k ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+                tab === k ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
               <I className="size-3.5" />{l}
             </button>
           ))}
@@ -139,7 +139,7 @@ function Requests() {
       <div className="flex gap-2">
         {(['open', 'answered'] as const).map(k => (
           <button key={k} onClick={() => setFilter(k)}
-            className={cn('h-8 rounded-full px-3.5 text-[13px] font-medium', filter === k ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-white text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] dark:bg-neutral-900 dark:text-neutral-300')}>
+            className={cn('h-8 rounded-full px-3.5 text-[13px] font-medium', filter === k ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-surface text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12)] dark:bg-neutral-900 dark:text-neutral-300')}>
             {k === 'open' ? 'Em aberto' : 'Atendidos'}
           </button>
         ))}
@@ -252,7 +252,7 @@ function Feed() {
           <Link key={i} to={x.link.split('#')[0]} state={{ inApp: true, hash: x.link.split('#')[1] }} className="flex items-start gap-3 px-4 py-3 hover:bg-neutral-900/[.02] dark:hover:bg-white/[.03]">
             <span className="relative">
               <Avatar name={x.who.name} email={x.who.email} url={x.who.avatar} size={34} />
-              <span className="absolute -bottom-1 -right-1 grid size-4 place-items-center rounded-full bg-white text-accent-600 ring-1 ring-black/5 dark:bg-neutral-800"><I className="size-2.5" /></span>
+              <span className="absolute -bottom-1 -right-1 grid size-4 place-items-center rounded-full bg-surface text-accent-600 ring-1 ring-black/5 dark:bg-neutral-800"><I className="size-2.5" /></span>
             </span>
             <span className="min-w-0 flex-1 text-[14px] leading-snug text-neutral-600 dark:text-neutral-400">
               <b className="font-semibold text-neutral-900 dark:text-white">{x.who.name}</b> {x.text} <span className="font-medium text-neutral-900 dark:text-white">{x.title}</span>

@@ -56,7 +56,7 @@ function shouldShowCallout() {
 export function ShareCallout() {
   if (!shouldShowCallout()) return null
   return (
-    <button onClick={openNewChooser} className="press group flex w-full items-center gap-4 rounded-[16px] bg-white p-4 text-left ring-1 ring-brand-orange/30 dark:bg-neutral-900">
+    <button onClick={openNewChooser} className="press group flex w-full items-center gap-4 rounded-[16px] bg-surface p-4 text-left ring-1 ring-brand-orange/30 dark:bg-neutral-900">
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-orange/15 text-brand-orange"><Zap className="size-5" /></span>
       <span className="min-w-0 flex-1">
         <span className="block text-[16px] font-semibold text-neutral-900 dark:text-white">Resolveu algo hoje?</span>
@@ -180,7 +180,7 @@ export function ImpactCard({ userId, me }: { userId: string; me?: boolean }) {
         <>
           <div className="grid grid-cols-2 gap-px bg-neutral-200/70 sm:grid-cols-4 dark:bg-neutral-800">
             {stat.map(([I, n, l, c]) => (
-              <div key={l} className="bg-white px-4 py-4 dark:bg-neutral-900">
+              <div key={l} className="bg-surface px-4 py-4 dark:bg-neutral-900">
                 <I className="size-4" style={{ color: c }} />
                 <div className="mt-1.5 text-[26px] font-bold tabular-nums tracking-tight text-neutral-900 dark:text-white">{n}</div>
                 <div className="text-[12px] text-neutral-500">{l}</div>

@@ -227,7 +227,7 @@ export function TrailForm({ trail, onClose, onSaved, onDelete }: { trail?: Trail
         </div>
         <div className="grid grid-cols-2 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
           {(['draft', 'published'] as const).map(s => (
-            <button key={s} type="button" onClick={() => setStatus(s)} className={cn('h-8 rounded-[7px] text-[13px] font-medium', status === s ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+            <button key={s} type="button" onClick={() => setStatus(s)} className={cn('h-8 rounded-[7px] text-[13px] font-medium', status === s ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
               {s === 'draft' ? 'Rascunho' : 'Publicada'}
             </button>
           ))}

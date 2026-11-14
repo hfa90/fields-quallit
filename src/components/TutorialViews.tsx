@@ -27,7 +27,7 @@ export function ViewSwitcher({ value, onChange }: { value: ViewMode; onChange: (
         return (
           <button key={m} role="radio" aria-checked={on} title={label} onClick={() => onChange(m)}
             className={cn('inline-flex h-7 items-center gap-1.5 rounded-[7px] px-2.5 text-[13px] font-medium transition',
-              on ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200')}>
+              on ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200')}>
             <I className="size-4" /><span className={cn('hidden lg:inline', on && 'sm:inline')}>{label}</span>
           </button>
         )

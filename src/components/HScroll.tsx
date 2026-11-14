@@ -59,7 +59,7 @@ export default function HScroll({ children, className, label }: { children: Reac
     else setTimeout(() => { drag.current = null }, 0) // libera depois do clique ser ignorado
   }
 
-  const arrow = 'absolute top-1/2 z-10 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-white text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_4px_14px_-2px_rgb(0_0_0/0.25)] transition hover:scale-105 hover:text-neutral-950 md:grid dark:bg-neutral-800 dark:text-neutral-200 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12),0_4px_14px_-2px_rgb(0_0_0/0.6)]'
+  const arrow = 'absolute top-1/2 z-10 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-surface text-neutral-700 shadow-[0_0_0_0.5px_rgb(0_0_0/0.12),0_4px_14px_-2px_rgb(0_0_0/0.25)] transition hover:scale-105 hover:text-neutral-950 md:grid dark:bg-neutral-800 dark:text-neutral-200 dark:shadow-[0_0_0_0.5px_rgb(255_255_255/0.12),0_4px_14px_-2px_rgb(0_0_0/0.6)]'
 
   return (
     <div className="group/hs relative">

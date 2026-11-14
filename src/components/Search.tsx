@@ -154,7 +154,7 @@ export function SearchPalette() {
   return (
     <div className="fixed inset-0 z-[60] flex justify-center sm:items-start sm:p-6 sm:pt-[10vh]" onKeyDown={onKey}>
       <div className="absolute inset-0 bg-black/40 animate-in" onClick={close} />
-      <div className="pop-in relative flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl dark:bg-neutral-900 sm:h-auto sm:max-h-[75vh] sm:max-w-2xl sm:rounded-[16px]">
+      <div className="pop-in relative flex h-full w-full flex-col overflow-hidden bg-surface shadow-2xl dark:bg-neutral-900 sm:h-auto sm:max-h-[75vh] sm:max-w-2xl sm:rounded-[16px]">
         <div className="pt-safe flex items-center gap-2 border-b border-neutral-200/80 px-3 dark:border-neutral-800">
           <Search className="ml-1 size-5 shrink-0 text-accent-600" />
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} type="search" enterKeyHint="search" autoComplete="off"
@@ -262,7 +262,7 @@ export function HeroSearch() {
         <h2 className="text-[22px] font-bold leading-tight tracking-tight sm:text-[26px]">O que você precisa resolver hoje?</h2>
         <p className="mt-1 text-[14px] text-white/75 sm:text-[15px]">Busque em todos os tutoriais, comandos, anexos, pedidos e pessoas.</p>
         <button onClick={() => openSearch()}
-          className="press mt-5 flex h-14 w-full items-center gap-3 rounded-[14px] bg-white px-4 text-left shadow-[0_10px_30px_-10px_rgb(0_0_0/0.4)]">
+          className="press mt-5 flex h-14 w-full items-center gap-3 rounded-[14px] bg-surface px-4 text-left shadow-[0_10px_30px_-10px_rgb(0_0_0/0.4)]">
           <Search className="size-5 text-accent-600" strokeWidth={2.4} />
           <span className="flex-1 truncate text-[16px] text-neutral-400">Ex.: vpn, instalar linux, impressora não imprime…</span>
           <kbd className="hidden rounded-md border border-neutral-200 px-1.5 py-0.5 text-[12px] text-neutral-400 sm:block">{mac ? '⌘' : 'Ctrl'} K</kbd>

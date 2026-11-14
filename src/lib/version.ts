@@ -14,6 +14,13 @@ export function versionLabel() {
  */
 export const CHANGELOG: { version: string; date: string; title: string; items: string[] }[] = [
   {
+    version: '1.13.0', date: '2026-11-14', title: 'Tema claro mais suave',
+    items: [
+      'O tema claro não usa mais branco puro: fundo em cinza-gelo levemente quente e cartões em off-white',
+      'Menos brilho na tela, mais confortável para os olhos em uso prolongado',
+    ],
+  },
+  {
     version: '1.12.0', date: '2026-11-13', title: 'O robozinho tira o QR do bolso',
     items: [
       'O robozinho agora tem um bolso: depois de chegar (ou de cumprimentar), ele procura lá dentro e tira o QR code do app',

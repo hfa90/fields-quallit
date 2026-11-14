@@ -158,7 +158,7 @@ export function NewUserModal({ open, onClose, onCreated }: { open: boolean; onCl
             <div className="grid grid-cols-3 rounded-[9px] bg-neutral-900/[.06] p-0.5 dark:bg-white/10">
               {(['field', 'field_admin', 'admin'] as Role[]).map(r => (
                 <button key={r} type="button" onClick={() => setRole(r)}
-                  className={cn('h-9 rounded-[7px] text-[13px] font-medium', role === r ? 'bg-white text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
+                  className={cn('h-9 rounded-[7px] text-[13px] font-medium', role === r ? 'bg-surface text-neutral-900 shadow-[0_1px_3px_rgb(0_0_0/0.12)] dark:bg-neutral-600 dark:text-white' : 'text-neutral-600 dark:text-neutral-300')}>
                   {r === 'field' ? 'Field' : r === 'field_admin' ? 'Field Admin' : 'Admin'}
                 </button>
               ))}

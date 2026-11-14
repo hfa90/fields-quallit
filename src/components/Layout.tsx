@@ -54,7 +54,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#000000' : '#f5f5f7')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#000000' : '#ecebe6')
     setNativeTheme(dark)
     try { localStorage.setItem('fq-theme', dark ? 'dark' : 'light') } catch { /* ignore */ }
   }, [dark])
@@ -121,11 +121,11 @@ export default function Layout({ children }: { children: ReactNode }) {
               <button onClick={() => (window.innerWidth < 768 ? nav('/notificacoes') : setMenu(m => m === 'notif' ? null : 'notif'))}
                 className="relative grid size-9 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-900/5 dark:text-neutral-300 dark:hover:bg-white/10" aria-label="Notificações">
                 <Bell className="size-5" />
-                {unread > 0 && <span className="absolute right-0.5 top-0.5 grid h-[17px] min-w-[17px] place-items-center rounded-full bg-[#ff3b30] px-1 text-[10px] font-semibold text-white ring-2 ring-[#f5f5f7] dark:ring-black">{unread > 99 ? '99+' : unread}</span>}
+                {unread > 0 && <span className="absolute right-0.5 top-0.5 grid h-[17px] min-w-[17px] place-items-center rounded-full bg-[#ff3b30] px-1 text-[10px] font-semibold text-white ring-2 ring-neutral-50 dark:ring-black">{unread > 99 ? '99+' : unread}</span>}
               </button>
               {menu === 'notif' && (
                 <>
-                  <div className="absolute right-0 top-11 z-50 w-[380px] overflow-hidden rounded-[14px] bg-white shadow-2xl ring-[0.5px] ring-black/10 pop-in dark:bg-neutral-900 dark:ring-white/10">
+                  <div className="absolute right-0 top-11 z-50 w-[380px] overflow-hidden rounded-[14px] bg-surface shadow-2xl ring-[0.5px] ring-black/10 pop-in dark:bg-neutral-900 dark:ring-white/10">
                     <div className="flex items-center justify-between px-4 py-3">
                       <span className="text-[15px] font-semibold text-neutral-900 dark:text-white">Notificações</span>
                       {unread > 0 && <button onClick={() => markRead()} className="text-[13px] font-medium text-accent-600 dark:text-accent-400">Marcar todas como lidas</button>}

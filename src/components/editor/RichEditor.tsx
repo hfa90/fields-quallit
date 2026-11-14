@@ -136,7 +136,7 @@ function Popover({ icon, title, children, active }: { icon: React.ReactNode; tit
     <div className="relative" ref={ref}>
       <TB title={title} active={active || open} onClick={() => setOpen(o => !o)}>{icon}</TB>
       {open && (
-        <div className="absolute left-0 top-10 z-30 min-w-52 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 pop-in">
+        <div className="absolute left-0 top-10 z-30 min-w-52 rounded-xl border border-neutral-200 bg-surface p-2 shadow-xl dark:border-neutral-700 dark:bg-neutral-900 pop-in">
           {children(() => setOpen(false))}
         </div>
       )}
@@ -291,7 +291,7 @@ function Toolbar({ editor, onImages, uploading, onAnnotate, onVideo }: { editor:
           {inCode && <>
             <span className="mr-1 font-medium text-neutral-500">Linguagem:</span>
             <select
-              className="h-7 rounded-md border border-neutral-200 bg-white px-2 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+              className="h-7 rounded-md border border-neutral-200 bg-surface px-2 text-xs dark:border-neutral-700 dark:bg-neutral-900"
               value={editor.getAttributes('codeBlock').language ?? 'plaintext'}
               onChange={e => editor.chain().focus().updateAttributes('codeBlock', { language: e.target.value }).run()}
             >{LANGS.map(l => <option key={l} value={l}>{l}</option>)}</select>
