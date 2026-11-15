@@ -7,6 +7,7 @@ import App from './App'
 import { AuthProvider } from './lib/auth'
 import { entry } from './lib/entry'
 import { initNative } from './lib/native'
+import { initMediaAuth } from './lib/mediaAuth'
 import ErrorBoundary, { reloadForNewVersion } from './components/ErrorBoundary'
 
 // Retorno do redirecionamento do 404.html (GitHub Pages SPA)
@@ -28,6 +29,8 @@ document.addEventListener('gesturechange', stop, { passive: false })
 document.addEventListener('gestureend', stop, { passive: false })
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault() }, { passive: false })
 document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault() }, { passive: false })
+
+initMediaAuth()
 
 // App instalável / offline (somente em produção)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

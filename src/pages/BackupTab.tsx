@@ -3,6 +3,7 @@ import { zipSync, strToU8 } from 'fflate'
 import { Download, DatabaseBackup, CloudUpload, ShieldCheck, Loader2, Clock, FileArchive } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase, ATTACHMENTS_BUCKET } from '../lib/supabase'
+import { fetchMedia } from '../lib/mediaAuth'
 import { errMsg, fileSize, fmtDateTime, timeAgo } from '../lib/utils'
 import { Button, Spinner } from '../components/ui'
 
@@ -95,7 +96,7 @@ export default function BackupTab() {
       i = 0
       for (const [url, path] of media) {
         i++; setProgress(`Baixando imagens e vídeos ${i}/${media.size}…`)
-        try { const r = await fetch(url); if (r.ok) files[path] = new Uint8Array(await r.arrayBuffer()) } catch { /* segue */ }
+        try { const r = await fetchMedia(url); if (r.ok) files[path] = new Uint8Array(await r.arrayBuffer()) } catch { /* segue */ }
       }
 
       // Páginas legíveis + índice

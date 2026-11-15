@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase, ATTACHMENTS_BUCKET } from './supabase'
+import { fetchMedia } from './mediaAuth'
 import type { Attachment, Category, LinkItem, Profile, Tutorial } from './types'
 
 /** Tutorial completo como a tela de leitura usa */
@@ -70,7 +71,7 @@ export async function saveOffline(code: string, onProgress?: (s: string) => void
   const media = mediaUrls(tut.content_html, [tut.author?.avatar_url])
   for (let i = 0; i < media.length; i++) {
     onProgress?.(`Imagens e vídeos ${i + 1}/${media.length}`)
-    try { const r = await fetch(media[i], { mode: 'cors' }); if (r.ok) { bytes += Number(r.headers.get('content-length') || 0); await cache.put(media[i], r) } } catch { /* segue */ }
+    try { const r = await fetchMedia(media[i]); if (r.ok) { bytes += Number(r.headers.get('content-length') || 0); await cache.put(media[i], r) } } catch { /* segue */ }
   }
   for (let i = 0; i < files.length; i++) {
     onProgress?.(`Anexos ${i + 1}/${files.length}`)

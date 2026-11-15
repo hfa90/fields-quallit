@@ -1,6 +1,6 @@
 // Service worker: app abre instantâneo e funciona com rede ruim em campo.
 // Dados (Supabase) nunca são cacheados aqui — sempre vêm da rede.
-const VERSION = 'fq-v10'
+const VERSION = 'fq-v11'
 const OFFLINE = 'fq-offline-media'
 const SHELL = `${VERSION}-shell`
 const scope = self.registration.scope
@@ -18,6 +18,11 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
 
+  // Imagens/vídeos dos tutoriais (bucket privado): cópia offline ou busca com o login do usuário
+  if (url.pathname.includes('/storage/v1/object/public/kb-images/')) {
+    e.respondWith(caches.open(OFFLINE).then(c => c.match(req.url)).then(hit => hit || privateMedia(req, url, e.clientId)))
+    return
+  }
   // Mídia e anexos de tutoriais salvos para uso offline
   if (url.pathname.includes('/storage/v1/object/public/') || url.pathname.includes('/__offline__/')) {
     e.respondWith(caches.open(OFFLINE).then(c => c.match(req.url)).then(hit => hit || fetch(req)))
@@ -45,6 +50,42 @@ self.addEventListener('fetch', e => {
     })))
   }
 })
+
+// ---------- Mídia privada (kb-images) ----------
+// A página entrega o login atual por MessageChannel (src/lib/mediaAuth.ts); guardamos só em memória.
+let media = { token: null, apikey: null, exp: 0 }
+
+async function askToken(clientId) {
+  const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  const client = (clientId && list.find(c => c.id === clientId)) || list[0]
+  if (!client) return
+  const reply = await new Promise(resolve => {
+    const ch = new MessageChannel()
+    const t = setTimeout(() => resolve(null), 3000)
+    ch.port1.onmessage = ev => { clearTimeout(t); resolve(ev.data) }
+    client.postMessage({ type: 'fq-media-token' }, [ch.port2])
+  })
+  if (reply && reply.token) {
+    let exp = 0
+    try { exp = JSON.parse(atob(reply.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp * 1000 } catch {}
+    media = { token: reply.token, apikey: reply.apikey, exp }
+  }
+}
+
+async function privateMedia(req, url, clientId) {
+  if (!media.token || media.exp - 60000 < Date.now()) await askToken(clientId)
+  const get = () => {
+    const h = new Headers()
+    if (media.token) h.set('Authorization', `Bearer ${media.token}`)
+    if (media.apikey) h.set('apikey', media.apikey)
+    const range = req.headers.get('range')
+    if (range) h.set('Range', range)
+    return fetch(url.href.replace('/object/public/', '/object/authenticated/'), { headers: h, mode: 'cors', credentials: 'omit' })
+  }
+  let res = await get()
+  if ([400, 401, 403].includes(res.status)) { await askToken(clientId); res = await get() }
+  return res
+}
 
 // ---------- Notificações push ----------
 self.addEventListener('push', e => {
