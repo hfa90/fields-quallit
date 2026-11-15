@@ -56,9 +56,12 @@ export function ReviewTab() {
 /** Senha temporária legível (sem caracteres ambíguos) */
 export function tempPassword() {
   const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  const rnd = crypto.getRandomValues(new Uint32Array(10))
-  const s = Array.from(rnd, n => chars[n % chars.length]).join('')
-  return `${s.slice(0, 5)}-${s.slice(5)}`
+  // sorteia até ter minúscula, maiúscula e número (regra de senha do Supabase Auth)
+  for (;;) {
+    const rnd = crypto.getRandomValues(new Uint32Array(10))
+    const s = Array.from(rnd, n => chars[n % chars.length]).join('')
+    if (/[a-z]/.test(s) && /[A-Z]/.test(s) && /[0-9]/.test(s)) return `${s.slice(0, 5)}-${s.slice(5)}`
+  }
 }
 
 export async function callAdmin(body: Record<string, unknown>) {

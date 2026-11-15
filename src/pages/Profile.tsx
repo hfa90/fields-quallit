@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { uploadImage } from '../lib/upload'
 import { Avatar, Button, SectionTitle } from '../components/ui'
-import { ROLE_LABEL, errMsg } from '../lib/utils'
+import { ROLE_LABEL, errMsg, passwordProblem } from '../lib/utils'
 import { InstallRow, isStandalone } from '../components/InstallApp'
 import { isNative } from '../lib/native'
 import { Smartphone, Sparkles } from 'lucide-react'
@@ -44,7 +44,8 @@ export default function ProfilePage() {
     } catch (e) { toast.error(errMsg(e)) }
   }
   const changePw = async () => {
-    if (pw.length < 8) return toast.error('Mínimo de 8 caracteres')
+    const bad = passwordProblem(pw)
+    if (bad) return toast.error(bad)
     setPwBusy(true)
     const { error } = await supabase.auth.updateUser({ password: pw })
     setPwBusy(false)

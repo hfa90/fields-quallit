@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { Button, inputCls, labelCls } from '../components/ui'
-import { errMsg } from '../lib/utils'
+import { errMsg, passwordProblem } from '../lib/utils'
 
 /**
  * Definição de senha: usada no link "Esqueci minha senha" e no primeiro acesso
@@ -19,7 +19,8 @@ export default function ResetPassword({ firstAccess }: { firstAccess?: boolean }
     <div className="pt-safe pb-safe grid min-h-dvh place-items-center p-6">
       <form className="w-full max-w-sm space-y-4 fade-up" onSubmit={async e => {
         e.preventDefault()
-        if (pw.length < 8) return toast.error('A senha precisa ter pelo menos 8 caracteres')
+        const bad = passwordProblem(pw)
+        if (bad) return toast.error(bad)
         if (pw !== pw2) return toast.error('As senhas não conferem')
         setBusy(true)
         const { error } = await supabase.auth.updateUser({ password: pw, data: { must_change_password: false } })

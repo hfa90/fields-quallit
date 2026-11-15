@@ -112,6 +112,13 @@ export function hostOf(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
 }
 
+/** Mesma regra configurada no Supabase Auth: 8+ caracteres com minúscula, maiúscula e número */
+export function passwordProblem(pw: string) {
+  if (pw.length < 8) return 'A senha precisa ter pelo menos 8 caracteres'
+  if (!/[a-z]/.test(pw) || !/[A-Z]/.test(pw) || !/[0-9]/.test(pw)) return 'Use letras minúsculas, MAIÚSCULAS e números na senha'
+  return null
+}
+
 export function errMsg(e: unknown) {
   if (e && typeof e === 'object' && 'message' in e) return String((e as { message: unknown }).message)
   return String(e)
