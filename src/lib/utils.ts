@@ -69,7 +69,7 @@ export function readingTime(html: string) {
 export function shortUrl(code: string) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '')
   const origin = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(window.location.origin) && (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
-    ? 'https://hfa90.github.io' : window.location.origin
+    ? 'https://haydenfernandes.tech' : window.location.origin
   return `${origin}${base}/t/${code}`
 }
 

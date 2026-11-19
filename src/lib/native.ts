@@ -4,7 +4,7 @@ import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core'
 export const isNative = Capacitor.isNativePlatform()
 
 /** Endereço público do site (links curtos e de recuperação de senha precisam apontar para ele, não para o app) */
-export const PUBLIC_URL = (import.meta.env.VITE_PUBLIC_URL || 'https://hfa90.github.io/fields-quallit').replace(/\/$/, '')
+export const PUBLIC_URL = (import.meta.env.VITE_PUBLIC_URL || 'https://haydenfernandes.tech/quallit-tutoriais').replace(/\/$/, '')
 
 /** Página pública para baixar o app Android */
 export const ANDROID_PAGE = `${PUBLIC_URL}/android`

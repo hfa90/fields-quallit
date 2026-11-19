@@ -6,7 +6,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
  * sem reinstalar. O service worker do site mantém o app e os tutoriais salvos funcionando offline.
  * O site continua funcionando normalmente no navegador.
  */
-const SITE = 'https://hfa90.github.io/fields-quallit/'
+const SITE = 'https://haydenfernandes.tech/quallit-tutoriais/'
 
 const config: CapacitorConfig = {
   appId: 'br.com.quallit.fields',
@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
     url: SITE,
     errorPath: 'offline.html',
     // tudo que não for o site (downloads de anexos, links externos) abre no navegador do celular
-    allowNavigation: ['hfa90.github.io'],
+    allowNavigation: ['haydenfernandes.tech'],
   },
   android: {
     backgroundColor: '#f5f5f7',

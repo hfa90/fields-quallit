@@ -53,7 +53,7 @@ Variáveis (opcionais — já há valores padrão em `src/lib/supabase.ts`): `VI
 
 ## Configuração no Supabase (uma vez)
 
-Em **Authentication → URL Configuration → Redirect URLs**, adicione a URL do site publicado (ex.: `https://SEU_USUARIO.github.io/fields-quallit/**`) para que os links de confirmação de cadastro e recuperação de senha voltem para esta aplicação.
+Em **Authentication → URL Configuration → Redirect URLs**, adicione a URL do site publicado (hoje `https://haydenfernandes.tech/quallit-tutoriais/**`; antes `https://hfa90.github.io/fields-quallit/**`) para que os links de confirmação de cadastro e recuperação de senha voltem para esta aplicação.
 
 ## Administradores principais
 

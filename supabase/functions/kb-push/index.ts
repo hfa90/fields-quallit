@@ -47,7 +47,7 @@ Deno.serve(async req => {
     const { data: subs } = await sb.from('kb_push_subscriptions').select('*').eq('user_id', n.user_id)
     if (!subs?.length) return json({ sent: 0 })
 
-    webpush.setVapidDetails(cfg.app_url || 'https://hfa90.github.io/fields-quallit', cfg.vapid_public, cfg.vapid_private)
+    webpush.setVapidDetails(cfg.app_url || 'https://haydenfernandes.tech/quallit-tutoriais', cfg.vapid_public, cfg.vapid_private)
     const { count } = await sb.from('kb_notifications').select('id', { count: 'exact', head: true }).eq('user_id', n.user_id).is('read_at', null)
     const payload = JSON.stringify({
       title: n.title,
