@@ -71,6 +71,31 @@ jobs:
           cat dist/downloads/version.json
           rm -f "$RUNNER_TEMP/fields.p12"
 
+      # ---------- VPS da Hostinger: haydenfernandes.tech/quallit-tutoriais/ ----------
+      # Segredo necessário: VPS_DEPLOY_KEY — chave SSH privada do usuário "publicador" da VPS
+      # (só grava em /var/www/haydenfernandes.tech/...). Sem o segredo, este passo é pulado.
+      # O site é gerado de novo com o endereço da VPS; o APK e o version.json vão junto.
+      - name: Publicar na VPS (haydenfernandes.tech/quallit-tutoriais/)
+        env:
+          CHAVE: ${{ secrets.VPS_DEPLOY_KEY }}
+          VITE_BASE: /quallit-tutoriais/
+          VITE_PUBLIC_URL: https://haydenfernandes.tech/quallit-tutoriais
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ vars.VITE_SUPABASE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CHAVE" ]; then echo "::warning::VPS NÃO publicada: cadastre o segredo VPS_DEPLOY_KEY."; exit 0; fi
+          npx vite build --outDir dist-vps
+          mkdir -p dist-vps/downloads
+          cp dist/downloads/fields.apk dist/downloads/version.json dist-vps/downloads/
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$CHAVE" > ~/.ssh/vps && chmod 600 ~/.ssh/vps
+          echo "189.24.1.72 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB/Ly6zingGtSBqI9JsW62Ws492W7hU2vlWIBivkwoWX" >> ~/.ssh/known_hosts
+          rsync -rlt --delete --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r -e "ssh -i ~/.ssh/vps -o StrictHostKeyChecking=yes" \
+            dist-vps/ publicador@189.24.1.72:/var/www/haydenfernandes.tech/quallit-tutoriais/
+          rm -f ~/.ssh/vps
+          echo "Publicado na VPS: https://haydenfernandes.tech/quallit-tutoriais/"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
